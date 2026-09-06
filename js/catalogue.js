@@ -1,0 +1,136 @@
+/* ======================================================================
+   Hadeej'Art — Catalogue (grille produits, filtre catégories, détail)
+   ====================================================================== */
+
+let CURRENT_CATEGORY = 'tous';
+let CURRENT = null;
+
+function productsInCategory(catId) {
+  if (catId === 'tous') return PRODUCTS;
+  return PRODUCTS.filter(p => p.category === catId);
+}
+
+function renderCategoryFilters() {
+  const bar = document.getElementById('categoryFilters');
+  if (!bar) return;
+  bar.innerHTML = CATEGORIES.map(c => `
+    <button type="button" class="chip${c.id === CURRENT_CATEGORY ? ' active' : ''}"
+            data-cat="${c.id}" onclick="selectCategory('${c.id}')">${c.label}</button>
+  `).join('');
+}
+
+function selectCategory(catId) {
+  CURRENT_CATEGORY = catId;
+  renderCategoryFilters();
+  renderProducts();
+}
+
+function renderProducts() {
+  const grid = el('#productGrid');
+  if (!grid) return;
+  const list = productsInCategory(CURRENT_CATEGORY);
+  grid.innerHTML = list.map(p => `
+    <article class="card">
+      <img src="${p.img}" alt="${p.name}" loading="lazy" decoding="async"
+           onerror="this.style.objectFit='contain'; this.alt+=' (photo à venir)';">
+      <div class="cap">
+        <h3>${p.name}</h3>
+        <div class="price">${formatPrice(p.price)}</div>
+        <div class="row">
+          <button class="btn sm icon" onclick="addToCart('${p.id}', {})">🧺 Ajouter</button>
+          <button class="btn sm ghost" onclick="achatDirect('${p.id}')">Acheter</button>
+          <button class="btn sm ghost" onclick="openDetail('${p.id}')">Détail</button>
+        </div>
+      </div>
+    </article>
+  `).join('') || '<p class="small">Aucun produit dans cette catégorie pour le moment.</p>';
+}
+
+/* ====== DÉTAIL ====== */
+function openDetail(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  CURRENT = p;
+
+  el('#dName').textContent = p.name;
+  el('#dImg').src = p.img;
+  el('#dImg').alt = p.name;
+  if (el('#dColor')) el('#dColor').value = '';
+  if (el('#dTissu')) el('#dTissu').value = p.fabric || '';
+  if (el('#dNote'))  el('#dNote').value = '';
+  if (el('#dSize')) {
+    const sizeSel = el('#dSize');
+    const sizes = (p.sizes && p.sizes.length) ? p.sizes : SIZES;
+    sizeSel.innerHTML = sizes.map(s => `<option>${s}</option>`).join('');
+    sizeSel.value = sizes.includes('M') ? 'M' : sizes[0];
+  }
+  if (el('#dSexe')) el('#dSexe').value = 'Unisexe';
+
+  const optBox = document.getElementById('detailOptions');
+  const sexeEl = document.getElementById('dSexe');
+  const sexeField = sexeEl ? (sexeEl.closest('.field') || sexeEl.parentElement) : null;
+  const gendered = isGenderedProduct(p);
+
+  if (optBox) {
+    if (p.variantOptions) {
+      const vo = p.variantOptions;
+      optBox.innerHTML = `<label for="${vo.id}">${vo.label}</label>` +
+        `<select id="${vo.id}" class="input">` +
+        vo.choices.map(c => `<option value="${c.value}">${c.label}</option>`).join('') +
+        `</select>`;
+      optBox.style.display = '';
+    } else {
+      optBox.innerHTML = '';
+      optBox.style.display = 'none';
+    }
+  }
+  if (sexeField) sexeField.style.display = gendered ? 'none' : '';
+
+  el('#detail').classList.add('show');
+}
+
+function closeDetail() {
+  document.getElementById('detail').classList.remove('show');
+}
+
+function addFromDetail() {
+  if (!CURRENT) return;
+  const productId = CURRENT.id;
+  const color = el('#dColor') ? el('#dColor').value.trim() : '';
+  const size  = el('#dSize')  ? el('#dSize').value  : '';
+  const tissu = el('#dTissu') ? el('#dTissu').value.trim() : '';
+  const note  = el('#dNote')  ? el('#dNote').value.trim()  : '';
+
+  const gendered = isGenderedProduct(CURRENT);
+  const sexe = gendered ? '' : (el('#dSexe') ? el('#dSexe').value : '');
+
+  let optionKimono = '';
+  let priceOverride = null;
+  if (CURRENT.variantOptions) {
+    const sel = document.getElementById(CURRENT.variantOptions.id);
+    const val = sel ? (sel.value || '') : '';
+    optionKimono = val;
+    const choice = CURRENT.variantOptions.choices.find(c => c.value === val);
+    if (choice) priceOverride = choice.price;
+  }
+
+  const opts = { color, size, sexe, tissu, note, optionKimono };
+  if (priceOverride != null) opts.price = priceOverride;
+
+  addToCart(productId, opts);
+  closeDetail();
+  /* Différé : voir la note dans achatDirect() (cart.js). */
+  setTimeout(openCart, 0);
+}
+
+function scrollToCatalogue() {
+  document.getElementById('catalogue').scrollIntoView({ behavior: 'smooth' });
+}
+
+function openImageFullscreen(src) {
+  document.getElementById('imgViewerImg').src = src;
+  document.getElementById('imgViewer').classList.add('show');
+}
+function closeImageViewer() {
+  document.getElementById('imgViewer').classList.remove('show');
+}

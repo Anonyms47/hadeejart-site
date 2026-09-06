@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hadeejart-static",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [".claude/dev-server.js", "5500"],
+      "port": 5500
+    }
+  ]
+}

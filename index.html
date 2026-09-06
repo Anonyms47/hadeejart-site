@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Hadeej’Art — Boutique</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+
+<meta name="description" content="Hadeej’Art — Créations & accessoires inspirés Wax. Commande WhatsApp rapide.">
+<meta name="theme-color" content="#111111">
+<meta property="og:title" content="Hadeej’Art — Boutique">
+<meta property="og:description" content="Créations & accessoires — Commande WhatsApp en 1 clic.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Hadeej’Art",
+  "sameAs": []
+}
+</script>
+</head>
+<body>
+<canvas id="inv" width="1240" height="1754"></canvas>
+
+<div class="container">
+  <!-- HEADER -->
+  <div class="header" id="siteHeader" aria-label="Barre supérieure">
+    <div class="brand" aria-label="Identité Hadeej’Art">
+      <div class="mark">
+        <img src="images/logo.png" alt="Logo Hadeej’Art">
+      </div>
+      <div>
+        <h1>Hadeej’Art</h1>
+        <div class="badge">Pièces stylées & authentiquement africaines</div>
+      </div>
+    </div>
+    <div class="action cart">
+      <button id="cartBtn" class="btn" type="button"><span>Panier</span><span class="bubble" id="cartCount">0</span></button>
+    </div>
+  </div>
+
+  <!-- BANDE MOTIF HAUT -->
+  <div class="motif-bar motif-top" aria-hidden="true"></div>
+
+  <!-- HERO -->
+  <section class="hero" aria-label="Mise en avant">
+    <div class="hero-card">
+      <div class="ribbon"></div>
+      <div class="hero-inline">
+        <div class="logo-inline">
+          <img src="images/logo.png" alt="Logo Hadeej’Art">
+        </div>
+        <h2>Racontez votre histoire.<br/>Portez l’Afrique.</h2>
+      </div>
+      <p class="hero-sub">Collection Hadeej’Art — Confort, modernité, personnalisation.</p>
+      <p class="note">Astuce : utilisez <b>Détail</b> pour choisir couleur, taille (S–XXL), tissu et une note libre.</p>
+      <div class="beads"></div>
+      <div class="cta-row">
+        <button class="btn cta-hero" type="button" onclick="scrollToCatalogue()">Voir la collection</button>
+        <button class="btn ghost cta-hero-2" type="button" onclick="scrollToCatalogue()">Nouveautés</button>
+      </div>
+    </div>
+
+    <div class="hero-card hero-frame">
+      <img src="images/logo.png" alt="Hadeej’Art — Logo" class="logo-hero">
+    </div>
+
+    <div class="mobile-sticky-cta">
+      <button class="btn" type="button" onclick="scrollToCatalogue()">Voir la collection</button>
+    </div>
+  </section>
+
+  <!-- CATALOGUE -->
+  <h2 id="catalogue" class="section-title">Catalogue</h2>
+  <div id="categoryFilters" class="category-filters"></div>
+  <div id="productGrid" class="grid"></div>
+
+  <!-- BANDE MOTIF BAS -->
+  <div class="motif-bar motif-bottom" aria-hidden="true"></div>
+</div>
+
+<!-- PANIER -->
+<div id="cartPanel" class="panel">
+  <h4>Votre panier</h4>
+  <div id="cartLines"></div>
+  <div class="sep"></div>
+  <div class="line"><span>Sous-total</span><b id="cartSubtotal">0 FCFA</b></div>
+  <div class="line"><span>Total</span><b id="cartTotal">0 FCFA</b></div>
+  <div class="sep"></div>
+  <button class="btn" type="button" onclick="openClient()">Finaliser</button>
+</div>
+
+<!-- MODAL DÉTAIL -->
+<div id="detail" class="modal">
+  <div class="sheet">
+    <header>
+      <b id="dName">Détail</b>
+      <button class="btn ghost" type="button" onclick="closeDetail()">Fermer</button>
+    </header>
+    <div class="body">
+      <div class="media">
+        <img id="dImg" alt="">
+        <button class="img-expand" type="button" onclick="openImageFullscreen(document.getElementById('dImg').src)" title="Voir en plein écran">
+          <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M4 15v5h5"/></svg>
+        </button>
+      </div>
+      <div>
+        <div class="field"><label for="dColor">Couleur</label><input id="dColor" class="input" placeholder="ex: Orange"/></div>
+        <div class="field">
+          <label for="dSize">Taille</label>
+          <select id="dSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+        </div>
+        <div class="field"><label for="dTissu">Tissu</label><input id="dTissu" class="input" placeholder="ex: Wax"/></div>
+        <div class="field"><label for="dNote">Note (facultatif)</label><input id="dNote" class="input" placeholder="ex: manches longues"/></div>
+        <div class="field sexe-field">
+          <label for="dSexe">Sexe</label>
+          <select id="dSexe"><option>Unisexe</option><option>Homme</option><option>Femme</option></select>
+        </div>
+        <div id="detailOptions" class="field" style="display:none;"></div>
+        <div class="field"><button class="btn" type="button" onclick="addFromDetail()">Ajouter au panier</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLIENT -->
+<div id="client" class="modal">
+  <div class="sheet" style="max-width:900px">
+    <header><b>Mes informations</b><button class="btn ghost" type="button" onclick="closeClient()">Fermer</button></header>
+    <div class="body" style="grid-template-columns:1fr 1fr">
+      <div>
+        <div class="field"><label for="cName">Nom complet</label><input id="cName" class="input" placeholder="ex: Aïcha Diop"></div>
+        <div class="field"><label for="cPhone">Téléphone (WhatsApp)</label><input id="cPhone" class="input" placeholder="77 123 45 67"></div>
+        <div class="field"><label for="cAddr">Adresse de livraison</label><input id="cAddr" class="input" placeholder="Quartier, ville, repère"></div>
+        <div class="field">
+          <label class="checkbox"><input type="checkbox" id="cRemember"> Se souvenir de mes informations</label>
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <label>Mode de paiement</label>
+          <div id="payGrid" class="pay-grid">
+            <button type="button" class="pay-card" data-method="Espèces" aria-pressed="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <rect width="22" height="14" x="1" y="5" rx="2" fill="#fff" stroke="#5a3b25"/>
+                <circle cx="12" cy="12" r="3" fill="#c46d20"/>
+              </svg>
+              <span>Espèces</span>
+            </button>
+            <button type="button" class="pay-card" data-method="Wave">
+              <img src="images/payments/wave-icon.png" alt="" width="18" height="18">
+              <span>Wave</span>
+            </button>
+            <button type="button" class="pay-card" data-method="Orange Money">
+              <img src="images/payments/orange-money-icon.png" alt="" width="18" height="18">
+              <span>Orange Money</span>
+            </button>
+          </div>
+          <input type="hidden" id="cPay" name="pay_method" value="Espèces">
+        </div>
+
+        <div class="cta-row">
+          <button type="button" class="btn" id="btnOrder" data-action="order">Passer la commande</button>
+          <p class="cta-hint">Une facture (image) sera générée et partagée sur WhatsApp.</p>
+        </div>
+
+        <noscript>
+          <a class="btn" href="https://wa.me/781444340">Passer la commande</a>
+        </noscript>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLEIN ÉCRAN IMAGE -->
+<div id="imgViewer" class="lightbox" onclick="closeImageViewer()">
+  <button class="close" aria-label="Fermer" type="button" onclick="closeImageViewer(); event.stopPropagation()">Fermer</button>
+  <img id="imgViewerImg" alt="Aperçu produit"/>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/catalogue.js"></script>
+<script src="js/invoice.js"></script>
+<script src="js/checkout.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
