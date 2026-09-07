@@ -4,9 +4,17 @@
 
 const SITE_WA_NUMBER = '781444340'; /* numéro WhatsApp (sans +) */
 
+const PAYMENT_LABELS = {
+  wave: 'Wave',
+  orange_money: 'Orange Money',
+  sendwave: 'Sendwave',
+  taptap_send: 'TapTap Send'
+};
+
 function openClient() {
   if (!CART.length) { openCart(); return; }
   document.getElementById('client').classList.add('show');
+  setTimeout(() => { if (typeof initDeliveryMap === 'function') initDeliveryMap(); }, 50);
 }
 function closeClient() {
   document.getElementById('client').classList.remove('show');
@@ -21,21 +29,24 @@ function restoreClientInfo() {
     const setVal = (id, val) => { const e = document.getElementById(id); if (e) e.value = val || ''; };
     setVal('cName', u.name);
     setVal('cPhone', u.phone);
-    setVal('cAddr', u.addr);
+    setVal('cEmail', u.email);
+    setVal('cCountry', u.country);
+    setVal('cCity', u.city);
+    setVal('cDistrict', u.district);
     const remember = document.getElementById('cRemember');
     if (remember) remember.checked = true;
-    selectPaymentMethodByName(u.pay || 'Espèces');
+    selectPaymentMethodByValue(u.pay || 'wave');
   } catch (e) { /* ignore données corrompues */ }
 }
 
 function saveClientInfoIfAsked() {
   const remember = document.getElementById('cRemember');
+  const val = id => (document.getElementById(id) || {}).value || '';
   if (remember && remember.checked) {
     localStorage.setItem('ha_user', JSON.stringify({
-      name: (document.getElementById('cName') || {}).value || '',
-      phone: (document.getElementById('cPhone') || {}).value || '',
-      addr: (document.getElementById('cAddr') || {}).value || '',
-      pay: (document.getElementById('cPay') || {}).value || 'Espèces'
+      name: val('cName'), phone: val('cPhone'), email: val('cEmail'),
+      country: val('cCountry'), city: val('cCity'), district: val('cDistrict'),
+      pay: (document.getElementById('cPay') || {}).value || 'wave'
     }));
   } else {
     localStorage.removeItem('ha_user');
@@ -43,10 +54,10 @@ function saveClientInfoIfAsked() {
 }
 
 /* ====== Moyen de paiement (chips) ====== */
-function selectPaymentMethodByName(name) {
+function selectPaymentMethodByValue(value) {
   const grid = document.getElementById('payGrid');
   if (!grid) return;
-  const btn = grid.querySelector(`.pay-card[data-method="${CSS.escape(name)}"]`) || grid.querySelector('.pay-card');
+  const btn = grid.querySelector(`.pay-card[data-method="${CSS.escape(value)}"]`) || grid.querySelector('.pay-card');
   if (btn) setPaymentMethod(btn);
 }
 
@@ -56,7 +67,7 @@ function setPaymentMethod(btn) {
   if (!grid || !btn) return;
   grid.querySelectorAll('.pay-card').forEach(b => b.setAttribute('aria-pressed', 'false'));
   btn.setAttribute('aria-pressed', 'true');
-  if (out) out.value = btn.dataset.method || 'Espèces';
+  if (out) out.value = btn.dataset.method || 'wave';
 }
 
 function bindPaymentGrid() {
@@ -68,19 +79,42 @@ function bindPaymentGrid() {
   });
 }
 
-/* ====== Commande -> WhatsApp ====== */
-function buildOrderMessage() {
+function bindCurrencySelector() {
+  const sel = document.getElementById('currencySelect');
+  if (!sel) return;
+  sel.value = CURRENT_CURRENCY;
+  sel.addEventListener('change', () => setCurrency(sel.value));
+}
+
+function bindLangSelector() {
+  const sel = document.getElementById('langSelect');
+  if (!sel) return;
+  sel.value = CURRENT_LANG;
+  sel.addEventListener('change', () => setLang(sel.value));
+}
+
+/* ====== Commande -> Supabase + WhatsApp ====== */
+function buildOrderMessage(orderRef, location) {
   const name  = (document.getElementById('cName')  || {}).value.trim() || 'Client';
   const phone = (document.getElementById('cPhone') || {}).value.trim() || '';
-  const addr  = (document.getElementById('cAddr')  || {}).value.trim() || '';
-  const pay   = (document.getElementById('cPay')   || {}).value || 'Espèces';
-  const total = cartTotal();
+  const email = (document.getElementById('cEmail') || {}).value.trim() || '';
+  const country = (document.getElementById('cCountry') || {}).value.trim() || '';
+  const city = (document.getElementById('cCity') || {}).value.trim() || '';
+  const district = (document.getElementById('cDistrict') || {}).value.trim() || '';
+  const pay = PAYMENT_LABELS[(document.getElementById('cPay') || {}).value] || 'Wave';
 
   const lines = [];
   lines.push('*Nouvelle commande — Hadeej’Art*');
+  if (orderRef) lines.push('Réf: ' + orderRef);
   lines.push('Nom: ' + name);
   lines.push('Téléphone: ' + phone);
-  lines.push('Adresse de livraison: ' + (addr || '—'));
+  if (email) lines.push('E-mail: ' + email);
+  lines.push('Pays: ' + (country || '—') + ' · Ville: ' + (city || '—') + ' · Quartier: ' + (district || '—'));
+  if (location && location.lat != null) {
+    lines.push('Adresse détectée: ' + (location.address || '—'));
+    if (location.note) lines.push('Précision: ' + location.note);
+    lines.push('Position: ' + location.mapsLink);
+  }
   if (CART.length) {
     lines.push('*Articles:*');
     CART.forEach(l => {
@@ -91,35 +125,66 @@ function buildOrderMessage() {
       if (l.optionKimono) bits.push(l.optionKimono === 'avec' ? 'Avec pantalon' : 'Sans pantalon');
       if (l.note) bits.push('Note: ' + l.note);
       const detail = bits.length ? ' (' + bits.join(', ') + ')' : '';
-      lines.push('- ' + l.name + detail + ' × ' + l.qty + ' — ' + formatPrice(l.price * l.qty));
+      lines.push('- ' + l.name + detail + ' × ' + l.qty + ' — ' + formatMoney(l.price * l.qty, l.currency));
     });
   }
-  lines.push('Total: ' + formatPrice(total));
+  lines.push('Total: ' + formatCartTotals());
   lines.push('Paiement: ' + pay);
-  if (window.LAST_INVOICE_ID) lines.push('Réf. facture: ' + window.LAST_INVOICE_ID);
   return lines.join('\n');
 }
 
+function validateCheckoutForm() {
+  const name = (document.getElementById('cName') || {}).value.trim();
+  const phone = (document.getElementById('cPhone') || {}).value.trim();
+  if (!name) { alert('Merci d’indiquer votre nom.'); return false; }
+  if (!phone) { alert('Merci d’indiquer votre téléphone.'); return false; }
+  return true;
+}
+
 async function haOrder() {
-  if (!CART.length) {
-    alert('Votre panier est vide.');
-    return false;
-  }
+  if (!CART.length) { alert('Votre panier est vide.'); return false; }
+  if (!validateCheckoutForm()) return false;
+
+  const btn = document.getElementById('btnOrder');
+  if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
+
   try {
     saveClientInfoIfAsked();
+    const location = (typeof getDeliveryLocation === 'function') ? getDeliveryLocation() : {};
+    const val = id => (document.getElementById(id) || {}).value.trim();
 
-    /* Génère la facture image puis tente un partage direct (mobile),
-       sinon on télécharge l'image et on ouvre WhatsApp avec le récap texte. */
-    let shared = false;
-    if (typeof buildInvoiceImage === 'function') {
-      await buildInvoiceImage();
-      if (typeof shareInvoiceWhatsApp === 'function') {
-        shared = await shareInvoiceWhatsApp();
-      }
+    const payload = {
+      customer: { name: val('cName'), phone: val('cPhone'), email: val('cEmail'), country: val('cCountry'), city: val('cCity'), district: val('cDistrict') },
+      location: { lat: location.lat, lng: location.lng, address: location.address, note: location.note, maps_link: location.mapsLink },
+      payment_method: (document.getElementById('cPay') || {}).value || 'wave',
+      currency: CURRENT_CURRENCY,
+      items: CART.map(l => ({
+        product_id: (PRODUCTS.find(p => p.id === l.id) || {})._dbId,
+        size: l.size, color: l.color, fabric: l.tissu, note: l.note,
+        option_kimono: l.optionKimono, qty: l.qty
+      }))
+    };
+
+    let orderRef = null;
+    try {
+      const result = await placeOrderRemote(payload);
+      orderRef = result && result.order_ref;
+      window.LAST_INVOICE_ID = orderRef;
+    } catch (err) {
+      console.error('placeOrderRemote:', err);
+      /* On ne bloque pas la commande WhatsApp si la sauvegarde serveur échoue
+         (ex: hors-ligne) : le message WhatsApp reste la source de vérité
+         opérationnelle pour la vendeuse. */
     }
 
+    if (typeof buildInvoiceImage === 'function') await buildInvoiceImage();
+
+    let shared = false;
+    if (typeof shareInvoiceWhatsApp === 'function') {
+      shared = await shareInvoiceWhatsApp(() => buildOrderMessage(orderRef, location));
+    }
     if (!shared) {
-      const msg = encodeURIComponent(buildOrderMessage());
+      const msg = encodeURIComponent(buildOrderMessage(orderRef, location));
       window.open(`https://wa.me/${SITE_WA_NUMBER}?text=${msg}`, '_blank');
     }
 
@@ -129,5 +194,7 @@ async function haOrder() {
     console.error('haOrder error:', err);
     alert("Redirection WhatsApp impossible. Vérifiez les champs et réessayez.");
     return false;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Passer la commande'; }
   }
 }

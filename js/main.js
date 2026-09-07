@@ -3,6 +3,7 @@
    ====================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.documentElement.lang = CURRENT_LANG;
   initInvoiceCanvas();
   renderCategoryFilters();
   renderProducts();
@@ -12,8 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
   bindCartOutsideClose();
   bindCartLineActions();
   bindPaymentGrid();
+  bindCurrencySelector();
+  bindLangSelector();
   restoreClientInfo();
 
   const orderBtn = document.getElementById('btnOrder');
   if (orderBtn) orderBtn.addEventListener('click', e => { e.preventDefault(); haOrder(); });
+
+  loadCatalog(() => {
+    renderCategoryFilters();
+    renderProducts();
+    recomputeCartCurrency();
+  });
 });

@@ -1,96 +1,76 @@
 /* ======================================================================
-   Hadeej'Art — Données produits & catégories
-   Ce fichier est le point unique de vérité pour le catalogue.
-   Il est conçu pour être remplacé plus tard par un appel à une API/admin
-   (chaque produit garde déjà : category, sizes, fabric, colors) sans
-   changer le reste du code (catalogue.js / cart.js lisent uniquement
-   ces structures).
+   Hadeej'Art — État catalogue (alimenté par Supabase, voir js/api.js)
+   Ce fichier ne contient plus de données statiques : il expose l'état
+   courant (CATEGORIES, PRODUCTS) et les mêmes helpers qu'avant, pour que
+   cart.js / catalogue.js / checkout.js / invoice.js n'aient rien à
+   connaître de Supabase.
    ====================================================================== */
 
-/* Catégories cibles (certaines n'ont pas encore de produit : c'est prévu,
-   l'admin futur pourra en ajouter sans toucher au code). */
-const CATEGORIES = [
-  { id: 'tous',         label: 'Tous' },
-  { id: 'pantalons',    label: 'Pantalons' },
-  { id: 'robes',        label: 'Robes' },
-  { id: 'kimonos',      label: 'Kimonos' },
-  { id: 'combinaisons', label: 'Combinaisons' },
-  { id: 'sacs',         label: 'Sacs' },
-  { id: 'chaussures',   label: 'Chaussures' },
-  { id: 'accessoires',  label: 'Accessoires' }
-];
-
-/* Tailles standard proposées à la commande */
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
-/* Devise d'affichage par défaut. La conversion EUR/USD est une étape
-   future : formatPrice() est le seul endroit à modifier le jour où
-   plusieurs devises seront actives (voir README d'architecture). */
-const CURRENCY = 'FCFA';
-function formatPrice(n) {
-  return Number(n || 0).toLocaleString('fr-FR') + ' ' + CURRENCY;
-}
+/* "Tous" + les 6 catégories chargées depuis la base (voir api.js). */
+let CATEGORIES = [{ id: 'tous', label: t('all') }];
+let PRODUCTS = [];
+let CATALOG_LOADED = false;
+let RAW_CATEGORIES = [];
+let RAW_PRODUCTS = [];
 
-/* ====== PRODUITS ======
-   sizes  : tailles disponibles pour ce produit
-   fabric : tissu par défaut (l'acheteur peut préciser une note libre)
-   colors : couleurs suggérées (l'acheteur peut aussi taper une couleur libre) */
-const PRODUCTS = [
-  { id: 'boob', name: 'Boob (bob africain)', price: 2500, img: 'images/boob.jpg',
-    category: 'accessoires', sizes: ['S','M','L'], fabric: 'Wax', colors: ['Orange','Multicolore'] },
-
-  { id: 'ensemble-pantalon-boob-homme', name: 'Ensemble Pantalon + Boob (Homme)', price: 5000, img: 'images/ensemble-pantalon-boob.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [], gendered: true },
-
-  { id: 'ensemble-pantalon-boob-femme', name: 'Ensemble Pantalon + Boob (Femme)', price: 6000, img: 'images/ensemble-pantalon-boob.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [], gendered: true },
-
-  { id: 'pantalon', name: 'Pantalon', price: 3000, img: 'images/pantalon.jpg',
-    category: 'pantalons', sizes: SIZES, fabric: 'Wax', colors: [] },
-
-  { id: 'kimono-versace', name: 'Kimono en Versace', price: 10000, img: 'images/kimono-versace.jpg',
-    category: 'kimonos', sizes: SIZES, fabric: 'Versace', colors: [] },
-
-  { id: 'kimono-court', name: 'Kimono Court', price: 6000, img: 'images/kimono-court.jpg',
-    category: 'kimonos', sizes: SIZES, fabric: 'Wax', colors: [] },
-
-  { id: 'ensemble-kimono-homme', name: 'Ensemble Kimono Homme', price: 10000, img: 'images/ensemble-kimono-homme.jpg',
-    category: 'kimonos', sizes: SIZES, fabric: 'Wax', colors: [], gendered: true,
-    variantOptions: { id: 'optionKimono', label: 'Option', choices: [
-      { value: 'avec', label: 'Avec pantalon', price: 12000 },
-      { value: 'sans', label: 'Sans pantalon', price: 10000 }
-    ]}},
-
-  { id: 'kimono-long', name: 'Kimono Long', price: 8000, img: 'images/kimono-long.jpg',
-    category: 'kimonos', sizes: SIZES, fabric: 'Wax', colors: [] },
-
-  { id: 'ensemble-short', name: 'Ensemble Short', price: 8000, img: 'images/ensemble-short.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [] },
-
-  { id: 'pantalon-kimono-court-ens', name: 'Pantalon + Kimono Court (ensemble)', price: 12000, img: 'images/pantalon-kimono-court.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [] },
-
-  { id: 'bas-large-chemise-top-ens', name: 'Bas Large + Chemise Top (ensemble)', price: 10000, img: 'images/bas-large-chemise-top.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [] },
-
-  { id: 'ensemble-chemise-pantalon-homme', name: 'Ensemble Chemise + Pantalon pour Homme', price: 10000, img: 'images/ensemble-chemise-pantalon-homme.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [], gendered: true },
-
-  { id: 'ensemble-short-homme', name: 'Ensemble short pour Homme', price: 8000, img: 'images/ensemble-short-homme.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [], gendered: true },
-
-  { id: 'pantalon-bas-large', name: 'Pantalon bas large', price: 3000, img: 'images/pantalon-bas-large.jpg',
-    category: 'pantalons', sizes: SIZES, fabric: 'Wax', colors: [] },
-
-  { id: 'ensemble-chemise-pantalons-femme', name: 'Ensemble chemise et pantalons pour Femme', price: 10000, img: 'images/ensemble-chemise-pantalons-femme.jpg',
-    category: 'combinaisons', sizes: SIZES, fabric: 'Wax', colors: [], gendered: true }
-];
-
-/* Un produit est "genré" (masculin/féminin déjà dans son nom) : on masque
-   alors le champ Sexe dans le détail, au lieu de le proposer en plus. */
 function isGenderedProduct(p) {
   if (!p) return false;
   if (p.gendered) return true;
-  const t = ((p.id || '') + ' ' + (p.name || '')).toLowerCase();
-  return t.includes('homme') || t.includes('femme');
+  const txt = ((p.id || '') + ' ' + (p.name || '')).toLowerCase();
+  return txt.includes('homme') || txt.includes('femme');
+}
+
+/* Reçoit les lignes brutes Supabase (categories, products avec leurs
+   images/collections jointes) et les transforme dans la forme attendue
+   par le reste du site. Appelé par api.js, et de nouveau à chaque
+   changement de langue pour ré-appliquer les libellés traduits. */
+function applyCatalogData(categoryRows, productRows) {
+  RAW_CATEGORIES = categoryRows || RAW_CATEGORIES;
+  RAW_PRODUCTS = productRows || RAW_PRODUCTS;
+  categoryRows = RAW_CATEGORIES;
+  productRows = RAW_PRODUCTS;
+
+  CATEGORIES = [{ id: 'tous', label: t('all') }].concat(
+    (categoryRows || []).map(c => ({ id: c.slug, label: pickLang(c, 'name'), _row: c }))
+  );
+
+  PRODUCTS = (productRows || []).map(p => {
+    const images = (p.product_images || []).slice().sort((a, b) => a.sort_order - b.sort_order);
+    const primary = images.find(i => i.is_primary) || images[0];
+    const variantOptions = p.variant_options ? {
+      id: p.variant_options.id,
+      label: p.variant_options.label_fr,
+      choices: (p.variant_options.choices || []).map(c => ({
+        value: c.value,
+        label: c.label_fr,
+        prices: { FCFA: c.price_fcfa, EUR: c.price_eur, USD: c.price_usd }
+      }))
+    } : null;
+
+    return {
+      id: p.slug,
+      _dbId: p.id,
+      name: pickLang(p, 'name'),
+      fabric: pickLang(p, 'fabric'),
+      img: primary ? primary.image_url : '',
+      images: images.map(i => i.image_url),
+      category: p.categories ? p.categories.slug : null,
+      sizes: (p.sizes && p.sizes.length) ? p.sizes : SIZES,
+      colors: p.colors || [],
+      gendered: !!p.gendered,
+      variantOptions,
+      prices: { FCFA: p.price_fcfa, EUR: p.price_eur, USD: p.price_usd },
+      collectionSlugs: (p.product_collections || []).map(pc => pc.collections && pc.collections.slug).filter(Boolean)
+    };
+  });
+
+  CATALOG_LOADED = true;
+}
+
+/* Ré-applique les libellés dans la langue courante sans re-télécharger le
+   catalogue (utilisé quand le visiteur change de langue). */
+function refreshCatalogLabels() {
+  if (RAW_CATEGORIES.length || RAW_PRODUCTS.length) applyCatalogData();
 }

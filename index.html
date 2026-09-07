@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Hadeej’Art — Boutique</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="css/style.css">
 
 <meta name="description" content="Hadeej’Art — Créations & accessoires inspirés Wax. Commande WhatsApp rapide.">
@@ -37,8 +38,20 @@
         <div class="badge">Pièces stylées & authentiquement africaines</div>
       </div>
     </div>
-    <div class="action cart">
-      <button id="cartBtn" class="btn" type="button"><span>Panier</span><span class="bubble" id="cartCount">0</span></button>
+    <div class="action">
+      <select id="langSelect" class="select-pill" aria-label="Langue" title="Langue">
+        <option value="fr">FR</option>
+        <option value="en">EN</option>
+        <option value="wo">WO</option>
+      </select>
+      <select id="currencySelect" class="select-pill" aria-label="Devise" title="Devise">
+        <option value="FCFA">FCFA</option>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+      </select>
+      <div class="cart">
+        <button id="cartBtn" class="btn" type="button"><span>Panier</span><span class="bubble" id="cartCount">0</span></button>
+      </div>
     </div>
   </div>
 
@@ -108,6 +121,7 @@
         </button>
       </div>
       <div>
+        <div class="price" id="dPrice"></div>
         <div class="field"><label for="dColor">Couleur</label><input id="dColor" class="input" placeholder="ex: Orange"/></div>
         <div class="field">
           <label for="dSize">Taille</label>
@@ -118,7 +132,7 @@
         <div class="field sexe-field">
           <label for="dSexe">Sexe</label>
           <select id="dSexe"><option>Unisexe</option><option>Homme</option><option>Femme</option></select>
-        </div>
+</div>
         <div id="detailOptions" class="field" style="display:none;"></div>
         <div class="field"><button class="btn" type="button" onclick="addFromDetail()">Ajouter au panier</button></div>
       </div>
@@ -128,13 +142,33 @@
 
 <!-- MODAL CLIENT -->
 <div id="client" class="modal">
-  <div class="sheet" style="max-width:900px">
+  <div class="sheet" style="max-width:960px">
     <header><b>Mes informations</b><button class="btn ghost" type="button" onclick="closeClient()">Fermer</button></header>
     <div class="body" style="grid-template-columns:1fr 1fr">
       <div>
         <div class="field"><label for="cName">Nom complet</label><input id="cName" class="input" placeholder="ex: Aïcha Diop"></div>
         <div class="field"><label for="cPhone">Téléphone (WhatsApp)</label><input id="cPhone" class="input" placeholder="77 123 45 67"></div>
-        <div class="field"><label for="cAddr">Adresse de livraison</label><input id="cAddr" class="input" placeholder="Quartier, ville, repère"></div>
+        <div class="field"><label for="cEmail">E-mail (facultatif)</label><input id="cEmail" type="email" class="input" placeholder="vous@exemple.com"></div>
+        <div class="row">
+          <div class="field" style="flex:1"><label for="cCountry">Pays</label><input id="cCountry" class="input" placeholder="Sénégal"></div>
+          <div class="field" style="flex:1"><label for="cCity">Ville</label><input id="cCity" class="input" placeholder="Dakar"></div>
+        </div>
+        <div class="field"><label for="cDistrict">Quartier</label><input id="cDistrict" class="input" placeholder="Sicap Mbao"></div>
+
+        <div class="field">
+          <label>Localisation de livraison</label>
+          <div class="map-tools">
+            <input id="mapSearch" class="input" placeholder="Rechercher une adresse…">
+            <button type="button" class="btn ghost sm" id="btnMapSearch">Chercher</button>
+            <button type="button" class="btn ghost sm" id="btnLocateMe">📍 Ma position</button>
+          </div>
+          <div id="deliveryMap"></div>
+          <p class="small" id="mapStatus">Déplacez le repère ou recherchez votre adresse.</p>
+          <input type="hidden" id="locLat"><input type="hidden" id="locLng">
+          <div class="field"><label for="locAddress">Adresse détectée</label><input id="locAddress" class="input" readonly placeholder="s'affiche après sélection sur la carte"></div>
+          <div class="field"><label for="locNote">Précision libre (repère, étage…)</label><input id="locNote" class="input" placeholder="ex: portail bleu, 2e étage"></div>
+        </div>
+
         <div class="field">
           <label class="checkbox"><input type="checkbox" id="cRemember"> Se souvenir de mes informations</label>
         </div>
@@ -143,23 +177,30 @@
         <div class="field">
           <label>Mode de paiement</label>
           <div id="payGrid" class="pay-grid">
-            <button type="button" class="pay-card" data-method="Espèces" aria-pressed="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <rect width="22" height="14" x="1" y="5" rx="2" fill="#fff" stroke="#5a3b25"/>
-                <circle cx="12" cy="12" r="3" fill="#c46d20"/>
-              </svg>
-              <span>Espèces</span>
-            </button>
-            <button type="button" class="pay-card" data-method="Wave">
+            <button type="button" class="pay-card" data-method="wave" aria-pressed="true">
               <img src="images/payments/wave-icon.png" alt="" width="18" height="18">
               <span>Wave</span>
             </button>
-            <button type="button" class="pay-card" data-method="Orange Money">
+            <button type="button" class="pay-card" data-method="orange_money">
               <img src="images/payments/orange-money-icon.png" alt="" width="18" height="18">
               <span>Orange Money</span>
             </button>
+            <button type="button" class="pay-card" data-method="sendwave">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="#5B2A86"/>
+                <path d="M6 13l4 4 8-9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Sendwave</span>
+            </button>
+            <button type="button" class="pay-card" data-method="taptap_send">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="#0B5FFF"/>
+                <path d="M7 12h10M13 8l4 4-4 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>TapTap Send</span>
+            </button>
           </div>
-          <input type="hidden" id="cPay" name="pay_method" value="Espèces">
+          <input type="hidden" id="cPay" name="pay_method" value="wave">
         </div>
 
         <div class="cta-row">
@@ -181,10 +222,16 @@
   <img id="imgViewerImg" alt="Aperçu produit"/>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/config.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/currency.js"></script>
 <script src="js/data.js"></script>
+<script src="js/api.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/catalogue.js"></script>
 <script src="js/invoice.js"></script>
+<script src="js/map.js"></script>
 <script src="js/checkout.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>

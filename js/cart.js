@@ -28,13 +28,28 @@ function addToCart(id, opts) {
   if (found) {
     found.qty++;
   } else {
+    const priceInfo = priceForProduct(p, opts.optionKimono);
     CART.push(Object.assign({
       key, id, qty: 1,
-      price: (opts.price != null ? opts.price : p.price),
+      price: priceInfo.amount,
+      currency: priceInfo.currency,
       name: p.name,
       img: p.img
     }, opts));
   }
+  updateCartUI();
+}
+
+/* Recalcule le prix de chaque ligne dans la devise active (appelé quand
+   le visiteur change de devise après avoir déjà rempli son panier). */
+function recomputeCartCurrency() {
+  CART.forEach(l => {
+    const p = PRODUCTS.find(x => x.id === l.id);
+    if (!p) return;
+    const priceInfo = priceForProduct(p, l.optionKimono);
+    l.price = priceInfo.amount;
+    l.currency = priceInfo.currency;
+  });
   updateCartUI();
 }
 
@@ -51,8 +66,29 @@ function achatDirect(id) {
   setTimeout(openCart, 0);
 }
 
+/* Certaines lignes peuvent retomber en FCFA si le produit n'a pas de prix
+   dans la devise active : on ne mélange jamais deux devises dans un seul
+   total (sinon les nombres n'ont plus de sens). On regroupe donc par
+   devise réellement utilisée par chaque ligne. */
+function cartTotalsByCurrency() {
+  const totals = {};
+  CART.forEach(l => {
+    const cur = l.currency || CURRENT_CURRENCY;
+    totals[cur] = (totals[cur] || 0) + l.price * l.qty;
+  });
+  return totals;
+}
+
 function cartTotal() {
-  return CART.reduce((s, l) => s + l.price * l.qty, 0);
+  const totals = cartTotalsByCurrency();
+  return totals[CURRENT_CURRENCY] || 0;
+}
+
+function formatCartTotals() {
+  const totals = cartTotalsByCurrency();
+  const currencies = Object.keys(totals);
+  if (!currencies.length) return formatPrice(0);
+  return currencies.map(c => formatMoney(totals[c], c)).join(' + ');
 }
 
 function updateCartUI() {
@@ -71,7 +107,7 @@ function updateCartUI() {
     <div class="line">
       <span>${name}${detail} ×${l.qty}</span>
       <span style="display:flex;align-items:center;gap:8px">
-        <b>${formatPrice(l.price * l.qty)}</b>
+        <b>${formatMoney(l.price * l.qty, l.currency)}</b>
         <button class="trash" aria-label="Supprimer ${name}" title="Supprimer"
                 data-key="${escapeHtml(l.key)}">
           <svg viewBox="0 0 24 24">
@@ -82,12 +118,12 @@ function updateCartUI() {
         </button>
       </span>
     </div>`;
-  }).join('') || '<div class="small">Panier vide</div>';
+  }).join('') || `<div class="small">${escapeHtml(t('empty_cart'))}</div>`;
 
   document.getElementById('cartLines').innerHTML = lines;
-  const st = cartTotal();
-  document.getElementById('cartSubtotal').textContent = formatPrice(st);
-  document.getElementById('cartTotal').textContent = formatPrice(st);
+  const totalsText = formatCartTotals();
+  document.getElementById('cartSubtotal').textContent = totalsText;
+  document.getElementById('cartTotal').textContent = totalsText;
 }
 
 function bindCartLineActions() {

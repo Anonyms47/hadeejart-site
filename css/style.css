@@ -197,7 +197,7 @@ img{max-width:100%;height:auto;display:block}
 .lightbox .close:hover{ background:#fff; }
 
 /* ====== PANIER ====== */
-.cart{position:fixed;right:14px;top:14px;z-index:40}
+.cart{display:inline-flex}
 .panel{position:fixed;right:14px;top:64px;background:#fff;border:1px solid #0001;border-radius:16px;box-shadow:0 16px 30px rgba(0,0,0,.25);padding:14px;max-width:320px;width:92vw;display:none}
 .panel.show{display:block}
 .panel h4{margin:0 0 10px 0}
@@ -278,17 +278,34 @@ img{max-width:100%;height:auto;display:block}
   .hero, .grid { max-width: 100%; }
   img, video, canvas, svg { max-width: 100%; }
 
-  .action.cart .btn{ width:46px; height:46px; padding:0; border-radius:14px; position:relative; display:grid; place-items:center; }
-  .action.cart .btn span:first-child{ display:none; }
-  .action.cart .btn::before{
+  .cart .btn{ width:46px; height:46px; padding:0; border-radius:14px; position:relative; display:grid; place-items:center; }
+  .cart .btn span:first-child{ display:none; }
+  .cart .btn::before{
     content:'';
     width:22px; height:22px;
     background: currentColor;
     -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 6z"/><circle cx="9" cy="20" r="1.8"/><circle cx="17" cy="20" r="1.8"/></svg>') no-repeat center / contain;
     mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 6h15l-2 9H8L6 6z"/><circle cx="9" cy="20" r="1.8"/><circle cx="17" cy="20" r="1.8"/></svg>') no-repeat center / contain;
   }
-  .action.cart .btn span.bubble{ position:absolute; right:-6px; top:-6px; min-width:20px; height:20px; font-size:12px; padding:0 6px; }
+  .cart .btn span.bubble{ position:absolute; right:-6px; top:-6px; min-width:20px; height:20px; font-size:12px; padding:0 6px; }
 }
+
+/* ====== Sélecteurs langue / devise ====== */
+.select-pill{
+  width:auto; min-width:60px; flex:0 0 auto;
+  border:1.5px solid #e6d7c8; background:#fff6ee; color:#5a3b25;
+  font-weight:700; font-size:13px; padding:8px 10px; border-radius:999px; cursor:pointer;
+}
+@media (max-width:520px){
+  .header{ flex-wrap:wrap; row-gap:8px; }
+  .select-pill{ min-width:52px; padding:6px 8px; font-size:12px; }
+}
+
+/* ====== Carte de livraison ====== */
+.map-tools{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.map-tools .input{ flex:1; min-width:140px; }
+#deliveryMap{ height:220px; border-radius:14px; overflow:hidden; border:1px solid var(--brand); }
+
 
 #detail.gendered .sexe-field{display:none !important}
 @media(max-width:768px){#detailOptions{display:block !important}}

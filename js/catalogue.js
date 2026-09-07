@@ -15,7 +15,7 @@ function renderCategoryFilters() {
   if (!bar) return;
   bar.innerHTML = CATEGORIES.map(c => `
     <button type="button" class="chip${c.id === CURRENT_CATEGORY ? ' active' : ''}"
-            data-cat="${c.id}" onclick="selectCategory('${c.id}')">${c.label}</button>
+            data-cat="${escapeHtml(c.id)}" onclick="selectCategory('${escapeHtml(c.id)}')">${escapeHtml(c.label)}</button>
   `).join('');
 }
 
@@ -28,22 +28,30 @@ function selectCategory(catId) {
 function renderProducts() {
   const grid = el('#productGrid');
   if (!grid) return;
+
+  if (!CATALOG_LOADED && !PRODUCTS.length) {
+    grid.innerHTML = `<p class="small">${escapeHtml(t('loading'))}</p>`;
+    return;
+  }
+
   const list = productsInCategory(CURRENT_CATEGORY);
-  grid.innerHTML = list.map(p => `
+  grid.innerHTML = list.map(p => {
+    const priceInfo = priceForProduct(p);
+    return `
     <article class="card">
-      <img src="${p.img}" alt="${p.name}" loading="lazy" decoding="async"
+      <img src="${escapeHtml(p.img)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"
            onerror="this.style.objectFit='contain'; this.alt+=' (photo à venir)';">
       <div class="cap">
-        <h3>${p.name}</h3>
-        <div class="price">${formatPrice(p.price)}</div>
+        <h3>${escapeHtml(p.name)}</h3>
+        <div class="price">${formatMoney(priceInfo.amount, priceInfo.currency)}${priceInfo.isFallback ? ' <span class="small">(FCFA)</span>' : ''}</div>
         <div class="row">
-          <button class="btn sm icon" onclick="addToCart('${p.id}', {})">🧺 Ajouter</button>
-          <button class="btn sm ghost" onclick="achatDirect('${p.id}')">Acheter</button>
-          <button class="btn sm ghost" onclick="openDetail('${p.id}')">Détail</button>
+          <button class="btn sm icon" onclick="addToCart('${escapeHtml(p.id)}', {})">🧺 ${escapeHtml(t('add'))}</button>
+          <button class="btn sm ghost" onclick="achatDirect('${escapeHtml(p.id)}')">${escapeHtml(t('buy'))}</button>
+          <button class="btn sm ghost" onclick="openDetail('${escapeHtml(p.id)}')">${escapeHtml(t('detail'))}</button>
         </div>
       </div>
-    </article>
-  `).join('') || '<p class="small">Aucun produit dans cette catégorie pour le moment.</p>';
+    </article>`;
+  }).join('') || `<p class="small">${escapeHtml(t('no_products'))}</p>`;
 }
 
 /* ====== DÉTAIL ====== */
@@ -61,10 +69,14 @@ function openDetail(id) {
   if (el('#dSize')) {
     const sizeSel = el('#dSize');
     const sizes = (p.sizes && p.sizes.length) ? p.sizes : SIZES;
-    sizeSel.innerHTML = sizes.map(s => `<option>${s}</option>`).join('');
+    sizeSel.innerHTML = sizes.map(s => `<option>${escapeHtml(s)}</option>`).join('');
     sizeSel.value = sizes.includes('M') ? 'M' : sizes[0];
   }
   if (el('#dSexe')) el('#dSexe').value = 'Unisexe';
+
+  const priceInfo = priceForProduct(p);
+  const priceEl = document.getElementById('dPrice');
+  if (priceEl) priceEl.textContent = formatMoney(priceInfo.amount, priceInfo.currency) + (priceInfo.isFallback ? ' (FCFA — indisponible en ' + CURRENT_CURRENCY + ')' : '');
 
   const optBox = document.getElementById('detailOptions');
   const sexeEl = document.getElementById('dSexe');
@@ -74,9 +86,9 @@ function openDetail(id) {
   if (optBox) {
     if (p.variantOptions) {
       const vo = p.variantOptions;
-      optBox.innerHTML = `<label for="${vo.id}">${vo.label}</label>` +
-        `<select id="${vo.id}" class="input">` +
-        vo.choices.map(c => `<option value="${c.value}">${c.label}</option>`).join('') +
+      optBox.innerHTML = `<label for="${escapeHtml(vo.id)}">${escapeHtml(vo.label)}</label>` +
+        `<select id="${escapeHtml(vo.id)}" class="input">` +
+        vo.choices.map(c => `<option value="${escapeHtml(c.value)}">${escapeHtml(c.label)}</option>`).join('') +
         `</select>`;
       optBox.style.display = '';
     } else {
@@ -105,19 +117,12 @@ function addFromDetail() {
   const sexe = gendered ? '' : (el('#dSexe') ? el('#dSexe').value : '');
 
   let optionKimono = '';
-  let priceOverride = null;
   if (CURRENT.variantOptions) {
     const sel = document.getElementById(CURRENT.variantOptions.id);
-    const val = sel ? (sel.value || '') : '';
-    optionKimono = val;
-    const choice = CURRENT.variantOptions.choices.find(c => c.value === val);
-    if (choice) priceOverride = choice.price;
+    optionKimono = sel ? (sel.value || '') : '';
   }
 
-  const opts = { color, size, sexe, tissu, note, optionKimono };
-  if (priceOverride != null) opts.price = priceOverride;
-
-  addToCart(productId, opts);
+  addToCart(productId, { color, size, sexe, tissu, note, optionKimono });
   closeDetail();
   /* Différé : voir la note dans achatDirect() (cart.js). */
   setTimeout(openCart, 0);
@@ -133,4 +138,16 @@ function openImageFullscreen(src) {
 }
 function closeImageViewer() {
   document.getElementById('imgViewer').classList.remove('show');
+}
+
+/* Rafraîchit l'affichage quand la langue ou la devise change, sans
+   re-télécharger le catalogue. */
+function onLangChange() {
+  refreshCatalogLabels();
+  renderCategoryFilters();
+  renderProducts();
+}
+function onCurrencyChange() {
+  renderProducts();
+  recomputeCartCurrency();
 }
