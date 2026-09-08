@@ -4,14 +4,6 @@
 
 const el = sel => document.querySelector(sel);
 
-/* Les champs libres (couleur, tissu, note) sont saisis par le visiteur :
-   on échappe systématiquement avant de les insérer dans du HTML. */
-function escapeHtml(s) {
-  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
-
 let CART = [];
 
 function cartLineKey(id, opts) {
@@ -68,14 +60,6 @@ function refreshCartLanguage() {
 function removeFromCart(key) {
   CART = CART.filter(l => l.key !== key);
   updateCartUI();
-}
-
-function achatDirect(id) {
-  addToCart(id, {});
-  /* Différé : sinon le même clic, en continuant sa bulle jusqu'à
-     document, déclenche aussitôt la fermeture "clic en dehors" du
-     panier (voir bindCartOutsideClose dans ui.js). */
-  setTimeout(openCart, 0);
 }
 
 /* Certaines lignes peuvent retomber en FCFA si le produit n'a pas de prix

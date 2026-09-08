@@ -2,8 +2,6 @@
    Hadeej'Art — Client, moyen de paiement, commande WhatsApp
    ====================================================================== */
 
-const SITE_WA_NUMBER = '781444340'; /* numéro WhatsApp (sans +) */
-
 const PAYMENT_LABELS = {
   wave: 'Wave',
   orange_money: 'Orange Money',

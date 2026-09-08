@@ -8,9 +8,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('footerYear');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
   initInvoiceCanvas();
+
+  /* Arrivée depuis un lien "index.html?category=..." ou "?collection=..."
+     (menu Boutique/Collections d'une autre page, ou lien partagé) : on
+     préselectionne le filtre avant même le premier rendu. */
+  const params = new URLSearchParams(location.search);
+  const qCollection = params.get('collection');
+  const qCategory = params.get('category');
+  if (qCollection) CURRENT_COLLECTION = qCollection;
+  else if (qCategory) CURRENT_CATEGORY = qCategory;
+
   renderCategoryFilters();
   renderProducts();
   updateCartUI();
+  if (qCollection || qCategory) {
+    setTimeout(() => { const c = document.getElementById('catalogue'); if (c) c.scrollIntoView({ behavior: 'smooth' }); }, 60);
+  }
 
   bindHeaderScrollShadow();
   bindCartOutsideClose();

@@ -75,7 +75,6 @@ function renderProducts() {
         <div class="price">${formatMoney(priceInfo.amount, priceInfo.currency)}${priceInfo.isFallback ? ' <span class="small">(FCFA)</span>' : ''}</div>
         <div class="row">
           <button class="btn sm icon" onclick="addToCart('${escapeHtml(p.id)}', {})">🧺 ${escapeHtml(t('add'))}</button>
-          <button class="btn sm ghost" onclick="achatDirect('${escapeHtml(p.id)}')">${escapeHtml(t('buy'))}</button>
           <button class="btn sm ghost" onclick="openDetail('${escapeHtml(p.id)}')">${escapeHtml(t('detail'))}</button>
         </div>
       </div>
@@ -169,7 +168,9 @@ function addFromDetail() {
 
   addToCart(productId, { color, size, sexe, tissu, note, optionKimono });
   closeDetail();
-  /* Différé : voir la note dans achatDirect() (cart.js). */
+  /* Différé : sinon le même clic, en continuant sa bulle jusqu'à document,
+     déclenche aussitôt la fermeture "clic en dehors" du panier (voir
+     bindCartOutsideClose dans ui.js). */
   setTimeout(openCart, 0);
 }
 

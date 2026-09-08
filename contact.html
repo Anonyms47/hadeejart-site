@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title data-i18n="page_title_terms">Conditions générales de vente — Hadeej’Art</title>
+<title data-i18n="page_title_contact">Contact — Hadeej’Art</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<meta name="description" content="Hadeej’Art — Conditions générales de vente : produits, commande, paiement, livraison et retours.">
+<meta name="description" content="Hadeej’Art — Contactez-nous directement sur WhatsApp pour toute question ou suivi de commande.">
 <meta name="theme-color" content="#111111">
 </head>
 <body>
@@ -118,34 +118,22 @@
 
   <section class="page-hero">
     <div class="ribbon"></div>
-    <h1 data-i18n="terms_link">Conditions générales de vente</h1>
-    <p class="page-updated"><span data-i18n="privacy_updated_label">Dernière mise à jour :</span> <span id="updateDate"></span></p>
+    <h1 data-i18n="contact_title">Contact</h1>
+    <p class="lead" data-i18n="contact_lead">Une question, une envie particulière, un suivi de commande ? Écrivez-nous directement sur WhatsApp.</p>
   </section>
 
-  <div class="content-card">
-    <h2 data-i18n="terms_s1_title">1. Qui sommes-nous</h2>
-    <div data-i18n-html="terms_s1_body"></div>
-
-    <h2 data-i18n="terms_s2_title">2. Produits et prix</h2>
-    <div data-i18n-html="terms_s2_body"></div>
-
-    <h2 data-i18n="terms_s3_title">3. Commande</h2>
-    <div data-i18n-html="terms_s3_body"></div>
-
-    <h2 data-i18n="terms_s4_title">4. Confirmation et livraison</h2>
-    <div data-i18n-html="terms_s4_body"></div>
-
-    <h2 data-i18n="terms_s5_title">5. Paiement</h2>
-    <div data-i18n-html="terms_s5_body"></div>
-
-    <h2 data-i18n="terms_s6_title">6. Retours et échanges</h2>
-    <div data-i18n-html="terms_s6_body"></div>
-
-    <h2 data-i18n="terms_s7_title">7. Données personnelles</h2>
-    <div data-i18n-html="terms_s7_body"></div>
-
-    <h2 data-i18n="terms_s8_title">8. Contact</h2>
-    <div data-i18n-html="terms_s8_body"></div>
+  <div class="contact-grid">
+    <div class="contact-card">
+      <a class="btn" id="contactWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
+      <div class="contact-notes">
+        <p data-i18n="contact_response_note">Nous répondons à chaque message dès que possible.</p>
+        <p data-i18n="contact_order_note">Pour toute question sur une commande déjà passée, gardez votre référence de commande à portée de main.</p>
+      </div>
+    </div>
+    <div class="contact-card">
+      <p data-i18n="contact_faq_hint">Besoin d’une réponse immédiate ? Un coup d’œil à notre FAQ répond peut-être déjà à votre question.</p>
+      <a class="btn ghost" href="faq.html" data-i18n="nav_faq">FAQ</a>
+    </div>
   </div>
 
   <div class="motif-bar motif-bottom" aria-hidden="true"></div>
@@ -228,11 +216,8 @@
 <script src="js/ui.js"></script>
 <script>
   function initPageContent() {
-    const d = document.getElementById('updateDate');
-    if (d) {
-      const locale = CURRENT_LANG === 'en' ? 'en-GB' : 'fr-FR';
-      d.textContent = new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
-    }
+    const link = document.getElementById('contactWaLink');
+    if (link) link.href = `https://wa.me/${SITE_WA_NUMBER}`;
   }
 </script>
 <script src="js/page.js"></script>

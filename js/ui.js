@@ -29,6 +29,4 @@ function bindCartOutsideClose() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && panel.classList.contains('show')) panel.classList.remove('show');
   });
-
-  btn.addEventListener('click', () => toggleCart());
 }

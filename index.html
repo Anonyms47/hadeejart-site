@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Hadeej’Art — Boutique</title>
+<title data-i18n="page_title_home">Hadeej’Art — Boutique</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="css/style.css">
@@ -54,6 +54,13 @@
         </button>
         <div class="dropdown" id="navCollectionsMenu" role="menu" aria-label="Collections"></div>
       </div>
+      <div class="nav-item" id="navInfo">
+        <button type="button" class="nav-link" id="navInfoBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_info">Infos</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navInfoMenu" role="menu" aria-label="Infos"></div>
+      </div>
     </nav>
 
     <div class="action">
@@ -68,7 +75,7 @@
         <option value="USD">USD</option>
       </select>
       <div class="cart">
-        <button id="cartBtn" class="btn" type="button"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></button>
+        <a id="cartBtn" class="btn" href="index.html"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></a>
       </div>
       <button type="button" class="hamburger" id="hamburgerBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="menu_open">
         <span></span><span></span><span></span>
@@ -95,6 +102,10 @@
       <section>
         <h3 data-i18n="nav_collections">Collections</h3>
         <div id="mobileCollectionsList" class="mobile-menu-list"></div>
+      </section>
+      <section>
+        <h3 data-i18n="nav_info">Infos</h3>
+        <div id="mobileInfoList" class="mobile-menu-list"></div>
       </section>
       <section class="mobile-menu-prefs">
         <div class="field">
@@ -173,6 +184,7 @@
           <li><a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" data-i18n="footer_home_link">Accueil</a></li>
           <li><a href="#catalogue" onclick="scrollToCatalogue();return false;" data-i18n="catalogue">Catalogue</a></li>
         </ul>
+        <ul class="footer-list" id="footerInfoList"></ul>
       </div>
 
       <div class="footer-col">
@@ -360,6 +372,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/config.js"></script>
+<script src="js/utils.js"></script>
 <script src="js/i18n.js"></script>
 <script src="js/currency.js"></script>
 <script src="js/data.js"></script>

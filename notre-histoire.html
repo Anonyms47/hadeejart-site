@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title data-i18n="page_title_terms">Conditions générales de vente — Hadeej’Art</title>
+<title data-i18n="page_title_story">Notre histoire — Hadeej’Art</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<meta name="description" content="Hadeej’Art — Conditions générales de vente : produits, commande, paiement, livraison et retours.">
+<meta name="description" content="Hadeej’Art — Notre histoire : une boutique de mode wax, pensée à Dakar, pour porter votre histoire.">
 <meta name="theme-color" content="#111111">
 </head>
 <body>
@@ -118,34 +118,17 @@
 
   <section class="page-hero">
     <div class="ribbon"></div>
-    <h1 data-i18n="terms_link">Conditions générales de vente</h1>
-    <p class="page-updated"><span data-i18n="privacy_updated_label">Dernière mise à jour :</span> <span id="updateDate"></span></p>
+    <h1 data-i18n="story_hero_title">Notre histoire</h1>
+    <p class="lead" data-i18n="story_hero_lead">Hadeej’Art est née d’un amour du wax et de l’envie de porter une histoire, pas seulement un vêtement.</p>
   </section>
 
-  <div class="content-card">
-    <h2 data-i18n="terms_s1_title">1. Qui sommes-nous</h2>
-    <div data-i18n-html="terms_s1_body"></div>
-
-    <h2 data-i18n="terms_s2_title">2. Produits et prix</h2>
-    <div data-i18n-html="terms_s2_body"></div>
-
-    <h2 data-i18n="terms_s3_title">3. Commande</h2>
-    <div data-i18n-html="terms_s3_body"></div>
-
-    <h2 data-i18n="terms_s4_title">4. Confirmation et livraison</h2>
-    <div data-i18n-html="terms_s4_body"></div>
-
-    <h2 data-i18n="terms_s5_title">5. Paiement</h2>
-    <div data-i18n-html="terms_s5_body"></div>
-
-    <h2 data-i18n="terms_s6_title">6. Retours et échanges</h2>
-    <div data-i18n-html="terms_s6_body"></div>
-
-    <h2 data-i18n="terms_s7_title">7. Données personnelles</h2>
-    <div data-i18n-html="terms_s7_body"></div>
-
-    <h2 data-i18n="terms_s8_title">8. Contact</h2>
-    <div data-i18n-html="terms_s8_body"></div>
+  <div class="content-card story-body">
+    <p data-i18n="story_p1">Chaque pièce Hadeej’Art part d’un tissu choisi avec soin — wax, bazin, bogolan — et d’une idée : que la mode africaine se porte au quotidien, moderne et sans compromis sur l’authenticité.</p>
+    <p data-i18n="story_p2">Nos créations sont pensées à Dakar et confectionnées avec soin. Chaque commande est personnalisable : couleur, taille, tissu, et une petite note libre pour la couturière. Chaque pièce est unique.</p>
+    <p data-i18n="story_p3">Nous croyons à une mode qui raconte quelque chose : un héritage, une fierté, une identité. C’est le sens de notre devise — Portez votre histoire.</p>
+    <div class="story-cta-row">
+      <button class="btn" type="button" data-i18n="story_cta" onclick="location.href='index.html#catalogue'">Découvrir la boutique</button>
+    </div>
   </div>
 
   <div class="motif-bar motif-bottom" aria-hidden="true"></div>
@@ -226,15 +209,6 @@
 <script src="js/api.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/ui.js"></script>
-<script>
-  function initPageContent() {
-    const d = document.getElementById('updateDate');
-    if (d) {
-      const locale = CURRENT_LANG === 'en' ? 'en-GB' : 'fr-FR';
-      d.textContent = new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
-    }
-  }
-</script>
 <script src="js/page.js"></script>
 </body>
 </html>

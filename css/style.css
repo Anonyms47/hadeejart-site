@@ -59,7 +59,7 @@ img{max-width:100%;height:auto;display:block}
 .badge{font:600 12px Poppins;opacity:.75}
 
 .action{display:inline-flex;gap:10px;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background-image:linear-gradient(180deg,var(--brand),var(--brand-700));color:#fff;padding:10px 16px;font-weight:800;box-shadow:0 8px 18px rgba(0,0,0,.18);cursor:pointer;transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;}
+.btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background-image:linear-gradient(180deg,var(--brand),var(--brand-700));color:#fff;padding:10px 16px;font-weight:800;box-shadow:0 8px 18px rgba(0,0,0,.18);cursor:pointer;text-decoration:none;transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;}
 .btn:hover{ transform: translateY(-1px); box-shadow:0 14px 24px rgba(0,0,0,.22); filter: saturate(1.05); }
 .btn span.bubble{display:inline-grid;place-items:center;background:#fff;color:var(--brand-700);min-width:20px;height:20px;border-radius:999px;font:800 12px Poppins;padding:0 5px}
 .btn.ghost{background:#fff;color:var(--emerald);box-shadow:0 1px 2px rgba(0,0,0,.08);border:1px solid #0001}
@@ -93,6 +93,7 @@ img{max-width:100%;height:auto;display:block}
 .logo-inline img{width:100%;height:100%;object-fit:cover}
 .hero h2{margin:0;font:800 42px/1.08 Kenia,Poppins;color:var(--brand-700);letter-spacing:.5px}
 @media(max-width:520px){.hero h2{font-size:34px}}
+@media(max-width:380px){.hero h2{font-size:28px}}
 .hero-sub{margin:.6rem 0 .2rem;color:#3a2a1c}
 .note{font-size:13px;opacity:.7;margin-top:.4rem}
 .ribbon{height:10px;border-radius:8px;margin-bottom:12px;background:repeating-linear-gradient(90deg,var(--brand-700) 0 14px,var(--brand) 14px 28px,#f1b37f 28px 42px);opacity:.9}
@@ -158,28 +159,47 @@ img{max-width:100%;height:auto;display:block}
 
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 @media(max-width:1020px){.grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:520px){.grid{grid-template-columns:1fr}}
-.card{background:#fff;border:1px solid #0001;border-radius:16px;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.12);position:relative;transition: transform .18s ease, box-shadow .2s ease;}
+/* En dessous de 760px, la grille reste impérativement à 2 colonnes (y
+   compris sur les très petits téléphones, ex: 320px) : voir les
+   ajustements de densité de carte plus bas plutôt qu'un repli à 1 colonne. */
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr); gap:10px;}}
+@media(max-width:400px){.grid{gap:8px}}
+.card{background:#fff;border:1px solid #0001;border-radius:16px;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.12);position:relative;transition: transform .18s ease, box-shadow .2s ease; display:flex; flex-direction:column;}
 .card:hover{ transform: translateY(-4px); box-shadow:0 16px 30px rgba(0,0,0,.18); }
 .card:before{content:"";position:absolute;left:0;right:0;top:0;height:6px;background:repeating-linear-gradient(90deg,var(--brand-700) 0 12px,var(--brand) 12px 24px);opacity:.45}
-.card img{display:block;width:100%;height:230px;object-fit:cover;background:#f4cdb7;transition: transform .35s ease;}
+.card img{display:block;width:100%;aspect-ratio:3/4;height:auto;object-fit:cover;background:#f4cdb7;transition: transform .35s ease;}
 .card:hover img{ transform: scale(1.03); }
-.card .cap{padding:12px 14px 14px}
+.card .cap{padding:12px 14px 14px; display:flex; flex-direction:column; flex:1;}
 .card h3,
 #dName {
   margin:2px 0 2px;font:800 18px Poppins;
   font-family: "Kenia", Poppins, sans-serif;
   letter-spacing: .3px;
 }
+.card h3{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
 .price {
   font:800 16px Poppins;margin:4px 0 10px;
   letter-spacing: .2px;
   font-weight:700;
 }
-.row{display:flex;gap:10px;flex-wrap:wrap}
+.row{display:flex;gap:10px;flex-wrap:wrap; margin-top:auto;}
 .btn.sm{padding:8px 12px;border-radius:12px;font-weight:700}
 .btn.icon{gap:6px}
+
+/* ====== Densité réduite des cartes sur mobile (grille 2 colonnes) ====== */
+@media(max-width:760px){
+  .card .cap{padding:9px 10px 11px}
+  .card h3{font-size:15px; line-height:1.25; margin:0 0 3px;}
+  .price{font-size:14px; margin:2px 0 8px;}
+  .card .row{flex-direction:column; gap:6px;}
+  .card .row .btn{width:100%; justify-content:center; padding:9px 8px; font-size:12.5px; white-space:nowrap;}
+}
+@media(max-width:360px){
+  .card h3{font-size:14px}
+  .price{font-size:13px}
+}
 
 /* ====== MODALS ====== */
 .modal{
@@ -359,9 +379,10 @@ img{max-width:100%;height:auto;display:block}
 .nav-drop-item{
   display:flex; align-items:center; gap:10px; width:100%; border:0; background:transparent; cursor:pointer;
   text-align:left; padding:8px; border-radius:10px; font:600 14px Poppins; color:var(--ink);
-  transition:background .15s, transform .1s ease;
+  text-decoration:none; transition:background .15s, transform .1s ease;
 }
 .nav-drop-item:hover, .nav-drop-item:focus-visible{ background:#fff1e4; transform:translateX(2px); }
+.nav-drop-item.current{ background:#fff1e4; font-weight:800; color:var(--brand-700); }
 .nav-drop-item .swatch{
   width:32px; height:32px; border-radius:9px; flex:0 0 auto; background-size:cover; background-position:center;
   background-color:#f4cdb7;
@@ -381,6 +402,7 @@ img{max-width:100%;height:auto;display:block}
   background:#fff6ee; border:1px solid #e6d7c8; border-radius:14px; padding:10px 14px; margin:0 0 16px;
   font:600 14px Poppins; color:#5a3b25;
 }
+.active-collection-banner[hidden]{ display:none; }
 
 /* ====== Bouton menu mobile (hamburger) + menu plein écran ====== */
 .hamburger{
@@ -466,8 +488,10 @@ body.mobile-menu-open{ overflow:hidden; }
 .footer-col h4{ margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.7px; color:var(--brand-700); }
 .footer-col h4:not(:first-child){ margin-top:18px; }
 .footer-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px; }
+.footer-list + .footer-list{ margin-top:7px; }
 .footer-list li a{ color:#5a4634; font-weight:600; }
 .footer-list li a:hover{ color:var(--brand-700); }
+.footer-list li a[aria-current="page"]{ color:var(--brand-700); }
 .footer-list:empty::after{ content:attr(data-empty); opacity:.6; font-weight:500; }
 
 .footer-pill-row{ display:flex; gap:6px; flex-wrap:wrap; }
@@ -564,14 +588,14 @@ body.mobile-menu-open{ overflow:hidden; }
 /* --- État de chargement du catalogue : trame "wax" qui patiente --- */
 .catalogue-skeleton{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
 @media(max-width:1020px){ .catalogue-skeleton{ grid-template-columns:repeat(3,1fr); } }
-@media(max-width:760px){ .catalogue-skeleton{ grid-template-columns:repeat(2,1fr); } }
-@media(max-width:520px){ .catalogue-skeleton{ grid-template-columns:1fr; } }
+@media(max-width:760px){ .catalogue-skeleton{ grid-template-columns:repeat(2,1fr); gap:10px; } }
 .skeleton-card{
   height:310px; border-radius:16px; background:#fff;
   background-image: linear-gradient(100deg, #fff 30%, #fbe9dc 50%, #fff 70%);
   background-size: 200% 100%;
   border:1px solid #0001; box-shadow:0 10px 24px rgba(0,0,0,.08);
 }
+@media(max-width:760px){ .skeleton-card{ height:240px; } }
 @media (prefers-reduced-motion: no-preference){
   .skeleton-card{ animation: shimmer 1.4s ease-in-out infinite; }
 }
@@ -584,4 +608,103 @@ body.mobile-menu-open{ overflow:hidden; }
   content:""; position:absolute; left:14px; right:14px; top:0; height:1px;
   background-image: repeating-linear-gradient(90deg, var(--brand) 0 6px, transparent 6px 12px);
   opacity:.5;
+}
+
+/* ======================================================================
+   ====== PAGES DE CONTENU (Notre histoire, Collections, Journal,
+   Contact, FAQ, pages légales) — mêmes textures/cadres que le reste du
+   site, réutilisés tels quels.
+   ====================================================================== */
+
+/* Petit bandeau/hero réutilisé sur chaque page de contenu */
+.page-hero{
+  background:var(--paper); border-radius:20px; padding:clamp(22px,4vw,36px); margin:18px 0 22px;
+  box-shadow:0 18px 36px rgba(0,0,0,.14); position:relative; overflow:hidden;
+}
+.page-hero .ribbon{ height:8px; border-radius:8px; margin-bottom:14px; background:repeating-linear-gradient(90deg,var(--brand-700) 0 14px,var(--brand) 14px 28px,#f1b37f 28px 42px); opacity:.9; }
+.page-hero h1{ margin:0 0 8px; font:800 36px/1.1 Kenia,Poppins; color:var(--brand-700); letter-spacing:.4px; }
+@media(max-width:520px){ .page-hero h1{ font-size:28px; } }
+.page-hero .lead{ margin:0; max-width:640px; color:#3a2a1c; font-size:1.05rem; line-height:1.6; }
+
+/* Carte de contenu générique (texte courant, sections légales...) */
+.content-card{
+  background:var(--paper); border-radius:20px; padding:clamp(20px,4vw,36px); margin:0 0 22px;
+  box-shadow:0 14px 30px rgba(0,0,0,.1);
+}
+.content-card + .content-card{ margin-top:18px; }
+.content-card h2{ margin:26px 0 10px; color:var(--brand-700); font:800 20px Poppins; }
+.content-card h2:first-child{ margin-top:0; }
+.content-card p{ line-height:1.7; margin:0 0 12px; }
+.content-card ul{ padding-left:20px; margin:0 0 12px; }
+.content-card li{ margin:6px 0; line-height:1.6; }
+.content-card a{ color:var(--brand-700); font-weight:700; }
+.page-updated{ font-size:13px; opacity:.65; margin:0 0 18px; }
+.back-link{ display:inline-flex; align-items:center; gap:6px; margin-bottom:16px; font-weight:700; color:var(--brand-700); text-decoration:none; }
+.back-link:hover{ text-decoration:underline; }
+
+/* --- Texte éditorial "Notre histoire" --- */
+.story-body{ max-width:760px; margin:0 auto; }
+.story-body p{ font-size:1.05rem; line-height:1.8; margin:0 0 18px; }
+.story-cta-row{ text-align:center; margin-top:8px; }
+
+/* --- État vide générique (Journal, Collections sans résultat...) --- */
+.empty-state{
+  text-align:center; padding:clamp(36px,8vw,64px) 20px; background:var(--paper); border-radius:20px;
+  box-shadow:0 14px 30px rgba(0,0,0,.1);
+}
+.empty-state .motif-dot{
+  width:64px; height:64px; margin:0 auto 16px; border-radius:50%;
+  background:conic-gradient(from 0deg,var(--brand-700),var(--safran),var(--terracotta),var(--brand-700));
+  opacity:.85; box-shadow:0 8px 18px rgba(0,0,0,.15);
+}
+.empty-state h2{ margin:0 0 8px; font:800 22px Poppins; color:var(--brand-700); }
+.empty-state p{ margin:0 auto 18px; max-width:440px; color:#5a4634; line-height:1.6; }
+
+/* --- Grille des collections --- */
+.collections-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+@media(max-width:900px){ .collections-grid{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:560px){ .collections-grid{ grid-template-columns:1fr; } }
+.collection-card{
+  background:#fff; border:1px solid #0001; border-radius:18px; overflow:hidden; text-decoration:none; color:var(--ink);
+  box-shadow:0 12px 26px rgba(0,0,0,.12); display:flex; flex-direction:column; transition:transform .18s ease, box-shadow .2s ease;
+}
+.collection-card:hover{ transform:translateY(-4px); box-shadow:0 18px 34px rgba(0,0,0,.18); }
+.collection-card .cover{
+  height:180px; background-size:cover; background-position:center; background-color:#f4cdb7;
+  background-image:
+    radial-gradient(circle at 20px 20px, rgba(0,0,0,.1) 3px, transparent 4px),
+    repeating-linear-gradient(45deg, rgba(43,30,18,.1) 0 8px, transparent 8px 20px);
+}
+.collection-card .body{ padding:16px; display:flex; flex-direction:column; gap:10px; flex:1; }
+.collection-card h3{ margin:0; font:800 19px Kenia,Poppins; color:var(--brand-700); }
+.collection-card .btn{ align-self:flex-start; margin-top:auto; }
+
+/* --- FAQ (accordéon natif <details>, fonctionne sans JS) --- */
+.faq-list{ display:flex; flex-direction:column; gap:10px; max-width:760px; margin:0 auto; }
+.faq-list details{
+  background:#fff; border:1px solid #e6d7c8; border-radius:14px; padding:4px 16px; box-shadow:0 6px 16px rgba(0,0,0,.06);
+}
+.faq-list summary{
+  cursor:pointer; list-style:none; padding:14px 28px 14px 0; font-weight:800; color:var(--ink); position:relative;
+}
+.faq-list summary::-webkit-details-marker{ display:none; }
+.faq-list summary:after{
+  content:""; position:absolute; right:2px; top:50%; width:12px; height:12px; margin-top:-8px;
+  border-right:2.4px solid var(--brand-700); border-bottom:2.4px solid var(--brand-700);
+  transform:rotate(45deg); transition:transform .2s ease;
+}
+.faq-list details[open] summary:after{ transform:rotate(-135deg); margin-top:-4px; }
+.faq-list .faq-answer{ margin:0 0 16px; line-height:1.7; color:#3a2a1c; }
+
+/* --- Contact --- */
+.contact-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:22px; align-items:start; }
+@media(max-width:760px){ .contact-grid{ grid-template-columns:1fr; } }
+.contact-card{ background:#fff; border-radius:18px; padding:26px; box-shadow:0 14px 30px rgba(0,0,0,.1); }
+.contact-card .btn{ margin-top:10px; }
+.contact-notes{ margin-top:16px; display:flex; flex-direction:column; gap:8px; font-size:.92rem; color:#5a4634; }
+.contact-notes a{ color:var(--brand-700); font-weight:700; }
+
+@media (prefers-reduced-motion: no-preference){
+  .page-hero{ animation: cardReveal .5s cubic-bezier(.22,.9,.32,1) both; }
+  .collection-card{ animation: cardReveal .5s cubic-bezier(.22,.9,.32,1) both; animation-delay: calc(var(--i,0) * 60ms); }
 }

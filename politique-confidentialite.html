@@ -3,74 +3,238 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Hadeej’Art — Politique de confidentialité</title>
+<title data-i18n="page_title_privacy">Politique de confidentialité — Hadeej’Art</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<meta name="description" content="Hadeej’Art — Politique de confidentialité : données collectées, usage, carte de livraison et vos droits.">
 <meta name="theme-color" content="#111111">
-<style>
-  .policy{ background:var(--paper); border-radius:20px; padding:28px clamp(18px,4vw,40px); box-shadow:0 18px 36px rgba(0,0,0,.12); margin:24px 0; }
-  .policy h2{ margin-top:28px }
-  .policy h2:first-child{ margin-top:0 }
-  .policy ul{ padding-left:20px }
-  .policy li{ margin:6px 0 }
-  .back-link{ display:inline-block; margin-bottom:16px; font-weight:700; color:var(--brand-700); text-decoration:none; }
-  .back-link:hover{ text-decoration:underline; }
-</style>
 </head>
 <body>
-<div class="container">
+<div class="container" id="top">
+  <!-- HEADER -->
   <div class="header" id="siteHeader" aria-label="Barre supérieure">
     <div class="brand" aria-label="Identité Hadeej’Art">
       <div class="mark"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
-      <div><h1>Hadeej’Art</h1><div class="badge">Pièces stylées & authentiquement africaines</div></div>
+      <div>
+        <h1>Hadeej’Art</h1>
+        <div class="badge" data-i18n="badge">Pièces stylées & authentiquement africaines</div>
+      </div>
+    </div>
+
+    <nav class="main-nav" id="mainNav" aria-label="Navigation principale">
+      <div class="nav-item" id="navShop">
+        <button type="button" class="nav-link" id="navShopBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_shop">Boutique</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navShopMenu" role="menu" aria-label="Boutique"></div>
+      </div>
+      <div class="nav-item" id="navCollections">
+        <button type="button" class="nav-link" id="navCollectionsBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_collections">Collections</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navCollectionsMenu" role="menu" aria-label="Collections"></div>
+      </div>
+      <div class="nav-item" id="navInfo">
+        <button type="button" class="nav-link" id="navInfoBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_info">Infos</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navInfoMenu" role="menu" aria-label="Infos"></div>
+      </div>
+    </nav>
+
+    <div class="action">
+      <select id="langSelect" class="select-pill lang-select" data-i18n-aria="lang_label" title="Langue">
+        <option value="fr">🇫🇷 FR</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="wo">🇸🇳 WO</option>
+      </select>
+      <select id="currencySelect" class="select-pill currency-select" data-i18n-aria="currency_label" title="Devise">
+        <option value="FCFA">FCFA</option>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+      </select>
+      <div class="cart">
+        <a id="cartBtn" class="btn" href="index.html"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></a>
+      </div>
+      <button type="button" class="hamburger" id="hamburgerBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="menu_open">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 
-  <div class="policy">
-    <a class="back-link" href="index.html">← Retour à la boutique</a>
-    <h1>Politique de confidentialité</h1>
-    <p class="small">Dernière mise à jour : <span id="updateDate"></span></p>
-
-    <h2>1. Qui sommes-nous</h2>
-    <p>Hadeej’Art est une boutique de créations et accessoires inspirés du wax, basée au Sénégal. Les commandes sont traitées manuellement par WhatsApp par l’équipe Hadeej’Art.</p>
-
-    <h2>2. Données que nous collectons</h2>
-    <p>Lorsque vous passez commande, nous vous demandons :</p>
-    <ul>
-      <li>Votre nom et votre numéro de téléphone (obligatoires, pour vous contacter et livrer la commande) ;</li>
-      <li>Votre e-mail (facultatif) ;</li>
-      <li>Votre pays, ville et quartier ;</li>
-      <li>Une localisation de livraison si vous choisissez de l’indiquer sur la carte : latitude/longitude, adresse détectée automatiquement, et toute précision libre que vous ajoutez (repère, étage…) ;</li>
-      <li>Le détail de votre commande (produits, tailles, couleurs, tissus, notes, moyen de paiement choisi).</li>
-    </ul>
-    <p>Le panier, la langue et la devise choisies, ainsi que vos informations si vous cochez « Se souvenir de mes informations », sont conservés uniquement dans le stockage local de votre navigateur (jamais transmis à un tiers pour cet usage), et peuvent être effacés à tout moment en vidant les données de site de votre navigateur.</p>
-
-    <h2>3. Comment nous utilisons ces données</h2>
-    <p>Ces informations servent exclusivement à traiter votre commande, vous contacter par WhatsApp, organiser la livraison et améliorer notre catalogue. Nous ne vendons ni ne louons vos données à des tiers.</p>
-
-    <h2>4. Carte de livraison — OpenStreetMap / Nominatim</h2>
-    <p>La carte interactive de sélection du lieu de livraison utilise <b>OpenStreetMap</b> (affichage de la carte) et le service <b>Nominatim</b> (recherche d’adresse et détection automatique de l’adresse à partir des coordonnées). Lorsque vous utilisez la recherche, déplacez le repère ou activez la géolocalisation, votre requête (texte recherché ou coordonnées) est envoyée aux serveurs d’OpenStreetMap/Nominatim, indépendants de Hadeej’Art, selon leur propre politique de confidentialité. La géolocalisation de votre appareil n’est utilisée que si vous l’autorisez explicitement dans votre navigateur ; vous pouvez toujours saisir votre position manuellement ou par recherche à la place. Le lien Google Maps généré à partir de vos coordonnées n’est qu’un lien standard (aucune donnée n’est transmise à Google pour le générer).</p>
-
-    <h2>5. Commande via WhatsApp</h2>
-    <p>La validation d’une commande ouvre une conversation WhatsApp (WhatsApp Inc. / Meta) contenant le récapitulatif de votre commande et, si votre appareil le permet, l’image de la facture. Cet échange est ensuite soumis aux conditions et à la politique de confidentialité de WhatsApp.</p>
-
-    <h2>6. Conservation et hébergement</h2>
-    <p>Les commandes et informations client associées sont stockées de façon sécurisée sur Supabase (base de données et hébergement), avec un accès strictement réservé à l’équipe Hadeej’Art authentifiée. Elles sont conservées le temps nécessaire au traitement de la commande et au suivi commercial.</p>
-
-    <h2>7. Vos droits</h2>
-    <p>Vous pouvez à tout moment demander l’accès, la correction ou la suppression de vos données en nous contactant via WhatsApp au numéro affiché sur le site.</p>
-
-    <h2>8. Contact</h2>
-    <p>Pour toute question relative à cette politique, contactez-nous via WhatsApp depuis la boutique.</p>
+  <!-- MENU MOBILE PLEIN ÉCRAN -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-head">
+      <div class="brand">
+        <div class="mark"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
+        <h1>Hadeej’Art</h1>
+      </div>
+      <button type="button" class="mobile-menu-close" id="mobileMenuClose" data-i18n-aria="menu_close" aria-label="Fermer le menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu-body">
+      <section>
+        <h3 data-i18n="nav_shop">Boutique</h3>
+        <div id="mobileShopList" class="mobile-menu-list"></div>
+      </section>
+      <section>
+        <h3 data-i18n="nav_collections">Collections</h3>
+        <div id="mobileCollectionsList" class="mobile-menu-list"></div>
+      </section>
+      <section>
+        <h3 data-i18n="nav_info">Infos</h3>
+        <div id="mobileInfoList" class="mobile-menu-list"></div>
+      </section>
+      <section class="mobile-menu-prefs">
+        <div class="field">
+          <label data-i18n="lang_label">Langue</label>
+          <select id="langSelectMobile" class="select-pill lang-select">
+            <option value="fr">🇫🇷 FR</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="wo">🇸🇳 WO</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="currency_label">Devise</label>
+          <select id="currencySelectMobile" class="select-pill currency-select">
+            <option value="FCFA">FCFA</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+      </section>
+      <a class="btn mobile-menu-cta" id="mobileWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
+    </div>
   </div>
 
+  <div class="motif-bar motif-top" aria-hidden="true"></div>
+
+  <!-- CONTENU -->
+  <a class="back-link" href="index.html">← <span data-i18n="footer_home_link">Accueil</span></a>
+
+  <section class="page-hero">
+    <div class="ribbon"></div>
+    <h1 data-i18n="privacy_link">Politique de confidentialité</h1>
+    <p class="page-updated"><span data-i18n="privacy_updated_label">Dernière mise à jour :</span> <span id="updateDate"></span></p>
+  </section>
+
+  <div class="content-card">
+    <h2 data-i18n="privacy_s1_title">1. Qui sommes-nous</h2>
+    <div data-i18n-html="privacy_s1_body"><p>Hadeej’Art est une boutique de créations et accessoires inspirés du wax, basée au Sénégal.</p></div>
+
+    <h2 data-i18n="privacy_s2_title">2. Données que nous collectons</h2>
+    <div data-i18n-html="privacy_s2_body"></div>
+
+    <h2 data-i18n="privacy_s3_title">3. Comment nous utilisons ces données</h2>
+    <div data-i18n-html="privacy_s3_body"></div>
+
+    <h2 data-i18n="privacy_s4_title">4. Carte de livraison — OpenStreetMap / Nominatim</h2>
+    <div data-i18n-html="privacy_s4_body"></div>
+
+    <h2 data-i18n="privacy_s5_title">5. Commande via WhatsApp</h2>
+    <div data-i18n-html="privacy_s5_body"></div>
+
+    <h2 data-i18n="privacy_s6_title">6. Conservation et hébergement</h2>
+    <div data-i18n-html="privacy_s6_body"></div>
+
+    <h2 data-i18n="privacy_s7_title">7. Vos droits</h2>
+    <div data-i18n-html="privacy_s7_body"></div>
+
+    <h2 data-i18n="privacy_s8_title">8. Contact</h2>
+    <div data-i18n-html="privacy_s8_body"></div>
+  </div>
+
+  <div class="motif-bar motif-bottom" aria-hidden="true"></div>
+
+  <!-- PIED DE PAGE -->
   <footer class="site-footer">
-    <p>© <span id="footerYear"></span> Hadeej’Art · <a href="index.html">Retour à la boutique</a></p>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
+        <p class="footer-tagline" data-i18n="footer_tagline">Portez votre histoire</p>
+        <p class="footer-about" data-i18n="footer_about">Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_nav_title">Navigation</h4>
+        <ul class="footer-list">
+          <li><a href="index.html" data-i18n="footer_home_link">Accueil</a></li>
+          <li><a href="index.html#catalogue" data-i18n="catalogue">Catalogue</a></li>
+        </ul>
+        <ul class="footer-list" id="footerInfoList"></ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_categories_title">Catégories</h4>
+        <ul class="footer-list" id="footerShopList"></ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_collections_title">Collections</h4>
+        <ul class="footer-list" id="footerCollectionsList"></ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_contact_title">Contact</h4>
+        <ul class="footer-list">
+          <li><a id="footerWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a></li>
+        </ul>
+        <h4 data-i18n="footer_langs_title">Langue</h4>
+        <div class="footer-pill-row" id="footerLangRow">
+          <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
+          <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
+          <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
+        </div>
+        <h4 data-i18n="footer_currencies_title">Devise</h4>
+        <div class="footer-pill-row" id="footerCurrencyRow">
+          <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
+          <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
+          <button type="button" class="footer-pill" data-currency="USD">USD</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-payments">
+      <span class="footer-payments-title" data-i18n="footer_payments_title">Paiement accepté</span>
+      <div class="footer-payments-row">
+        <span class="footer-pay-badge"><img src="images/payments/wave-icon.png" alt="" width="16" height="16">Wave</span>
+        <span class="footer-pay-badge"><img src="images/payments/orange-money-icon.png" alt="" width="16" height="16">Orange Money</span>
+        <span class="footer-pay-badge">Sendwave</span>
+        <span class="footer-pay-badge">TapTap Send</span>
+      </div>
+    </div>
+
+    <div class="footer-legal">
+      <span data-i18n="footer_legal_title">Informations légales</span>
+      <a href="politique-confidentialite.html" data-i18n="privacy_link">Politique de confidentialité</a>
+      <a href="conditions-generales.html" data-i18n="terms_link">Conditions générales de vente</a>
+    </div>
+
+    <p class="footer-copyright">© <span id="footerYear"></span> Hadeej’Art</p>
   </footer>
 </div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/currency.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ui.js"></script>
 <script>
-  document.getElementById('footerYear').textContent = new Date().getFullYear();
-  document.getElementById('updateDate').textContent = new Date().toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
+  function initPageContent() {
+    const d = document.getElementById('updateDate');
+    if (d) {
+      const locale = CURRENT_LANG === 'en' ? 'en-GB' : 'fr-FR';
+      d.textContent = new Date().toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+  }
 </script>
+<script src="js/page.js"></script>
 </body>
 </html>

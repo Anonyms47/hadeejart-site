@@ -89,6 +89,20 @@ async function loadCatalog(onUpdate) {
   }
 }
 
+/* Version légère de loadCatalog() pour les pages sans catalogue (Notre
+   histoire, Journal, Contact, FAQ, pages légales...) : ne charge que les
+   catégories et collections nécessaires aux menus Boutique/Collections du
+   header, du menu mobile et du footer, sans télécharger tous les produits. */
+async function loadNavData(onUpdate) {
+  try {
+    const [categories, collections] = await Promise.all([fetchCategories(), fetchCollections()]);
+    applyCatalogData(categories, [], collections);
+    if (onUpdate) onUpdate();
+  } catch (err) {
+    console.error('loadNavData:', err);
+  }
+}
+
 /* Passe commande via la fonction serveur place_order (calcule les prix
    côté base, ne fait jamais confiance aux montants envoyés par le client). */
 async function placeOrderRemote(payload) {
