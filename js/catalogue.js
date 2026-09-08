@@ -30,17 +30,20 @@ function renderProducts() {
   if (!grid) return;
 
   if (!CATALOG_LOADED && !PRODUCTS.length) {
-    grid.innerHTML = `<p class="small">${escapeHtml(t('loading'))}</p>`;
+    grid.className = 'catalogue-skeleton';
+    grid.innerHTML = Array.from({ length: 8 }).map((_, i) => `<div class="skeleton-card" style="--i:${i}"></div>`).join('')
+      + `<p class="small" style="grid-column:1/-1">${escapeHtml(t('loading'))}</p>`;
     return;
   }
+  grid.className = 'grid';
 
   const list = productsInCategory(CURRENT_CATEGORY);
-  grid.innerHTML = list.map(p => {
+  grid.innerHTML = list.map((p, i) => {
     const priceInfo = priceForProduct(p);
     return `
-    <article class="card">
+    <article class="card" style="--i:${i}">
       <img src="${escapeHtml(p.img)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"
-           onerror="this.style.objectFit='contain'; this.alt+=' (photo à venir)';">
+           onerror="this.style.objectFit='contain'; this.alt+=t('photo_coming');">
       <div class="cap">
         <h3>${escapeHtml(p.name)}</h3>
         <div class="price">${formatMoney(priceInfo.amount, priceInfo.currency)}${priceInfo.isFallback ? ' <span class="small">(FCFA)</span>' : ''}</div>
@@ -72,11 +75,11 @@ function openDetail(id) {
     sizeSel.innerHTML = sizes.map(s => `<option>${escapeHtml(s)}</option>`).join('');
     sizeSel.value = sizes.includes('M') ? 'M' : sizes[0];
   }
-  if (el('#dSexe')) el('#dSexe').value = 'Unisexe';
+  if (el('#dSexe')) el('#dSexe').selectedIndex = 0; /* "Unisexe" est toujours la 1re option, quelle que soit la langue */
 
   const priceInfo = priceForProduct(p);
   const priceEl = document.getElementById('dPrice');
-  if (priceEl) priceEl.textContent = formatMoney(priceInfo.amount, priceInfo.currency) + (priceInfo.isFallback ? ' (FCFA — indisponible en ' + CURRENT_CURRENCY + ')' : '');
+  if (priceEl) priceEl.textContent = formatMoney(priceInfo.amount, priceInfo.currency) + (priceInfo.isFallback ? t('price_unavailable_in')(CURRENT_CURRENCY) : '');
 
   const optBox = document.getElementById('detailOptions');
   const sexeEl = document.getElementById('dSexe');
@@ -146,6 +149,27 @@ function onLangChange() {
   refreshCatalogLabels();
   renderCategoryFilters();
   renderProducts();
+  if (typeof refreshCartLanguage === 'function') refreshCartLanguage();
+  if (typeof refreshMapStatusLabel === 'function') refreshMapStatusLabel();
+  refreshOpenDetailLabels();
+}
+
+/* Si la fiche produit est ouverte, ré-affiche nom/prix/option dans la
+   nouvelle langue sans effacer ce que le visiteur a déjà saisi. */
+function refreshOpenDetailLabels() {
+  if (!CURRENT || !document.getElementById('detail').classList.contains('show')) return;
+  el('#dName').textContent = CURRENT.name;
+  const priceInfo = priceForProduct(CURRENT);
+  const priceEl = document.getElementById('dPrice');
+  if (priceEl) priceEl.textContent = formatMoney(priceInfo.amount, priceInfo.currency) + (priceInfo.isFallback ? t('price_unavailable_in')(CURRENT_CURRENCY) : '');
+  if (CURRENT.variantOptions) {
+    const optLabel = document.querySelector('#detailOptions label');
+    if (optLabel) optLabel.textContent = CURRENT.variantOptions.label;
+    const sel = document.getElementById(CURRENT.variantOptions.id);
+    if (sel) {
+      [...sel.options].forEach((opt, i) => { opt.textContent = CURRENT.variantOptions.choices[i].label; });
+    }
+  }
 }
 function onCurrencyChange() {
   renderProducts();

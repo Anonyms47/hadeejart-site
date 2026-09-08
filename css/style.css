@@ -167,8 +167,11 @@ img{max-width:100%;height:auto;display:block}
 .btn.icon{gap:6px}
 
 /* ====== MODALS ====== */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
-.modal.show{display:flex}
+.modal{
+  position:fixed;inset:0;background:rgba(43,30,18,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility 0s linear .22s;
+}
+.modal.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .22s ease}
 .sheet{background:#fff;border-radius:18px;max-width:860px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 .sheet header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#fff7f1;border-bottom:1px solid #0001}
 .sheet .body{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:18px}
@@ -190,16 +193,23 @@ img{max-width:100%;height:auto;display:block}
 .input,select,textarea{width:100%;border:1px solid #0002;border-radius:10px;padding:10px 12px;font:600 14px Poppins;background:#fff}
 
 /* Lightbox plein écran */
-.lightbox{position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none; align-items: center; justify-content: center; z-index: 9999;}
-.lightbox.show{ display: flex; }
+.lightbox{
+  position: fixed; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: 9999;
+  visibility:hidden; opacity:0; pointer-events:none; transition:opacity 0s linear .18s,visibility 0s linear .18s;
+}
+.lightbox.show{ visibility:visible; opacity:1; pointer-events:auto; transition:opacity .18s ease; }
 .lightbox img{max-width: 95vw; max-height: 92vh; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.55);}
 .lightbox .close{position: fixed; top: 16px; right: 16px; background: rgba(255,255,255,.92); border:0; border-radius: 10px; padding: 8px 10px; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.18);}
 .lightbox .close:hover{ background:#fff; }
 
 /* ====== PANIER ====== */
 .cart{display:inline-flex}
-.panel{position:fixed;right:14px;top:64px;background:#fff;border:1px solid #0001;border-radius:16px;box-shadow:0 16px 30px rgba(0,0,0,.25);padding:14px;max-width:320px;width:92vw;display:none}
-.panel.show{display:block}
+.panel{
+  position:fixed;right:14px;top:64px;background:#fff;border:1px solid #0001;border-radius:16px;
+  box-shadow:0 16px 30px rgba(0,0,0,.25);padding:14px;max-width:320px;width:92vw;
+  visibility:hidden;opacity:0;pointer-events:none;transition:opacity 0s linear .18s,visibility 0s linear .18s;
+}
+.panel.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .18s ease}
 .panel h4{margin:0 0 10px 0}
 .panel .btn{ background-image: linear-gradient(180deg,var(--terracotta), #8F2F0A); width:100%; justify-content:center; }
 .line{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin:6px 0;gap:8px}
@@ -314,3 +324,84 @@ img{max-width:100%;height:auto;display:block}
 .site-footer{ margin:28px 0 10px; padding-top:16px; border-top:1px solid #0001; text-align:center; font-size:13px; opacity:.75; }
 .site-footer a{ color:var(--brand-700); font-weight:700; text-decoration:none; }
 .site-footer a:hover{ text-decoration:underline; }
+
+/* ======================================================================
+   ====== MISE EN SCÈNE ÉDITORIALE — mouvement, couture, ambiance Dakar
+   Tout ce bloc est désactivé pour les visiteurs qui préfèrent moins
+   d'animation (accessibilité), et n'anime que transform/opacity (léger,
+   fluide, sans jank sur mobile).
+   ====================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+
+  /* --- Cartes produit : entrée en cascade façon défilé de tissus --- */
+  @keyframes cardReveal {
+    from { opacity:0; transform: translateY(18px) scale(.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .card{ animation: cardReveal .5s cubic-bezier(.22,.9,.32,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+
+  /* --- Modale : entrée "couture" (léger scale + montée) --- */
+  .sheet{
+    transform: translateY(14px) scale(.97); opacity:0;
+    transition: transform .32s cubic-bezier(.22,.9,.32,1), opacity .28s ease;
+  }
+  .modal.show .sheet{ transform:none; opacity:1; }
+
+  /* --- Lightbox : léger zoom d'entrée sur l'image --- */
+  .lightbox img{ transform: scale(.96); transition: transform .25s cubic-bezier(.22,.9,.32,1); }
+  .lightbox.show img{ transform: scale(1); }
+
+  /* --- Panier déroulant : glissé + fondu --- */
+  .panel{ transform-origin: top right; transform: translateY(-6px) scale(.98); transition: opacity .18s ease, transform .18s cubic-bezier(.22,.9,.32,1), visibility 0s linear .18s; }
+  .panel.show{ transform:none; transition: opacity .18s ease, transform .18s cubic-bezier(.22,.9,.32,1); }
+
+  /* --- Puces catégorie : bascule vivante --- */
+  .chip{ transition: transform .08s ease, background .18s, border-color .18s, box-shadow .18s, color .18s; }
+  .chip.active{ animation: chipPop .28s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes chipPop { 0%{ transform:scale(.92) } 60%{ transform:scale(1.05) } 100%{ transform:scale(1) } }
+
+  /* --- Motif du hero : léger effet "tissu qui respire" --- */
+  .hero-frame{ animation: frameGlow 6s ease-in-out infinite; }
+  @keyframes frameGlow {
+    0%,100%{ box-shadow:0 18px 46px rgba(0,0,0,.18), 0 0 0 6px rgba(212,122,44,.08) inset; }
+    50%{ box-shadow:0 22px 52px rgba(0,0,0,.20), 0 0 0 9px rgba(212,122,44,.14) inset; }
+  }
+  .logo-hero{ animation: logoDrift 7s ease-in-out infinite; }
+  @keyframes logoDrift { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-6px) } }
+
+  /* --- Boutons : appui plus tactile --- */
+  .btn:active{ transform: translateY(0) scale(.96); }
+  .chip:active, .pay-card:active{ transform: scale(.95); }
+
+  /* --- Titres de section : petit trait qui se déroule --- */
+  .section-title:before{
+    animation: threadUnroll .7s cubic-bezier(.22,.9,.32,1) both;
+    transform-origin:left center;
+  }
+  @keyframes threadUnroll { from{ transform:scaleX(0) } to{ transform:scaleX(1) } }
+}
+
+/* --- État de chargement du catalogue : trame "wax" qui patiente --- */
+.catalogue-skeleton{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+@media(max-width:1020px){ .catalogue-skeleton{ grid-template-columns:repeat(3,1fr); } }
+@media(max-width:760px){ .catalogue-skeleton{ grid-template-columns:repeat(2,1fr); } }
+@media(max-width:520px){ .catalogue-skeleton{ grid-template-columns:1fr; } }
+.skeleton-card{
+  height:310px; border-radius:16px; background:#fff;
+  background-image: linear-gradient(100deg, #fff 30%, #fbe9dc 50%, #fff 70%);
+  background-size: 200% 100%;
+  border:1px solid #0001; box-shadow:0 10px 24px rgba(0,0,0,.08);
+}
+@media (prefers-reduced-motion: no-preference){
+  .skeleton-card{ animation: shimmer 1.4s ease-in-out infinite; }
+}
+@keyframes shimmer { from{ background-position:200% 0 } to{ background-position:-200% 0 } }
+
+/* --- Petit détail "cousu main" sur les cartes produit --- */
+.card{ position:relative; }
+.card .cap{ position:relative; }
+.card .cap:before{
+  content:""; position:absolute; left:14px; right:14px; top:0; height:1px;
+  background-image: repeating-linear-gradient(90deg, var(--brand) 0 6px, transparent 6px 12px);
+  opacity:.5;
+}

@@ -98,38 +98,38 @@ function buildOrderMessage(orderRef, location) {
   const name  = (document.getElementById('cName')  || {}).value.trim() || 'Client';
   const phone = (document.getElementById('cPhone') || {}).value.trim() || '';
   const email = (document.getElementById('cEmail') || {}).value.trim() || '';
-  const country = (document.getElementById('cCountry') || {}).value.trim() || '';
-  const city = (document.getElementById('cCity') || {}).value.trim() || '';
-  const district = (document.getElementById('cDistrict') || {}).value.trim() || '';
+  const country = (document.getElementById('cCountry') || {}).value.trim() || t('dash');
+  const city = (document.getElementById('cCity') || {}).value.trim() || t('dash');
+  const district = (document.getElementById('cDistrict') || {}).value.trim() || t('dash');
   const pay = PAYMENT_LABELS[(document.getElementById('cPay') || {}).value] || 'Wave';
 
   const lines = [];
-  lines.push('*Nouvelle commande — Hadeej’Art*');
-  if (orderRef) lines.push('Réf: ' + orderRef);
-  lines.push('Nom: ' + name);
-  lines.push('Téléphone: ' + phone);
-  if (email) lines.push('E-mail: ' + email);
-  lines.push('Pays: ' + (country || '—') + ' · Ville: ' + (city || '—') + ' · Quartier: ' + (district || '—'));
+  lines.push(t('wa_new_order'));
+  if (orderRef) lines.push(t('wa_ref') + ' ' + orderRef);
+  lines.push(t('wa_name') + ' ' + name);
+  lines.push(t('wa_phone') + ' ' + phone);
+  if (email) lines.push(t('wa_email') + ' ' + email);
+  lines.push(t('wa_location_line')(country, city, district));
   if (location && location.lat != null) {
-    lines.push('Adresse détectée: ' + (location.address || '—'));
-    if (location.note) lines.push('Précision: ' + location.note);
-    lines.push('Position: ' + location.mapsLink);
+    lines.push(t('wa_address_detected') + ' ' + (location.address || t('dash')));
+    if (location.note) lines.push(t('wa_precision') + ' ' + location.note);
+    lines.push(t('wa_position') + ' ' + location.mapsLink);
   }
   if (CART.length) {
-    lines.push('*Articles:*');
+    lines.push(t('wa_articles'));
     CART.forEach(l => {
       const bits = [];
       if (l.size) bits.push(l.size);
       if (l.color) bits.push(l.color);
       if (l.tissu) bits.push(l.tissu);
-      if (l.optionKimono) bits.push(l.optionKimono === 'avec' ? 'Avec pantalon' : 'Sans pantalon');
-      if (l.note) bits.push('Note: ' + l.note);
+      if (l.optionKimono) bits.push(variantChoiceLabel(l.id, l.optionKimono));
+      if (l.note) bits.push(t('wa_note') + ' ' + l.note);
       const detail = bits.length ? ' (' + bits.join(', ') + ')' : '';
       lines.push('- ' + l.name + detail + ' × ' + l.qty + ' — ' + formatMoney(l.price * l.qty, l.currency));
     });
   }
-  lines.push('Total: ' + formatCartTotals());
-  lines.push('Paiement: ' + pay);
+  lines.push(t('wa_total') + ' ' + formatCartTotals());
+  lines.push(t('wa_payment') + ' ' + pay);
   return lines.join('\n');
 }
 
@@ -137,20 +137,20 @@ function validateCheckoutForm() {
   const name = (document.getElementById('cName') || {}).value.trim();
   const phone = (document.getElementById('cPhone') || {}).value.trim();
   const email = (document.getElementById('cEmail') || {}).value.trim();
-  if (!name) { alert('Merci d’indiquer votre nom.'); return false; }
-  if (name.length > 120) { alert('Le nom est trop long.'); return false; }
-  if (!phone) { alert('Merci d’indiquer votre téléphone.'); return false; }
-  if (!/^[0-9+ ().-]{6,30}$/.test(phone)) { alert('Le numéro de téléphone n’est pas valide.'); return false; }
-  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert('L’adresse e-mail n’est pas valide.'); return false; }
+  if (!name) { alert(t('val_name_required')); return false; }
+  if (name.length > 120) { alert(t('val_name_too_long')); return false; }
+  if (!phone) { alert(t('val_phone_required')); return false; }
+  if (!/^[0-9+ ().-]{6,30}$/.test(phone)) { alert(t('val_phone_invalid')); return false; }
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert(t('val_email_invalid')); return false; }
   return true;
 }
 
 async function haOrder() {
-  if (!CART.length) { alert('Votre panier est vide.'); return false; }
+  if (!CART.length) { alert(t('val_cart_empty')); return false; }
   if (!validateCheckoutForm()) return false;
 
   const btn = document.getElementById('btnOrder');
-  if (btn) { btn.disabled = true; btn.textContent = 'Envoi en cours…'; }
+  if (btn) { btn.disabled = true; btn.textContent = t('sending'); }
 
   try {
     saveClientInfoIfAsked();
@@ -180,7 +180,7 @@ async function haOrder() {
         /* Rejet volontaire du serveur (champ invalide, anti-abus...) :
            on arrête tout, la vendeuse ne doit pas recevoir de commande
            WhatsApp sans enregistrement correspondant côté Supabase. */
-        alert(err.message || 'Commande refusée. Vérifiez les champs et réessayez.');
+        alert(translateServerError(err.message));
         return false;
       }
       /* Panne réseau réelle (hors-ligne, etc.) : on continue quand même
@@ -202,9 +202,9 @@ async function haOrder() {
     return true;
   } catch (err) {
     console.error('haOrder error:', err);
-    alert("Redirection WhatsApp impossible. Vérifiez les champs et réessayez.");
+    alert(t('val_whatsapp_redirect_failed'));
     return false;
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Passer la commande'; }
+    if (btn) { btn.disabled = false; btn.textContent = t('place_order_btn'); }
   }
 }

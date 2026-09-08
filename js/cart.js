@@ -53,6 +53,17 @@ function recomputeCartCurrency() {
   updateCartUI();
 }
 
+/* Ré-affiche chaque ligne déjà présente dans le panier avec le nom
+   traduit dans la nouvelle langue (le nom est figé au moment de l'ajout
+   sinon, y compris dans le message WhatsApp et la facture). */
+function refreshCartLanguage() {
+  CART.forEach(l => {
+    const p = PRODUCTS.find(x => x.id === l.id);
+    if (p) l.name = p.name;
+  });
+  updateCartUI();
+}
+
 function removeFromCart(key) {
   CART = CART.filter(l => l.key !== key);
   updateCartUI();
@@ -100,7 +111,7 @@ function updateCartUI() {
     if (l.size) bits.push(l.size);
     if (l.color) bits.push(l.color);
     if (l.tissu) bits.push(l.tissu);
-    if (l.optionKimono) bits.push(l.optionKimono === 'avec' ? 'Avec pantalon' : 'Sans pantalon');
+    if (l.optionKimono) bits.push(variantChoiceLabel(l.id, l.optionKimono));
     const detail = bits.length ? ' • ' + escapeHtml(bits.join(' • ')) : '';
     const name = escapeHtml(l.name);
     return `

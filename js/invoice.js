@@ -59,11 +59,11 @@ async function buildInvoiceImage() {
   /* Réutilise la réf. serveur (place_order) si déjà connue ; sinon repli local (ex: mode hors-ligne). */
   const orderId = window.LAST_INVOICE_ID || ("HA-" + Math.random().toString(36).slice(2, 8).toUpperCase());
   window.LAST_INVOICE_ID = orderId;
-  text("Facture · Réf: " + orderId, headerX + 90, headerY + 86, 18, "700", "#9e5317", "left");
+  text(t('invoice_ref_label') + " " + orderId, headerX + 90, headerY + 86, 18, "700", "#9e5317", "left");
 
   INV.save(); INV.translate(headerX + headerW - 70, headerY + 38); INV.rotate(-Math.PI / 180 * 12);
   INV.strokeStyle = "#2AA06A"; INV.lineWidth = 8; INV.strokeRect(-100, -22, 200, 44);
-  text("COMMANDE", 0, 8, 22, "800", "#2AA06A", "center"); INV.restore();
+  text(t('invoice_order_badge'), 0, 8, 22, "800", "#2AA06A", "center"); INV.restore();
 
   const val = id => (document.getElementById(id) || {}).value || "";
   const name = val('cName');
@@ -76,14 +76,14 @@ async function buildInvoiceImage() {
   const pay = PAYMENT_LABELS[payValue] || payValue || '';
 
   const left = PAD, right = NAT_W - PAD;
-  text("Détails client", left, 176, 24, "800", "#2b1e12", "left");
-  text("Nom : " + name, left, 202, 18, "600", "#2b1e12", "left");
-  text("Téléphone : " + phone, left, 224, 18, "600", "#2b1e12", "left");
-  text("Lieu : " + [district, city, country].filter(Boolean).join(', '), left, 246, 18, "600", "#2b1e12", "left");
-  text("Position : " + (loc.address || (loc.lat != null ? (loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4)) : '—')), left, 268, 16, "600", "#2b1e12", "left");
-  text("Paiement : " + pay, left, 290, 16, "700", "#6f5a4a", "left");
+  text(t('invoice_client_details'), left, 176, 24, "800", "#2b1e12", "left");
+  text(t('invoice_name') + " " + name, left, 202, 18, "600", "#2b1e12", "left");
+  text(t('invoice_phone') + " " + phone, left, 224, 18, "600", "#2b1e12", "left");
+  text(t('invoice_place') + " " + [district, city, country].filter(Boolean).join(', '), left, 246, 18, "600", "#2b1e12", "left");
+  text(t('invoice_position') + " " + (loc.address || (loc.lat != null ? (loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4)) : t('dash'))), left, 268, 16, "600", "#2b1e12", "left");
+  text(t('invoice_payment') + " " + pay, left, 290, 16, "700", "#6f5a4a", "left");
 
-  text("Articles", left, 322, 24, "800", "#2b1e12", "left");
+  text(t('invoice_articles'), left, 322, 24, "800", "#2b1e12", "left");
 
   let y = 348;
   CART.forEach(it => {
@@ -101,13 +101,12 @@ async function buildInvoiceImage() {
   INV.strokeStyle = "#00000010"; INV.lineWidth = 1; RRect(cardX, cardY, cardW, cardH, 12); INV.stroke();
 
   INV.fillStyle = "#B43D2A"; RRect(cardX, cardY + cardH - 48, cardW, 48, 12); INV.fill();
-  text("TOTAL", cardX + 20, cardY + cardH - 16, 22, "900", "#ffffff", "left");
+  text(t('invoice_total'), cardX + 20, cardY + cardH - 16, 22, "900", "#ffffff", "left");
   const totalsText = formatCartTotals();
   window.LAST_INVOICE_TOTAL = totalsText;
   text(totalsText, cardX + cardW - 24, cardY + cardH - 16, 24, "900", "#ffffff", "right");
 
-  text("Merci pour votre confiance — Hadeej’Art · WhatsApp 78-144-43-40",
-       left, NAT_H - 36, 14, "700", "#6f5a4a", "left");
+  text(t('invoice_thanks'), left, NAT_H - 36, 14, "700", "#6f5a4a", "left");
 }
 
 function invoiceBlob() {

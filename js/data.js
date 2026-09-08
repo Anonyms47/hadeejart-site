@@ -15,6 +15,16 @@ let CATALOG_LOADED = false;
 let RAW_CATEGORIES = [];
 let RAW_PRODUCTS = [];
 
+/* Libellé traduit d'un choix de variante (ex: "Avec pantalon" / "With
+   trousers" / "Ak tubéey") à partir du produit et de la valeur technique
+   stockée dans la ligne de panier. Repli sur la valeur brute si inconnue. */
+function variantChoiceLabel(productId, value) {
+  if (!value) return '';
+  const p = PRODUCTS.find(x => x.id === productId);
+  const choice = p && p.variantOptions && p.variantOptions.choices.find(c => c.value === value);
+  return choice ? choice.label : value;
+}
+
 function isGenderedProduct(p) {
   if (!p) return false;
   if (p.gendered) return true;

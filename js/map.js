@@ -17,23 +17,31 @@ function mapsLinkFor(lat, lng) {
   return `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
 }
 
-function setMapStatus(msg) {
+let lastMapStatusKey = 'map_status_default';
+function setMapStatus(key) {
+  lastMapStatusKey = key;
   const el = document.getElementById('mapStatus');
-  if (el) el.textContent = msg;
+  if (el) el.textContent = t(key);
+}
+/* Ré-applique le dernier message affiché dans la nouvelle langue (voir
+   onLangChange() dans catalogue.js). */
+function refreshMapStatusLabel() {
+  const el = document.getElementById('mapStatus');
+  if (el) el.textContent = t(lastMapStatusKey);
 }
 
 async function reverseGeocode(lat, lng) {
   try {
-    setMapStatus('Recherche de l’adresse…');
+    setMapStatus('map_reverse_searching');
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`);
     const data = await res.json();
     deliveryState.address = (data && data.display_name) || '';
     const addrEl = document.getElementById('locAddress');
     if (addrEl) addrEl.value = deliveryState.address;
-    setMapStatus(deliveryState.address ? 'Adresse détectée.' : 'Adresse introuvable — précisez avec la note libre.');
+    setMapStatus(deliveryState.address ? 'map_address_found' : 'map_address_not_found');
   } catch (err) {
     console.warn('reverseGeocode:', err);
-    setMapStatus('Adresse indisponible (hors ligne ?) — vous pouvez continuer, précisez avec la note libre.');
+    setMapStatus('map_address_offline');
   }
 }
 
@@ -78,17 +86,13 @@ function initDeliveryMap() {
   const locateBtn = document.getElementById('btnLocateMe');
   if (locateBtn) {
     locateBtn.addEventListener('click', () => {
-      if (!navigator.geolocation) { setMapStatus('Géolocalisation non disponible sur cet appareil.'); return; }
-      setMapStatus('Localisation en cours…');
+      if (!navigator.geolocation) { setMapStatus('map_geo_unavailable'); return; }
+      setMapStatus('map_locating');
       navigator.geolocation.getCurrentPosition(
         pos => { deliveryMap.setView([pos.coords.latitude, pos.coords.longitude], 15); moveMarker(pos.coords.latitude, pos.coords.longitude); },
         err => {
-          const messages = {
-            1: 'Localisation refusée. Vous pouvez l’autoriser dans les réglages du navigateur, ou utiliser la recherche / déplacer le repère.',
-            2: 'Position indisponible pour le moment — utilisez la recherche ou déplacez le repère.',
-            3: 'Localisation trop longue à obtenir — utilisez la recherche ou déplacez le repère.'
-          };
-          setMapStatus(messages[err.code] || 'Localisation impossible — utilisez la recherche ou déplacez le repère.');
+          const keys = { 1: 'map_geo_denied', 2: 'map_geo_position_unavailable', 3: 'map_geo_timeout' };
+          setMapStatus(keys[err.code] || 'map_geo_generic_fail');
         },
         { enableHighAccuracy: true, timeout: 8000 }
       );
@@ -100,7 +104,7 @@ function initDeliveryMap() {
   async function runSearch() {
     const q = (searchInput.value || '').trim();
     if (!q) return;
-    setMapStatus('Recherche…');
+    setMapStatus('map_searching');
     try {
       const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`);
       const results = await res.json();
@@ -109,10 +113,10 @@ function initDeliveryMap() {
         deliveryMap.setView([r.lat, r.lon], 15);
         moveMarker(parseFloat(r.lat), parseFloat(r.lon));
       } else {
-        setMapStatus('Aucun résultat pour cette recherche.');
+        setMapStatus('map_no_results');
       }
     } catch (err) {
-      setMapStatus('Recherche indisponible (hors ligne ?).');
+      setMapStatus('map_search_offline');
     }
   }
   if (searchBtn) searchBtn.addEventListener('click', runSearch);

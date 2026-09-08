@@ -35,22 +35,22 @@
       </div>
       <div>
         <h1>Hadeej’Art</h1>
-        <div class="badge">Pièces stylées & authentiquement africaines</div>
+        <div class="badge" data-i18n="badge">Pièces stylées & authentiquement africaines</div>
       </div>
     </div>
     <div class="action">
-      <select id="langSelect" class="select-pill" aria-label="Langue" title="Langue">
+      <select id="langSelect" class="select-pill" data-i18n-aria="lang_label" title="Langue">
         <option value="fr">FR</option>
         <option value="en">EN</option>
         <option value="wo">WO</option>
       </select>
-      <select id="currencySelect" class="select-pill" aria-label="Devise" title="Devise">
+      <select id="currencySelect" class="select-pill" data-i18n-aria="currency_label" title="Devise">
         <option value="FCFA">FCFA</option>
         <option value="EUR">EUR</option>
         <option value="USD">USD</option>
       </select>
       <div class="cart">
-        <button id="cartBtn" class="btn" type="button"><span>Panier</span><span class="bubble" id="cartCount">0</span></button>
+        <button id="cartBtn" class="btn" type="button"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></button>
       </div>
     </div>
   </div>
@@ -66,14 +66,14 @@
         <div class="logo-inline">
           <img src="images/logo.png" alt="Logo Hadeej’Art">
         </div>
-        <h2>Racontez votre histoire.<br/>Portez l’Afrique.</h2>
+        <h2 data-i18n-html="hero_title_html">Racontez votre histoire.<br/>Portez l’Afrique.</h2>
       </div>
-      <p class="hero-sub">Collection Hadeej’Art — Confort, modernité, personnalisation.</p>
-      <p class="note">Astuce : utilisez <b>Détail</b> pour choisir couleur, taille (S–XXL), tissu et une note libre.</p>
+      <p class="hero-sub" data-i18n="hero_sub">Collection Hadeej’Art — Confort, modernité, personnalisation.</p>
+      <p class="note" data-i18n-html="hero_note_html">Astuce : utilisez <b>Détail</b> pour choisir couleur, taille (S–XXL), tissu et une note libre.</p>
       <div class="beads"></div>
       <div class="cta-row">
-        <button class="btn cta-hero" type="button" onclick="scrollToCatalogue()">Voir la collection</button>
-        <button class="btn ghost cta-hero-2" type="button" onclick="scrollToCatalogue()">Nouveautés</button>
+        <button class="btn cta-hero" type="button" data-i18n="cta_view_collection" onclick="scrollToCatalogue()">Voir la collection</button>
+        <button class="btn ghost cta-hero-2" type="button" data-i18n="cta_new" onclick="scrollToCatalogue()">Nouveautés</button>
       </div>
     </div>
 
@@ -82,12 +82,12 @@
     </div>
 
     <div class="mobile-sticky-cta">
-      <button class="btn" type="button" onclick="scrollToCatalogue()">Voir la collection</button>
+      <button class="btn" type="button" data-i18n="cta_view_collection" onclick="scrollToCatalogue()">Voir la collection</button>
     </div>
   </section>
 
   <!-- CATALOGUE -->
-  <h2 id="catalogue" class="section-title">Catalogue</h2>
+  <h2 id="catalogue" class="section-title" data-i18n="catalogue">Catalogue</h2>
   <div id="categoryFilters" class="category-filters"></div>
   <div id="productGrid" class="grid"></div>
 
@@ -96,50 +96,50 @@
 
   <!-- PIED DE PAGE -->
   <footer class="site-footer">
-    <p>© <span id="footerYear"></span> Hadeej’Art · <a href="politique-confidentialite.html">Politique de confidentialité</a></p>
+    <p>© <span id="footerYear"></span> Hadeej’Art · <a href="politique-confidentialite.html" data-i18n="privacy_link">Politique de confidentialité</a></p>
   </footer>
 </div>
 
 <!-- PANIER -->
 <div id="cartPanel" class="panel">
-  <h4>Votre panier</h4>
+  <h4 data-i18n="cart_title">Votre panier</h4>
   <div id="cartLines"></div>
   <div class="sep"></div>
-  <div class="line"><span>Sous-total</span><b id="cartSubtotal">0 FCFA</b></div>
-  <div class="line"><span>Total</span><b id="cartTotal">0 FCFA</b></div>
+  <div class="line"><span data-i18n="subtotal">Sous-total</span><b id="cartSubtotal">0 FCFA</b></div>
+  <div class="line"><span data-i18n="total">Total</span><b id="cartTotal">0 FCFA</b></div>
   <div class="sep"></div>
-  <button class="btn" type="button" onclick="openClient()">Finaliser</button>
+  <button class="btn" type="button" data-i18n="checkout" onclick="openClient()">Finaliser</button>
 </div>
 
 <!-- MODAL DÉTAIL -->
 <div id="detail" class="modal">
   <div class="sheet">
     <header>
-      <b id="dName">Détail</b>
-      <button class="btn ghost" type="button" onclick="closeDetail()">Fermer</button>
+      <b id="dName" data-i18n="detail_default_title">Détail</b>
+      <button class="btn ghost" type="button" data-i18n="close" onclick="closeDetail()">Fermer</button>
     </header>
     <div class="body">
       <div class="media">
         <img id="dImg" alt="">
-        <button class="img-expand" type="button" onclick="openImageFullscreen(document.getElementById('dImg').src)" title="Voir en plein écran">
+        <button class="img-expand" type="button" onclick="openImageFullscreen(document.getElementById('dImg').src)" data-i18n-title="fullscreen_title" title="Voir en plein écran">
           <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M4 15v5h5"/></svg>
         </button>
       </div>
       <div>
         <div class="price" id="dPrice"></div>
-        <div class="field"><label for="dColor">Couleur</label><input id="dColor" class="input" placeholder="ex: Orange"/></div>
+        <div class="field"><label for="dColor" data-i18n="color_label">Couleur</label><input id="dColor" class="input" data-i18n-placeholder="color_placeholder" placeholder="ex: Orange"/></div>
         <div class="field">
-          <label for="dSize">Taille</label>
+          <label for="dSize" data-i18n="size_label">Taille</label>
           <select id="dSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
         </div>
-        <div class="field"><label for="dTissu">Tissu</label><input id="dTissu" class="input" placeholder="ex: Wax"/></div>
-        <div class="field"><label for="dNote">Note (facultatif)</label><input id="dNote" class="input" placeholder="ex: manches longues"/></div>
+        <div class="field"><label for="dTissu" data-i18n="fabric_label">Tissu</label><input id="dTissu" class="input" data-i18n-placeholder="fabric_placeholder" placeholder="ex: Wax"/></div>
+        <div class="field"><label for="dNote" data-i18n="note_label">Note (facultatif)</label><input id="dNote" class="input" data-i18n-placeholder="note_placeholder" placeholder="ex: manches longues"/></div>
         <div class="field sexe-field">
-          <label for="dSexe">Sexe</label>
-          <select id="dSexe"><option>Unisexe</option><option>Homme</option><option>Femme</option></select>
+          <label for="dSexe" data-i18n="sex_label">Sexe</label>
+          <select id="dSexe"><option data-i18n="sex_unisex">Unisexe</option><option data-i18n="sex_male">Homme</option><option data-i18n="sex_female">Femme</option></select>
 </div>
         <div id="detailOptions" class="field" style="display:none;"></div>
-        <div class="field"><button class="btn" type="button" onclick="addFromDetail()">Ajouter au panier</button></div>
+        <div class="field"><button class="btn" type="button" data-i18n="add_to_cart" onclick="addFromDetail()">Ajouter au panier</button></div>
       </div>
     </div>
   </div>
@@ -148,39 +148,39 @@
 <!-- MODAL CLIENT -->
 <div id="client" class="modal">
   <div class="sheet" style="max-width:960px">
-    <header><b>Mes informations</b><button class="btn ghost" type="button" onclick="closeClient()">Fermer</button></header>
+    <header><b data-i18n="client_title">Mes informations</b><button class="btn ghost" type="button" data-i18n="close" onclick="closeClient()">Fermer</button></header>
     <div class="body" style="grid-template-columns:1fr 1fr">
       <div>
-        <div class="field"><label for="cName">Nom complet</label><input id="cName" class="input" placeholder="ex: Aïcha Diop"></div>
-        <div class="field"><label for="cPhone">Téléphone (WhatsApp)</label><input id="cPhone" class="input" placeholder="77 123 45 67"></div>
-        <div class="field"><label for="cEmail">E-mail (facultatif)</label><input id="cEmail" type="email" class="input" placeholder="vous@exemple.com"></div>
+        <div class="field"><label for="cName" data-i18n="name_label">Nom complet</label><input id="cName" class="input" data-i18n-placeholder="name_placeholder" placeholder="ex: Aïcha Diop"></div>
+        <div class="field"><label for="cPhone" data-i18n="phone_label">Téléphone (WhatsApp)</label><input id="cPhone" class="input" data-i18n-placeholder="phone_placeholder" placeholder="77 123 45 67"></div>
+        <div class="field"><label for="cEmail" data-i18n="email_label">E-mail (facultatif)</label><input id="cEmail" type="email" class="input" data-i18n-placeholder="email_placeholder" placeholder="vous@exemple.com"></div>
         <div class="row">
-          <div class="field" style="flex:1"><label for="cCountry">Pays</label><input id="cCountry" class="input" placeholder="Sénégal"></div>
-          <div class="field" style="flex:1"><label for="cCity">Ville</label><input id="cCity" class="input" placeholder="Dakar"></div>
+          <div class="field" style="flex:1"><label for="cCountry" data-i18n="country_label">Pays</label><input id="cCountry" class="input" data-i18n-placeholder="country_placeholder" placeholder="Sénégal"></div>
+          <div class="field" style="flex:1"><label for="cCity" data-i18n="city_label">Ville</label><input id="cCity" class="input" data-i18n-placeholder="city_placeholder" placeholder="Dakar"></div>
         </div>
-        <div class="field"><label for="cDistrict">Quartier</label><input id="cDistrict" class="input" placeholder="Sicap Mbao"></div>
+        <div class="field"><label for="cDistrict" data-i18n="district_label">Quartier</label><input id="cDistrict" class="input" data-i18n-placeholder="district_placeholder" placeholder="Sicap Mbao"></div>
 
         <div class="field">
-          <label>Localisation de livraison</label>
+          <label data-i18n="location_label">Localisation de livraison</label>
           <div class="map-tools">
-            <input id="mapSearch" class="input" placeholder="Rechercher une adresse…">
-            <button type="button" class="btn ghost sm" id="btnMapSearch">Chercher</button>
-            <button type="button" class="btn ghost sm" id="btnLocateMe">📍 Ma position</button>
+            <input id="mapSearch" class="input" data-i18n-placeholder="map_search_placeholder" placeholder="Rechercher une adresse…">
+            <button type="button" class="btn ghost sm" id="btnMapSearch" data-i18n="map_search_btn">Chercher</button>
+            <button type="button" class="btn ghost sm" id="btnLocateMe" data-i18n="map_locate_btn">📍 Ma position</button>
           </div>
           <div id="deliveryMap"></div>
-          <p class="small" id="mapStatus">Déplacez le repère ou recherchez votre adresse.</p>
+          <p class="small" id="mapStatus" data-i18n="map_status_default">Déplacez le repère ou recherchez votre adresse.</p>
           <input type="hidden" id="locLat"><input type="hidden" id="locLng">
-          <div class="field"><label for="locAddress">Adresse détectée</label><input id="locAddress" class="input" readonly placeholder="s'affiche après sélection sur la carte"></div>
-          <div class="field"><label for="locNote">Précision libre (repère, étage…)</label><input id="locNote" class="input" placeholder="ex: portail bleu, 2e étage"></div>
+          <div class="field"><label for="locAddress" data-i18n="address_detected_label">Adresse détectée</label><input id="locAddress" class="input" readonly data-i18n-placeholder="address_detected_placeholder" placeholder="s'affiche après sélection sur la carte"></div>
+          <div class="field"><label for="locNote" data-i18n="location_note_label">Précision libre (repère, étage…)</label><input id="locNote" class="input" data-i18n-placeholder="location_note_placeholder" placeholder="ex: portail bleu, 2e étage"></div>
         </div>
 
         <div class="field">
-          <label class="checkbox"><input type="checkbox" id="cRemember"> Se souvenir de mes informations</label>
+          <label class="checkbox"><input type="checkbox" id="cRemember"> <span data-i18n="remember_label">Se souvenir de mes informations</span></label>
         </div>
       </div>
       <div>
         <div class="field">
-          <label>Mode de paiement</label>
+          <label data-i18n="payment_label">Mode de paiement</label>
           <div id="payGrid" class="pay-grid">
             <button type="button" class="pay-card" data-method="wave" aria-pressed="true">
               <img src="images/payments/wave-icon.png" alt="" width="18" height="18">
@@ -209,8 +209,8 @@
         </div>
 
         <div class="cta-row">
-          <button type="button" class="btn" id="btnOrder" data-action="order">Passer la commande</button>
-          <p class="cta-hint">Une facture (image) sera générée et partagée sur WhatsApp.</p>
+          <button type="button" class="btn" id="btnOrder" data-action="order" data-i18n="place_order_btn">Passer la commande</button>
+          <p class="cta-hint" data-i18n="invoice_hint">Une facture (image) sera générée et partagée sur WhatsApp.</p>
         </div>
 
         <noscript>
@@ -223,8 +223,8 @@
 
 <!-- PLEIN ÉCRAN IMAGE -->
 <div id="imgViewer" class="lightbox" onclick="closeImageViewer()">
-  <button class="close" aria-label="Fermer" type="button" onclick="closeImageViewer(); event.stopPropagation()">Fermer</button>
-  <img id="imgViewerImg" alt="Aperçu produit"/>
+  <button class="close" data-i18n-aria="close" aria-label="Fermer" type="button" data-i18n="close" onclick="closeImageViewer(); event.stopPropagation()">Fermer</button>
+  <img id="imgViewerImg" data-i18n-alt="lightbox_alt" alt="Aperçu produit"/>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>

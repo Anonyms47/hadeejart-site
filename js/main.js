@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   document.documentElement.lang = CURRENT_LANG;
+  applyStaticTranslations();
   const yearEl = document.getElementById('footerYear');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
   initInvoiceCanvas();
