@@ -88,7 +88,12 @@ async function placeOrderRemote(payload) {
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const msg = (data && (data.message || data.hint)) || ('Erreur serveur (' + res.status + ')');
-    throw new Error(msg);
+    const err = new Error(msg);
+    /* Distingue un rejet volontaire (validation, anti-abus) d'une panne
+       réseau : seul le second cas justifie un repli silencieux sur
+       WhatsApp seul (voir haOrder() dans checkout.js). */
+    err.isValidation = true;
+    throw err;
   }
   return data;
 }

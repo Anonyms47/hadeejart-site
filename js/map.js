@@ -10,6 +10,7 @@ const DEFAULT_MAP_CENTER = { lat: 14.7167, lng: -17.4677 }; /* Dakar */
 let deliveryMap = null;
 let deliveryMarker = null;
 let deliveryState = { lat: null, lng: null, address: '' };
+let deliveryInteracted = false; /* true seulement après une action volontaire du visiteur */
 let reverseGeocodeTimer = null;
 
 function mapsLinkFor(lat, lng) {
@@ -37,6 +38,7 @@ async function reverseGeocode(lat, lng) {
 }
 
 function moveMarker(lat, lng, skipReverse) {
+  if (!skipReverse) deliveryInteracted = true;
   deliveryState.lat = lat;
   deliveryState.lng = lng;
   if (deliveryMarker) deliveryMarker.setLatLng([lat, lng]);
@@ -80,7 +82,14 @@ function initDeliveryMap() {
       setMapStatus('Localisation en cours…');
       navigator.geolocation.getCurrentPosition(
         pos => { deliveryMap.setView([pos.coords.latitude, pos.coords.longitude], 15); moveMarker(pos.coords.latitude, pos.coords.longitude); },
-        () => setMapStatus('Localisation refusée ou indisponible — utilisez la recherche ou déplacez le repère.'),
+        err => {
+          const messages = {
+            1: 'Localisation refusée. Vous pouvez l’autoriser dans les réglages du navigateur, ou utiliser la recherche / déplacer le repère.',
+            2: 'Position indisponible pour le moment — utilisez la recherche ou déplacez le repère.',
+            3: 'Localisation trop longue à obtenir — utilisez la recherche ou déplacez le repère.'
+          };
+          setMapStatus(messages[err.code] || 'Localisation impossible — utilisez la recherche ou déplacez le repère.');
+        },
         { enableHighAccuracy: true, timeout: 8000 }
       );
     });
@@ -114,7 +123,9 @@ function initDeliveryMap() {
 
 function getDeliveryLocation() {
   const noteEl = document.getElementById('locNote');
-  if (deliveryState.lat == null) return { lat: null, lng: null, address: '', note: noteEl ? noteEl.value.trim() : '', mapsLink: '' };
+  if (!deliveryInteracted || deliveryState.lat == null) {
+    return { lat: null, lng: null, address: '', note: noteEl ? noteEl.value.trim() : '', mapsLink: '' };
+  }
   return {
     lat: deliveryState.lat,
     lng: deliveryState.lng,

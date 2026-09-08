@@ -41,10 +41,10 @@ function applyCatalogData(categoryRows, productRows) {
     const primary = images.find(i => i.is_primary) || images[0];
     const variantOptions = p.variant_options ? {
       id: p.variant_options.id,
-      label: p.variant_options.label_fr,
+      label: pickLang(p.variant_options, 'label'),
       choices: (p.variant_options.choices || []).map(c => ({
         value: c.value,
-        label: c.label_fr,
+        label: pickLang(c, 'label'),
         prices: { FCFA: c.price_fcfa, EUR: c.price_eur, USD: c.price_usd }
       }))
     } : null;

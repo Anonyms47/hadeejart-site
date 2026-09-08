@@ -29,16 +29,33 @@ async function loadCollectionsList() {
         <td>${(c.product_collections || []).length}</td>
         <td class="row-actions">
           <button class="btn ghost sm" data-edit="${c.id}">Modifier</button>
+          ${c.status !== 'archived' ? `<button class="btn ghost sm" data-archive="${c.id}">Archiver</button>` : ''}
           <button class="btn danger sm" data-delete="${c.id}">Supprimer</button>
         </td>
       </tr>`).join('') || '<tr><td colspan="4">Aucune collection pour le moment.</td></tr>'}</tbody></table>`;
 
   host.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openCollectionForm(btn.dataset.edit)));
+  host.querySelectorAll('[data-archive]').forEach(btn => btn.addEventListener('click', () => archiveCollection(btn.dataset.archive)));
   host.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', () => deleteCollection(btn.dataset.delete)));
 }
 
+async function archiveCollection(id) {
+  const { error } = await sb.from('collections').update({ status: 'archived' }).eq('id', id);
+  if (error) toast('Erreur: ' + error.message, true);
+  else { toast('Collection archivée (masquée du site, conservée).'); loadCollectionsList(); }
+}
+
 async function deleteCollection(id) {
-  if (!confirm('Supprimer définitivement cette collection ?')) return;
+  const { count, error: countErr } = await sb.from('product_collections').select('product_id', { count: 'exact', head: true }).eq('collection_id', id);
+  if (countErr) { toast('Erreur: ' + countErr.message, true); return; }
+
+  if (count > 0) {
+    if (!confirm(`Cette collection contient encore ${count} produit(s). Préférez l’archiver plutôt que de la supprimer ?\n\nOK = archiver · Annuler = ne rien faire`)) return;
+    await archiveCollection(id);
+    return;
+  }
+
+  if (!confirm('Supprimer définitivement cette collection vide ?')) return;
   const { error } = await sb.from('collections').delete().eq('id', id);
   if (error) toast('Erreur: ' + error.message, true);
   else { toast('Collection supprimée.'); loadCollectionsList(); }

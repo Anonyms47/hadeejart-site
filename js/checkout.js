@@ -136,8 +136,12 @@ function buildOrderMessage(orderRef, location) {
 function validateCheckoutForm() {
   const name = (document.getElementById('cName') || {}).value.trim();
   const phone = (document.getElementById('cPhone') || {}).value.trim();
+  const email = (document.getElementById('cEmail') || {}).value.trim();
   if (!name) { alert('Merci d’indiquer votre nom.'); return false; }
+  if (name.length > 120) { alert('Le nom est trop long.'); return false; }
   if (!phone) { alert('Merci d’indiquer votre téléphone.'); return false; }
+  if (!/^[0-9+ ().-]{6,30}$/.test(phone)) { alert('Le numéro de téléphone n’est pas valide.'); return false; }
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert('L’adresse e-mail n’est pas valide.'); return false; }
   return true;
 }
 
@@ -172,9 +176,15 @@ async function haOrder() {
       window.LAST_INVOICE_ID = orderRef;
     } catch (err) {
       console.error('placeOrderRemote:', err);
-      /* On ne bloque pas la commande WhatsApp si la sauvegarde serveur échoue
-         (ex: hors-ligne) : le message WhatsApp reste la source de vérité
-         opérationnelle pour la vendeuse. */
+      if (err.isValidation) {
+        /* Rejet volontaire du serveur (champ invalide, anti-abus...) :
+           on arrête tout, la vendeuse ne doit pas recevoir de commande
+           WhatsApp sans enregistrement correspondant côté Supabase. */
+        alert(err.message || 'Commande refusée. Vérifiez les champs et réessayez.');
+        return false;
+      }
+      /* Panne réseau réelle (hors-ligne, etc.) : on continue quand même
+         vers WhatsApp, qui reste la source de vérité opérationnelle. */
     }
 
     if (typeof buildInvoiceImage === 'function') await buildInvoiceImage();

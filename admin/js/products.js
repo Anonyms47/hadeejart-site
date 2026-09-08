@@ -60,17 +60,34 @@ async function loadProductsList() {
         <td><span class="badge ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
         <td class="row-actions">
           <button class="btn ghost sm" data-edit="${p.id}">Modifier</button>
+          ${p.status !== 'archived' ? `<button class="btn ghost sm" data-archive="${p.id}">Archiver</button>` : ''}
           <button class="btn danger sm" data-delete="${p.id}">Supprimer</button>
         </td>
       </tr>`;
     }).join('') || '<tr><td colspan="6">Aucun produit.</td></tr>'}</tbody></table>`;
 
   host.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openProductForm(btn.dataset.edit)));
+  host.querySelectorAll('[data-archive]').forEach(btn => btn.addEventListener('click', () => archiveProduct(btn.dataset.archive)));
   host.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', () => deleteProduct(btn.dataset.delete)));
 }
 
+async function archiveProduct(id) {
+  const { error } = await sb.from('products').update({ status: 'archived' }).eq('id', id);
+  if (error) toast('Erreur: ' + error.message, true);
+  else { toast('Produit archivé (masqué du site, historique conservé).'); loadProductsList(); }
+}
+
 async function deleteProduct(id) {
-  if (!confirm('Supprimer définitivement ce produit ?')) return;
+  const { count, error: countErr } = await sb.from('order_items').select('id', { count: 'exact', head: true }).eq('product_id', id);
+  if (countErr) { toast('Erreur: ' + countErr.message, true); return; }
+
+  if (count > 0) {
+    if (!confirm(`Ce produit apparaît dans ${count} commande(s) : il ne peut pas être supprimé définitivement (l’historique serait faussé).\n\nL’archiver à la place (masqué du site, conservé pour l’historique) ?`)) return;
+    await archiveProduct(id);
+    return;
+  }
+
+  if (!confirm('Supprimer définitivement ce produit ? (aucune commande ne le référence, action irréversible)')) return;
   const { error } = await sb.from('products').delete().eq('id', id);
   if (error) toast('Erreur: ' + error.message, true);
   else { toast('Produit supprimé.'); loadProductsList(); }
