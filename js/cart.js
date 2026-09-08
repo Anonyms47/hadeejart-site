@@ -38,6 +38,7 @@ function addToCart(id, opts) {
     }, opts));
   }
   updateCartUI();
+  if (typeof bumpCartIcon === 'function') bumpCartIcon();
 }
 
 /* Recalcule le prix de chaque ligne dans la devise active (appelé quand

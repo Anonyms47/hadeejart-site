@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindCurrencySelector();
   bindLangSelector();
   restoreClientInfo();
+  if (typeof initNav === 'function') initNav();
 
   const orderBtn = document.getElementById('btnOrder');
   if (orderBtn) orderBtn.addEventListener('click', e => { e.preventDefault(); haOrder(); });
@@ -27,5 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCategoryFilters();
     renderProducts();
     recomputeCartCurrency();
+    if (typeof renderNavMenus === 'function') renderNavMenus();
   });
 });

@@ -36,6 +36,13 @@ const UI_STRINGS = {
     lang_label: 'Langue', currency_label: 'Devise',
     cart: 'Panier',
 
+    nav_shop: 'Boutique', nav_all_items: 'Toutes les pièces',
+    nav_collections: 'Collections',
+    nav_collections_empty: 'Aucune collection publiée pour le moment.',
+    nav_whatsapp: 'Écrivez-nous sur WhatsApp',
+    menu_open: 'Ouvrir le menu', menu_close: 'Fermer le menu',
+    active_collection_label: 'Collection :', clear_filter: 'Voir tout',
+
     hero_title_html: 'Racontez votre histoire.<br/>Portez l’Afrique.',
     hero_sub: 'Collection Hadeej’Art — Confort, modernité, personnalisation.',
     hero_note_html: 'Astuce : utilisez <b>Détail</b> pour choisir couleur, taille (S–XXL), tissu et une note libre.',
@@ -79,6 +86,12 @@ const UI_STRINGS = {
     place_order_btn: 'Passer la commande', sending: 'Envoi en cours…',
     invoice_hint: 'Une facture (image) sera générée et partagée sur WhatsApp.',
 
+    suggest_countries: ['Sénégal', 'Mali', 'Mauritanie', 'Gambie', 'Guinée-Bissau', 'Côte d’Ivoire', 'France'],
+    suggest_cities: ['Dakar', 'Thiès', 'Rufisque', 'Pikine', 'Guédiawaye', 'Saint-Louis', 'Touba', 'Mbour', 'Kaolack', 'Ziguinchor'],
+    suggest_districts: ['Plateau', 'Médina', 'Sicap Mbao', 'Parcelles Assainies', 'Ouakam', 'Ngor', 'Yoff', 'Mermoz', 'Sacré-Cœur', 'Liberté', 'Grand Yoff', 'Almadies'],
+    suggest_fabrics: ['Wax', 'Bazin', 'Bogolan', 'Lin', 'Coton', 'Soie', 'Dentelle', 'Velours'],
+    suggest_colors: ['Orange', 'Bleu', 'Rouge', 'Vert', 'Jaune', 'Noir', 'Blanc', 'Rose', 'Violet', 'Marron', 'Doré', 'Beige'],
+
     map_reverse_searching: 'Recherche de l’adresse…',
     map_address_found: 'Adresse détectée.',
     map_address_not_found: 'Adresse introuvable — précisez avec la note libre.',
@@ -117,7 +130,16 @@ const UI_STRINGS = {
     srv_qty_invalid: 'Quantité invalide',
 
     privacy_link: 'Politique de confidentialité',
+    terms_link: 'Conditions générales de vente',
     lightbox_alt: 'Aperçu produit',
+
+    footer_tagline: 'Portez votre histoire',
+    footer_about: 'Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.',
+    footer_nav_title: 'Navigation', footer_home_link: 'Accueil',
+    footer_categories_title: 'Catégories', footer_collections_title: 'Collections',
+    footer_contact_title: 'Contact', footer_langs_title: 'Langue',
+    footer_currencies_title: 'Devise', footer_payments_title: 'Paiement accepté',
+    footer_legal_title: 'Informations légales',
 
     invoice_ref_label: 'Facture · Réf:',
     invoice_order_badge: 'COMMANDE',
@@ -139,6 +161,13 @@ const UI_STRINGS = {
     badge: 'Stylish, authentically African pieces',
     lang_label: 'Language', currency_label: 'Currency',
     cart: 'Cart',
+
+    nav_shop: 'Shop', nav_all_items: 'All pieces',
+    nav_collections: 'Collections',
+    nav_collections_empty: 'No published collections yet.',
+    nav_whatsapp: 'Message us on WhatsApp',
+    menu_open: 'Open menu', menu_close: 'Close menu',
+    active_collection_label: 'Collection:', clear_filter: 'View all',
 
     hero_title_html: 'Tell your story.<br/>Wear Africa.',
     hero_sub: 'Hadeej’Art Collection — Comfort, modern style, personalisation.',
@@ -183,6 +212,12 @@ const UI_STRINGS = {
     place_order_btn: 'Place order', sending: 'Sending…',
     invoice_hint: 'An invoice (image) will be generated and shared on WhatsApp.',
 
+    suggest_countries: ['Senegal', 'Mali', 'Mauritania', 'Gambia', 'Guinea-Bissau', 'Ivory Coast', 'France'],
+    suggest_cities: ['Dakar', 'Thiès', 'Rufisque', 'Pikine', 'Guédiawaye', 'Saint-Louis', 'Touba', 'Mbour', 'Kaolack', 'Ziguinchor'],
+    suggest_districts: ['Plateau', 'Médina', 'Sicap Mbao', 'Parcelles Assainies', 'Ouakam', 'Ngor', 'Yoff', 'Mermoz', 'Sacré-Cœur', 'Liberté', 'Grand Yoff', 'Almadies'],
+    suggest_fabrics: ['Wax', 'Bazin', 'Bogolan', 'Linen', 'Cotton', 'Silk', 'Lace', 'Velvet'],
+    suggest_colors: ['Orange', 'Blue', 'Red', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Brown', 'Gold', 'Beige'],
+
     map_reverse_searching: 'Looking up the address…',
     map_address_found: 'Address detected.',
     map_address_not_found: 'Address not found — add detail with the free note.',
@@ -221,7 +256,16 @@ const UI_STRINGS = {
     srv_qty_invalid: 'Invalid quantity',
 
     privacy_link: 'Privacy policy',
+    terms_link: 'Terms of sale',
     lightbox_alt: 'Product preview',
+
+    footer_tagline: 'Wear your story',
+    footer_about: 'Hadeej’Art designs authentic wax pieces, thoughtfully crafted, so every outfit tells a story.',
+    footer_nav_title: 'Navigation', footer_home_link: 'Home',
+    footer_categories_title: 'Categories', footer_collections_title: 'Collections',
+    footer_contact_title: 'Contact', footer_langs_title: 'Language',
+    footer_currencies_title: 'Currency', footer_payments_title: 'Accepted payments',
+    footer_legal_title: 'Legal information',
 
     invoice_ref_label: 'Invoice · Ref:',
     invoice_order_badge: 'ORDER',
@@ -243,6 +287,13 @@ const UI_STRINGS = {
     badge: 'Yëf yu rafet, wone askan wi Afrig',
     lang_label: 'Làkk', currency_label: 'Xaalis',
     cart: 'Panier',
+
+    nav_shop: 'Bitik', nav_all_items: 'Yëf yépp',
+    nav_collections: 'Koleksiyoŋ yi',
+    nav_collections_empty: 'Amul koleksiyoŋ bu ñu génne léegi.',
+    nav_whatsapp: 'Bindal nu ci WhatsApp',
+    menu_open: 'Ubbi menu bi', menu_close: 'Tëj menu bi',
+    active_collection_label: 'Koleksiyoŋ :', clear_filter: 'Xool lëpp',
 
     hero_title_html: 'Wax sa taariix.<br/>Solu Afrig.',
     hero_sub: 'Koleksiyoŋ Hadeej’Art — Ndare, taxaw ci jamono, defar ko ni sa neex.',
@@ -287,6 +338,12 @@ const UI_STRINGS = {
     place_order_btn: 'Yónnee sa commande', sending: 'Di yónnee…',
     invoice_hint: 'Dinañu defar ab nataal facture te yónnee ko ci WhatsApp.',
 
+    suggest_countries: ['Senegaal', 'Mali', 'Muritani', 'Gambi', 'Gine-Bisaawo', 'Kodiwaar', 'Faraas'],
+    suggest_cities: ['Dakar', 'Thiès', 'Rufisque', 'Pikine', 'Guédiawaye', 'Saint-Louis', 'Touba', 'Mbour', 'Kaolack', 'Ziguinchor'],
+    suggest_districts: ['Plateau', 'Médina', 'Sicap Mbao', 'Parcelles Assainies', 'Ouakam', 'Ngor', 'Yoff', 'Mermoz', 'Sacré-Cœur', 'Liberté', 'Grand Yoff', 'Almadies'],
+    suggest_fabrics: ['Wax', 'Bazin', 'Bogolan', 'Lin', 'Coton', 'Soie', 'Dentelle', 'Velours'],
+    suggest_colors: ['Oranj', 'Ble', 'Xonq', 'Wert', 'Jonn', 'Ñuul', 'Weex', 'Roos', 'Vale', 'Maron', 'Wurus', 'Beige'],
+
     map_reverse_searching: 'Di seet adres bi…',
     map_address_found: 'Adres bi gis nañu.',
     map_address_not_found: 'Adres bi gisul — bindal leneen mbir ci nott bi.',
@@ -325,7 +382,16 @@ const UI_STRINGS = {
     srv_qty_invalid: 'Limu bi baaxul',
 
     privacy_link: 'Politig ci sutura',
+    terms_link: 'Balluwaay yu jaay',
     lightbox_alt: 'Nataal marsandiis',
+
+    footer_tagline: 'Solu sa taariix',
+    footer_about: 'Hadeej’Art dafay defar yëf wax yu dëggu, defar ko bu baax, ngir benn taariix féeñ ci nataal bu nekk.',
+    footer_nav_title: 'Navigasiyoŋ', footer_home_link: 'Xët wu njëkk',
+    footer_categories_title: 'Wàll yi', footer_collections_title: 'Koleksiyoŋ yi',
+    footer_contact_title: 'Jokkoo', footer_langs_title: 'Làkk',
+    footer_currencies_title: 'Xaalis', footer_payments_title: 'Fay bu ñu nangu',
+    footer_legal_title: 'Xibaar yu araame',
 
     invoice_ref_label: 'Facture · Ref:',
     invoice_order_badge: 'COMMANDE',

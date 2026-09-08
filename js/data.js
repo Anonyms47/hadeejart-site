@@ -11,9 +11,11 @@ const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 /* "Tous" + les 6 catégories chargées depuis la base (voir api.js). */
 let CATEGORIES = [{ id: 'tous', label: t('all') }];
 let PRODUCTS = [];
+let COLLECTIONS = [];
 let CATALOG_LOADED = false;
 let RAW_CATEGORIES = [];
 let RAW_PRODUCTS = [];
+let RAW_COLLECTIONS = [];
 
 /* Libellé traduit d'un choix de variante (ex: "Avec pantalon" / "With
    trousers" / "Ak tubéey") à partir du produit et de la valeur technique
@@ -36,15 +38,21 @@ function isGenderedProduct(p) {
    images/collections jointes) et les transforme dans la forme attendue
    par le reste du site. Appelé par api.js, et de nouveau à chaque
    changement de langue pour ré-appliquer les libellés traduits. */
-function applyCatalogData(categoryRows, productRows) {
+function applyCatalogData(categoryRows, productRows, collectionRows) {
   RAW_CATEGORIES = categoryRows || RAW_CATEGORIES;
   RAW_PRODUCTS = productRows || RAW_PRODUCTS;
+  RAW_COLLECTIONS = collectionRows || RAW_COLLECTIONS;
   categoryRows = RAW_CATEGORIES;
   productRows = RAW_PRODUCTS;
+  collectionRows = RAW_COLLECTIONS;
 
   CATEGORIES = [{ id: 'tous', label: t('all') }].concat(
     (categoryRows || []).map(c => ({ id: c.slug, label: pickLang(c, 'name'), _row: c }))
   );
+
+  COLLECTIONS = (collectionRows || []).map(c => ({
+    id: c.slug, label: pickLang(c, 'name'), cover: c.cover_image_url || '', _row: c
+  }));
 
   PRODUCTS = (productRows || []).map(p => {
     const images = (p.product_images || []).slice().sort((a, b) => a.sort_order - b.sort_order);
@@ -82,5 +90,5 @@ function applyCatalogData(categoryRows, productRows) {
 /* Ré-applique les libellés dans la langue courante sans re-télécharger le
    catalogue (utilisé quand le visiteur change de langue). */
 function refreshCatalogLabels() {
-  if (RAW_CATEGORIES.length || RAW_PRODUCTS.length) applyCatalogData();
+  if (RAW_CATEGORIES.length || RAW_PRODUCTS.length || RAW_COLLECTIONS.length) applyCatalogData();
 }

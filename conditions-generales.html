@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Hadeej’Art — Conditions générales de vente</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<meta name="theme-color" content="#111111">
+<style>
+  .policy{ background:var(--paper); border-radius:20px; padding:28px clamp(18px,4vw,40px); box-shadow:0 18px 36px rgba(0,0,0,.12); margin:24px 0; }
+  .policy h2{ margin-top:28px }
+  .policy h2:first-child{ margin-top:0 }
+  .policy ul{ padding-left:20px }
+  .policy li{ margin:6px 0 }
+  .back-link{ display:inline-block; margin-bottom:16px; font-weight:700; color:var(--brand-700); text-decoration:none; }
+  .back-link:hover{ text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header" id="siteHeader" aria-label="Barre supérieure">
+    <div class="brand" aria-label="Identité Hadeej’Art">
+      <div class="mark"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
+      <div><h1>Hadeej’Art</h1><div class="badge">Pièces stylées & authentiquement africaines</div></div>
+    </div>
+  </div>
+
+  <div class="policy">
+    <a class="back-link" href="index.html">← Retour à la boutique</a>
+    <h1>Conditions générales de vente</h1>
+    <p class="small">Dernière mise à jour : <span id="updateDate"></span></p>
+
+    <h2>1. Qui sommes-nous</h2>
+    <p>Hadeej’Art est une boutique de créations et accessoires inspirés du wax, basée au Sénégal. Le présent document décrit les conditions dans lesquelles une commande passée sur ce site est traitée.</p>
+
+    <h2>2. Produits et prix</h2>
+    <p>Les prix affichés sont fixés manuellement par Hadeej’Art, produit par produit, dans une ou plusieurs devises parmi FCFA, EUR et USD. Aucune conversion automatique n’est appliquée : si un prix n’est pas renseigné dans la devise que vous avez choisie, le prix en FCFA est affiché à titre indicatif. Les photos et descriptions sont fournies de bonne foi ; de légères variations (tissu, couleur, finition) peuvent exister d’une pièce à l’autre, le wax étant un tissu imprimé artisanalement.</p>
+
+    <h2>3. Commande</h2>
+    <p>Une commande se compose des articles ajoutés au panier (taille, couleur, tissu et note éventuelle), de vos coordonnées et d’un moyen de paiement choisi parmi Wave, Orange Money, Sendwave et TapTap Send. La validation de la commande l’enregistre côté Hadeej’Art puis ouvre une conversation WhatsApp avec le récapitulatif et, si votre appareil le permet, une facture au format image. Aucune commande n’est débitée automatiquement depuis ce site : le paiement s’effectue en dehors du site, selon les instructions communiquées sur WhatsApp pour le moyen choisi.</p>
+
+    <h2>4. Confirmation et livraison</h2>
+    <p>Chaque commande est confirmée manuellement par l’équipe Hadeej’Art via WhatsApp. La localisation de livraison indiquée sur la carte (ou à défaut le pays/ville/quartier saisis) sert à organiser la livraison ; toute précision utile peut être ajoutée dans le champ note libre. Les délais et frais de livraison sont communiqués directement par WhatsApp, selon la destination.</p>
+
+    <h2>5. Paiement</h2>
+    <p>Le paiement s’effectue via le moyen choisi (Wave, Orange Money, Sendwave ou TapTap Send), selon les instructions fournies par l’équipe Hadeej’Art. Une commande n’est considérée comme confirmée qu’après réception du paiement ou accord explicite entre la cliente/le client et Hadeej’Art.</p>
+
+    <h2>6. Retours et échanges</h2>
+    <p>Toute question relative à un retour, un échange ou une pièce non conforme doit être adressée via WhatsApp au numéro affiché sur le site, dans les meilleurs délais après réception. Chaque situation est étudiée au cas par cas.</p>
+
+    <h2>7. Données personnelles</h2>
+    <p>Le traitement de vos données (nom, téléphone, adresse, localisation…) est décrit dans notre <a href="politique-confidentialite.html">politique de confidentialité</a>.</p>
+
+    <h2>8. Contact</h2>
+    <p>Pour toute question relative à ces conditions, contactez-nous via WhatsApp depuis la boutique.</p>
+  </div>
+
+  <footer class="site-footer">
+    <p style="text-align:center;padding:14px 0">© <span id="footerYear"></span> Hadeej’Art · <a href="index.html">Retour à la boutique</a></p>
+  </footer>
+</div>
+<script>
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+  document.getElementById('updateDate').textContent = new Date().toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
+</script>
+</body>
+</html>

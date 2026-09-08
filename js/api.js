@@ -4,7 +4,7 @@
    "stale-while-revalidate" pour ne pas ralentir l'affichage.
    ====================================================================== */
 
-const CATALOG_CACHE_KEY = 'ha_catalog_cache_v1';
+const CATALOG_CACHE_KEY = 'ha_catalog_cache_v2';
 const CATALOG_CACHE_TTL_MS = 10 * 60 * 1000; /* 10 min */
 
 function supabaseHeaders() {
@@ -37,6 +37,18 @@ async function fetchProducts() {
   return res.json();
 }
 
+/* Uniquement les collections publiées par l'admin : aucune collection
+   fictive ou précréée côté site public. */
+async function fetchCollections() {
+  const select = encodeURIComponent('id,slug,name_fr,name_en,name_wo,cover_image_url');
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/collections?select=${select}&status=eq.published&order=created_at.asc`,
+    { headers: supabaseHeaders() }
+  );
+  if (!res.ok) throw new Error('Erreur chargement collections: ' + res.status);
+  return res.json();
+}
+
 function readCatalogCache() {
   try {
     const raw = localStorage.getItem(CATALOG_CACHE_KEY);
@@ -47,9 +59,9 @@ function readCatalogCache() {
   } catch (e) { return null; }
 }
 
-function writeCatalogCache(categories, products) {
+function writeCatalogCache(categories, products, collections) {
   try {
-    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ categories, products, savedAt: Date.now() }));
+    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ categories, products, collections, savedAt: Date.now() }));
   } catch (e) { /* stockage indisponible : tant pis, pas bloquant */ }
 }
 
@@ -59,7 +71,7 @@ function writeCatalogCache(categories, products) {
 async function loadCatalog(onUpdate) {
   const cached = readCatalogCache();
   if (cached) {
-    applyCatalogData(cached.categories, cached.products);
+    applyCatalogData(cached.categories, cached.products, cached.collections);
     if (onUpdate) onUpdate();
   }
 
@@ -67,9 +79,9 @@ async function loadCatalog(onUpdate) {
   if (isFresh) return;
 
   try {
-    const [categories, products] = await Promise.all([fetchCategories(), fetchProducts()]);
-    writeCatalogCache(categories, products);
-    applyCatalogData(categories, products);
+    const [categories, products, collections] = await Promise.all([fetchCategories(), fetchProducts(), fetchCollections()]);
+    writeCatalogCache(categories, products, collections);
+    applyCatalogData(categories, products, collections);
     if (onUpdate) onUpdate();
   } catch (err) {
     console.error('loadCatalog:', err);

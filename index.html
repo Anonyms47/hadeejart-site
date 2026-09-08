@@ -26,7 +26,7 @@
 <body>
 <canvas id="inv" width="1240" height="1754"></canvas>
 
-<div class="container">
+<div class="container" id="top">
   <!-- HEADER -->
   <div class="header" id="siteHeader" aria-label="Barre supérieure">
     <div class="brand" aria-label="Identité Hadeej’Art">
@@ -38,13 +38,31 @@
         <div class="badge" data-i18n="badge">Pièces stylées & authentiquement africaines</div>
       </div>
     </div>
+
+    <nav class="main-nav" id="mainNav" aria-label="Navigation principale">
+      <div class="nav-item" id="navShop">
+        <button type="button" class="nav-link" id="navShopBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_shop">Boutique</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navShopMenu" role="menu" aria-label="Boutique"></div>
+      </div>
+      <div class="nav-item" id="navCollections">
+        <button type="button" class="nav-link" id="navCollectionsBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_collections">Collections</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navCollectionsMenu" role="menu" aria-label="Collections"></div>
+      </div>
+    </nav>
+
     <div class="action">
-      <select id="langSelect" class="select-pill" data-i18n-aria="lang_label" title="Langue">
-        <option value="fr">FR</option>
-        <option value="en">EN</option>
-        <option value="wo">WO</option>
+      <select id="langSelect" class="select-pill lang-select" data-i18n-aria="lang_label" title="Langue">
+        <option value="fr">🇫🇷 FR</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="wo">🇸🇳 WO</option>
       </select>
-      <select id="currencySelect" class="select-pill" data-i18n-aria="currency_label" title="Devise">
+      <select id="currencySelect" class="select-pill currency-select" data-i18n-aria="currency_label" title="Devise">
         <option value="FCFA">FCFA</option>
         <option value="EUR">EUR</option>
         <option value="USD">USD</option>
@@ -52,6 +70,51 @@
       <div class="cart">
         <button id="cartBtn" class="btn" type="button"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></button>
       </div>
+      <button type="button" class="hamburger" id="hamburgerBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="menu_open">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MENU MOBILE PLEIN ÉCRAN -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-head">
+      <div class="brand">
+        <div class="mark"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
+        <h1>Hadeej’Art</h1>
+      </div>
+      <button type="button" class="mobile-menu-close" id="mobileMenuClose" data-i18n-aria="menu_close" aria-label="Fermer le menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="mobile-menu-body">
+      <section>
+        <h3 data-i18n="nav_shop">Boutique</h3>
+        <div id="mobileShopList" class="mobile-menu-list"></div>
+      </section>
+      <section>
+        <h3 data-i18n="nav_collections">Collections</h3>
+        <div id="mobileCollectionsList" class="mobile-menu-list"></div>
+      </section>
+      <section class="mobile-menu-prefs">
+        <div class="field">
+          <label data-i18n="lang_label">Langue</label>
+          <select id="langSelectMobile" class="select-pill lang-select">
+            <option value="fr">🇫🇷 FR</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="wo">🇸🇳 WO</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="currency_label">Devise</label>
+          <select id="currencySelectMobile" class="select-pill currency-select">
+            <option value="FCFA">FCFA</option>
+            <option value="EUR">EUR</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+      </section>
+      <a class="btn mobile-menu-cta" id="mobileWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
     </div>
   </div>
 
@@ -89,6 +152,7 @@
   <!-- CATALOGUE -->
   <h2 id="catalogue" class="section-title" data-i18n="catalogue">Catalogue</h2>
   <div id="categoryFilters" class="category-filters"></div>
+  <div id="activeCollectionBanner" class="active-collection-banner" hidden></div>
   <div id="productGrid" class="grid"></div>
 
   <!-- BANDE MOTIF BAS -->
@@ -96,7 +160,68 @@
 
   <!-- PIED DE PAGE -->
   <footer class="site-footer">
-    <p>© <span id="footerYear"></span> Hadeej’Art · <a href="politique-confidentialite.html" data-i18n="privacy_link">Politique de confidentialité</a></p>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
+        <p class="footer-tagline" data-i18n="footer_tagline">Portez votre histoire</p>
+        <p class="footer-about" data-i18n="footer_about">Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_nav_title">Navigation</h4>
+        <ul class="footer-list">
+          <li><a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" data-i18n="footer_home_link">Accueil</a></li>
+          <li><a href="#catalogue" onclick="scrollToCatalogue();return false;" data-i18n="catalogue">Catalogue</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_categories_title">Catégories</h4>
+        <ul class="footer-list" id="footerShopList"></ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_collections_title">Collections</h4>
+        <ul class="footer-list" id="footerCollectionsList"></ul>
+      </div>
+
+      <div class="footer-col">
+        <h4 data-i18n="footer_contact_title">Contact</h4>
+        <ul class="footer-list">
+          <li><a id="footerWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a></li>
+        </ul>
+        <h4 data-i18n="footer_langs_title">Langue</h4>
+        <div class="footer-pill-row" id="footerLangRow">
+          <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
+          <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
+          <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
+        </div>
+        <h4 data-i18n="footer_currencies_title">Devise</h4>
+        <div class="footer-pill-row" id="footerCurrencyRow">
+          <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
+          <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
+          <button type="button" class="footer-pill" data-currency="USD">USD</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-payments">
+      <span class="footer-payments-title" data-i18n="footer_payments_title">Paiement accepté</span>
+      <div class="footer-payments-row">
+        <span class="footer-pay-badge"><img src="images/payments/wave-icon.png" alt="" width="16" height="16">Wave</span>
+        <span class="footer-pay-badge"><img src="images/payments/orange-money-icon.png" alt="" width="16" height="16">Orange Money</span>
+        <span class="footer-pay-badge">Sendwave</span>
+        <span class="footer-pay-badge">TapTap Send</span>
+      </div>
+    </div>
+
+    <div class="footer-legal">
+      <span data-i18n="footer_legal_title">Informations légales</span>
+      <a href="politique-confidentialite.html" data-i18n="privacy_link">Politique de confidentialité</a>
+      <a href="conditions-generales.html" data-i18n="terms_link">Conditions générales de vente</a>
+    </div>
+
+    <p class="footer-copyright">© <span id="footerYear"></span> Hadeej’Art</p>
   </footer>
 </div>
 
@@ -127,12 +252,12 @@
       </div>
       <div>
         <div class="price" id="dPrice"></div>
-        <div class="field"><label for="dColor" data-i18n="color_label">Couleur</label><input id="dColor" class="input" data-i18n-placeholder="color_placeholder" placeholder="ex: Orange"/></div>
+        <div class="field"><label for="dColor" data-i18n="color_label">Couleur</label><input id="dColor" class="input" list="colorSuggestions" data-i18n-placeholder="color_placeholder" placeholder="ex: Orange"/></div>
         <div class="field">
           <label for="dSize" data-i18n="size_label">Taille</label>
           <select id="dSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
         </div>
-        <div class="field"><label for="dTissu" data-i18n="fabric_label">Tissu</label><input id="dTissu" class="input" data-i18n-placeholder="fabric_placeholder" placeholder="ex: Wax"/></div>
+        <div class="field"><label for="dTissu" data-i18n="fabric_label">Tissu</label><input id="dTissu" class="input" list="fabricSuggestions" data-i18n-placeholder="fabric_placeholder" placeholder="ex: Wax"/></div>
         <div class="field"><label for="dNote" data-i18n="note_label">Note (facultatif)</label><input id="dNote" class="input" data-i18n-placeholder="note_placeholder" placeholder="ex: manches longues"/></div>
         <div class="field sexe-field">
           <label for="dSexe" data-i18n="sex_label">Sexe</label>
@@ -155,10 +280,10 @@
         <div class="field"><label for="cPhone" data-i18n="phone_label">Téléphone (WhatsApp)</label><input id="cPhone" class="input" data-i18n-placeholder="phone_placeholder" placeholder="77 123 45 67"></div>
         <div class="field"><label for="cEmail" data-i18n="email_label">E-mail (facultatif)</label><input id="cEmail" type="email" class="input" data-i18n-placeholder="email_placeholder" placeholder="vous@exemple.com"></div>
         <div class="row">
-          <div class="field" style="flex:1"><label for="cCountry" data-i18n="country_label">Pays</label><input id="cCountry" class="input" data-i18n-placeholder="country_placeholder" placeholder="Sénégal"></div>
-          <div class="field" style="flex:1"><label for="cCity" data-i18n="city_label">Ville</label><input id="cCity" class="input" data-i18n-placeholder="city_placeholder" placeholder="Dakar"></div>
+          <div class="field" style="flex:1"><label for="cCountry" data-i18n="country_label">Pays</label><input id="cCountry" class="input" list="countrySuggestions" data-i18n-placeholder="country_placeholder" placeholder="Sénégal"></div>
+          <div class="field" style="flex:1"><label for="cCity" data-i18n="city_label">Ville</label><input id="cCity" class="input" list="citySuggestions" data-i18n-placeholder="city_placeholder" placeholder="Dakar"></div>
         </div>
-        <div class="field"><label for="cDistrict" data-i18n="district_label">Quartier</label><input id="cDistrict" class="input" data-i18n-placeholder="district_placeholder" placeholder="Sicap Mbao"></div>
+        <div class="field"><label for="cDistrict" data-i18n="district_label">Quartier</label><input id="cDistrict" class="input" list="districtSuggestions" data-i18n-placeholder="district_placeholder" placeholder="Sicap Mbao"></div>
 
         <div class="field">
           <label data-i18n="location_label">Localisation de livraison</label>
@@ -227,6 +352,12 @@
   <img id="imgViewerImg" data-i18n-alt="lightbox_alt" alt="Aperçu produit"/>
 </div>
 
+<datalist id="colorSuggestions"></datalist>
+<datalist id="fabricSuggestions"></datalist>
+<datalist id="countrySuggestions"></datalist>
+<datalist id="citySuggestions"></datalist>
+<datalist id="districtSuggestions"></datalist>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/config.js"></script>
 <script src="js/i18n.js"></script>
@@ -238,6 +369,7 @@
 <script src="js/invoice.js"></script>
 <script src="js/map.js"></script>
 <script src="js/checkout.js"></script>
+<script src="js/nav.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/main.js"></script>
 </body>

@@ -3,11 +3,34 @@
    ====================================================================== */
 
 let CURRENT_CATEGORY = 'tous';
+let CURRENT_COLLECTION = null;
 let CURRENT = null;
 
 function productsInCategory(catId) {
   if (catId === 'tous') return PRODUCTS;
   return PRODUCTS.filter(p => p.category === catId);
+}
+
+/* Liste affichée dans la grille : une collection choisie dans le menu
+   "Collections" prime sur le filtre de catégorie (les deux ne se
+   combinent pas, pour rester simple et lisible pour la cliente). */
+function currentProductList() {
+  if (CURRENT_COLLECTION) return PRODUCTS.filter(p => (p.collectionSlugs || []).includes(CURRENT_COLLECTION));
+  return productsInCategory(CURRENT_CATEGORY);
+}
+
+function selectCollection(slug) {
+  CURRENT_COLLECTION = slug;
+  CURRENT_CATEGORY = 'tous';
+  renderCategoryFilters();
+  renderProducts();
+  scrollToCatalogue();
+  if (typeof closeAllNavMenus === 'function') closeAllNavMenus();
+}
+
+function clearCollectionFilter() {
+  CURRENT_COLLECTION = null;
+  renderProducts();
 }
 
 function renderCategoryFilters() {
@@ -21,8 +44,10 @@ function renderCategoryFilters() {
 
 function selectCategory(catId) {
   CURRENT_CATEGORY = catId;
+  CURRENT_COLLECTION = null;
   renderCategoryFilters();
   renderProducts();
+  if (typeof closeAllNavMenus === 'function') closeAllNavMenus();
 }
 
 function renderProducts() {
@@ -36,8 +61,9 @@ function renderProducts() {
     return;
   }
   grid.className = 'grid';
+  renderActiveCollectionBanner();
 
-  const list = productsInCategory(CURRENT_CATEGORY);
+  const list = currentProductList();
   grid.innerHTML = list.map((p, i) => {
     const priceInfo = priceForProduct(p);
     return `
@@ -55,6 +81,22 @@ function renderProducts() {
       </div>
     </article>`;
   }).join('') || `<p class="small">${escapeHtml(t('no_products'))}</p>`;
+}
+
+/* Bandeau au-dessus de la grille quand une collection est sélectionnée
+   depuis le menu "Collections", avec un bouton pour revenir au catalogue
+   complet. */
+function renderActiveCollectionBanner() {
+  const host = document.getElementById('activeCollectionBanner');
+  if (!host) return;
+  if (!CURRENT_COLLECTION) { host.innerHTML = ''; host.hidden = true; return; }
+  const col = COLLECTIONS.find(c => c.id === CURRENT_COLLECTION);
+  const label = col ? col.label : CURRENT_COLLECTION;
+  host.hidden = false;
+  host.innerHTML = `
+    <span>${escapeHtml(t('active_collection_label'))} <b>${escapeHtml(label)}</b></span>
+    <button type="button" class="btn ghost sm" onclick="clearCollectionFilter()">${escapeHtml(t('clear_filter'))}</button>
+  `;
 }
 
 /* ====== DÉTAIL ====== */
@@ -151,6 +193,9 @@ function onLangChange() {
   renderProducts();
   if (typeof refreshCartLanguage === 'function') refreshCartLanguage();
   if (typeof refreshMapStatusLabel === 'function') refreshMapStatusLabel();
+  if (typeof renderNavMenus === 'function') renderNavMenus();
+  if (typeof renderSuggestionDatalists === 'function') renderSuggestionDatalists();
+  if (typeof syncLangCurrencyControls === 'function') syncLangCurrencyControls();
   refreshOpenDetailLabels();
 }
 
@@ -174,4 +219,6 @@ function refreshOpenDetailLabels() {
 function onCurrencyChange() {
   renderProducts();
   recomputeCartCurrency();
+  if (typeof syncLangCurrencyControls === 'function') syncLangCurrencyControls();
+  refreshOpenDetailLabels();
 }
