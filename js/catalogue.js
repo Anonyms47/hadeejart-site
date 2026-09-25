@@ -99,14 +99,71 @@ function renderActiveCollectionBanner() {
 }
 
 /* ====== DÉTAIL ====== */
+let CURRENT_GALLERY_INDEX = 0;
+
+/* Galerie : toutes les images du produit (repli sur l'image principale
+   seule si une seule photo). La bande de vignettes n'est affichée que
+   s'il y a plus d'une image. */
+function renderDetailGallery(p) {
+  const images = (p.images && p.images.length) ? p.images : [p.img];
+  CURRENT_GALLERY_INDEX = 0;
+  const mainImg = el('#dImg');
+  if (mainImg) { mainImg.src = images[0]; mainImg.alt = p.name; }
+  const thumbs = document.getElementById('dThumbs');
+  if (!thumbs) return;
+  if (images.length <= 1) {
+    thumbs.innerHTML = '';
+    thumbs.hidden = true;
+    return;
+  }
+  thumbs.hidden = false;
+  thumbs.innerHTML = images.map((src, i) => `
+    <button type="button" class="thumb${i === 0 ? ' active' : ''}" onclick="selectGalleryImage(${i})">
+      <img src="${escapeHtml(src)}" alt="" loading="lazy" decoding="async">
+    </button>`).join('');
+}
+
+function selectGalleryImage(i) {
+  if (!CURRENT) return;
+  const images = (CURRENT.images && CURRENT.images.length) ? CURRENT.images : [CURRENT.img];
+  if (i < 0 || i >= images.length) return;
+  CURRENT_GALLERY_INDEX = i;
+  const mainImg = el('#dImg');
+  if (mainImg) {
+    mainImg.src = images[i];
+    mainImg.classList.remove('switching');
+    void mainImg.offsetWidth; /* relance l'animation de fondu même si elle vient de jouer */
+    mainImg.classList.add('switching');
+  }
+  document.querySelectorAll('#dThumbs .thumb').forEach((btn, idx) => btn.classList.toggle('active', idx === i));
+}
+
+/* Catégorie + collection(s) du produit (données réelles déjà chargées,
+   aucune information inventée) et une ligne de disponibilité honnête :
+   un produit affiché est par définition publié donc disponible, et le
+   délai réel est communiqué par WhatsApp après la commande (cf. CGV) —
+   on ne peut pas afficher un délai précis que le site n'a jamais connu. */
+function renderDetailMeta(p) {
+  const meta = document.getElementById('dMeta');
+  if (!meta) return;
+  const tags = [];
+  const cat = CATEGORIES.find(c => c.id === p.category);
+  if (cat) tags.push(`<span class="tag">${escapeHtml(cat.label)}</span>`);
+  (p.collectionSlugs || []).forEach(slug => {
+    const col = COLLECTIONS.find(c => c.id === slug);
+    if (col) tags.push(`<span class="tag tag-collection">${escapeHtml(col.label)}</span>`);
+  });
+  meta.innerHTML = tags.length ? `<div class="detail-tags">${tags.join('')}</div>` : '';
+}
+
 function openDetail(id) {
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) return;
   CURRENT = p;
 
   el('#dName').textContent = p.name;
-  el('#dImg').src = p.img;
-  el('#dImg').alt = p.name;
+  renderDetailGallery(p);
+  renderDetailMeta(p);
   if (el('#dColor')) el('#dColor').value = '';
   if (el('#dTissu')) el('#dTissu').value = p.fabric || '';
   if (el('#dNote'))  el('#dNote').value = '';
@@ -115,8 +172,15 @@ function openDetail(id) {
     const sizes = (p.sizes && p.sizes.length) ? p.sizes : SIZES;
     sizeSel.innerHTML = sizes.map(s => `<option>${escapeHtml(s)}</option>`).join('');
     sizeSel.value = sizes.includes('M') ? 'M' : sizes[0];
+    if (typeof enhanceSelect === 'function') enhanceSelect(sizeSel);
+    if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sizeSel);
   }
-  if (el('#dSexe')) el('#dSexe').selectedIndex = 0; /* "Unisexe" est toujours la 1re option, quelle que soit la langue */
+  if (el('#dSexe')) {
+    const sexeSel = el('#dSexe');
+    sexeSel.selectedIndex = 0; /* "Unisexe" est toujours la 1re option, quelle que soit la langue */
+    if (typeof enhanceSelect === 'function') enhanceSelect(sexeSel);
+    if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sexeSel);
+  }
 
   const priceInfo = priceForProduct(p);
   const priceEl = document.getElementById('dPrice');
@@ -128,6 +192,11 @@ function openDetail(id) {
   const gendered = isGenderedProduct(p);
 
   if (optBox) {
+    /* La liste "épique" d'un éventuel select précédent vit dans <body>
+       (portail), pas dans optBox : la détruire explicitement avant de
+       jeter son support, sinon elle resterait orpheline dans le DOM. */
+    const prevSelect = optBox.querySelector('select');
+    if (prevSelect && prevSelect._epicDestroy) prevSelect._epicDestroy();
     if (p.variantOptions) {
       const vo = p.variantOptions;
       optBox.innerHTML = `<label for="${escapeHtml(vo.id)}">${escapeHtml(vo.label)}</label>` +
@@ -135,6 +204,8 @@ function openDetail(id) {
         vo.choices.map(c => `<option value="${escapeHtml(c.value)}">${escapeHtml(c.label)}</option>`).join('') +
         `</select>`;
       optBox.style.display = '';
+      const variantSel = document.getElementById(vo.id);
+      if (variantSel && typeof enhanceSelect === 'function') enhanceSelect(variantSel);
     } else {
       optBox.innerHTML = '';
       optBox.style.display = 'none';
@@ -142,11 +213,19 @@ function openDetail(id) {
   }
   if (sexeField) sexeField.style.display = gendered ? 'none' : '';
 
-  el('#detail').classList.add('show');
+  const modal = el('#detail');
+  if (modal.classList.contains('show')) return; /* déjà ouverte (ex: ré-ouverte pour un autre produit sans passer par une fermeture) */
+  modal.classList.add('show');
+  if (typeof lockBodyScroll === 'function') lockBodyScroll();
+  if (typeof pushOverlayHistory === 'function') pushOverlayHistory();
 }
 
-function closeDetail() {
-  document.getElementById('detail').classList.remove('show');
+function closeDetail(viaPopstate) {
+  const modal = document.getElementById('detail');
+  if (!modal || !modal.classList.contains('show')) return;
+  modal.classList.remove('show');
+  if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  if (!viaPopstate && typeof consumeOverlayHistory === 'function') consumeOverlayHistory();
 }
 
 function addFromDetail() {
@@ -179,11 +258,19 @@ function scrollToCatalogue() {
 }
 
 function openImageFullscreen(src) {
+  const viewer = document.getElementById('imgViewer');
+  if (viewer.classList.contains('show')) { document.getElementById('imgViewerImg').src = src; return; }
   document.getElementById('imgViewerImg').src = src;
-  document.getElementById('imgViewer').classList.add('show');
+  viewer.classList.add('show');
+  if (typeof lockBodyScroll === 'function') lockBodyScroll();
+  if (typeof pushOverlayHistory === 'function') pushOverlayHistory();
 }
-function closeImageViewer() {
-  document.getElementById('imgViewer').classList.remove('show');
+function closeImageViewer(viaPopstate) {
+  const viewer = document.getElementById('imgViewer');
+  if (!viewer || !viewer.classList.contains('show')) return;
+  viewer.classList.remove('show');
+  if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  if (!viaPopstate && typeof consumeOverlayHistory === 'function') consumeOverlayHistory();
 }
 
 /* Rafraîchit l'affichage quand la langue ou la devise change, sans
@@ -195,7 +282,6 @@ function onLangChange() {
   if (typeof refreshCartLanguage === 'function') refreshCartLanguage();
   if (typeof refreshMapStatusLabel === 'function') refreshMapStatusLabel();
   if (typeof renderNavMenus === 'function') renderNavMenus();
-  if (typeof renderSuggestionDatalists === 'function') renderSuggestionDatalists();
   if (typeof syncLangCurrencyControls === 'function') syncLangCurrencyControls();
   refreshOpenDetailLabels();
 }
@@ -205,6 +291,7 @@ function onLangChange() {
 function refreshOpenDetailLabels() {
   if (!CURRENT || !document.getElementById('detail').classList.contains('show')) return;
   el('#dName').textContent = CURRENT.name;
+  renderDetailMeta(CURRENT);
   const priceInfo = priceForProduct(CURRENT);
   const priceEl = document.getElementById('dPrice');
   if (priceEl) priceEl.textContent = formatMoney(priceInfo.amount, priceInfo.currency) + (priceInfo.isFallback ? t('price_unavailable_in')(CURRENT_CURRENCY) : '');
@@ -214,8 +301,14 @@ function refreshOpenDetailLabels() {
     const sel = document.getElementById(CURRENT.variantOptions.id);
     if (sel) {
       [...sel.options].forEach((opt, i) => { opt.textContent = CURRENT.variantOptions.choices[i].label; });
+      if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sel);
     }
   }
+  /* Les options d'Unisexe/Homme/Femme sont traduites via [data-i18n] par
+     applyStaticTranslations() ; le libellé affiché sur le bouton "épique"
+     (déjà mis en cache dans l'ancienne langue) doit être resynchronisé. */
+  const sexeSel = document.getElementById('dSexe');
+  if (sexeSel && typeof refreshEpicSelect === 'function') refreshEpicSelect(sexeSel);
 }
 function onCurrencyChange() {
   renderProducts();

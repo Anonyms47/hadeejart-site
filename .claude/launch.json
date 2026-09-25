@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "hadeejart-static",
-      "runtimeExecutable": "node",
-      "runtimeArgs": [".claude/dev-server.js", "5500"],
-      "port": 5500
+      "runtimeExecutable": "C:\\Python314\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "5520"],
+      "port": 5520
     }
   ]
 }

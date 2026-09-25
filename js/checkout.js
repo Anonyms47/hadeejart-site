@@ -11,11 +11,19 @@ const PAYMENT_LABELS = {
 
 function openClient() {
   if (!CART.length) { openCart(); return; }
-  document.getElementById('client').classList.add('show');
+  const modal = document.getElementById('client');
+  if (modal.classList.contains('show')) return;
+  modal.classList.add('show');
+  if (typeof lockBodyScroll === 'function') lockBodyScroll();
+  if (typeof pushOverlayHistory === 'function') pushOverlayHistory();
   setTimeout(() => { if (typeof initDeliveryMap === 'function') initDeliveryMap(); }, 50);
 }
-function closeClient() {
-  document.getElementById('client').classList.remove('show');
+function closeClient(viaPopstate) {
+  const modal = document.getElementById('client');
+  if (!modal || !modal.classList.contains('show')) return;
+  modal.classList.remove('show');
+  if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  if (!viaPopstate && typeof consumeOverlayHistory === 'function') consumeOverlayHistory();
 }
 
 /* ====== Mémorisation des infos client (opt-in) ====== */
@@ -75,20 +83,6 @@ function bindPaymentGrid() {
     const btn = e.target.closest('.pay-card');
     if (btn) setPaymentMethod(btn);
   });
-}
-
-function bindCurrencySelector() {
-  const sel = document.getElementById('currencySelect');
-  if (!sel) return;
-  sel.value = CURRENT_CURRENCY;
-  sel.addEventListener('change', () => setCurrency(sel.value));
-}
-
-function bindLangSelector() {
-  const sel = document.getElementById('langSelect');
-  if (!sel) return;
-  sel.value = CURRENT_LANG;
-  sel.addEventListener('change', () => setLang(sel.value));
 }
 
 /* ====== Commande -> Supabase + WhatsApp ====== */

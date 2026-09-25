@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title data-i18n="page_title_home">Hadeej’Art — Boutique</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -178,41 +178,43 @@
         <p class="footer-about" data-i18n="footer_about">Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.</p>
       </div>
 
-      <div class="footer-col">
-        <h4 data-i18n="footer_nav_title">Navigation</h4>
+      <details class="footer-col footer-accordion" open>
+        <summary data-i18n="footer_nav_title">Navigation</summary>
         <ul class="footer-list">
           <li><a href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" data-i18n="footer_home_link">Accueil</a></li>
-          <li><a href="#catalogue" onclick="scrollToCatalogue();return false;" data-i18n="catalogue">Catalogue</a></li>
+          <li><a href="#catalogue" onclick="scrollToCatalogue();return false;" data-i18n="nav_shop">Boutique</a></li>
         </ul>
         <ul class="footer-list" id="footerInfoList"></ul>
-      </div>
+      </details>
 
-      <div class="footer-col">
-        <h4 data-i18n="footer_categories_title">Catégories</h4>
+      <details class="footer-col footer-accordion" open>
+        <summary data-i18n="footer_shop_universe_title">Univers boutique</summary>
+        <h5 class="footer-sublabel" data-i18n="footer_categories_title">Catégories</h5>
         <ul class="footer-list" id="footerShopList"></ul>
-      </div>
-
-      <div class="footer-col">
-        <h4 data-i18n="footer_collections_title">Collections</h4>
+        <h5 class="footer-sublabel" data-i18n="footer_collections_title">Collections</h5>
         <ul class="footer-list" id="footerCollectionsList"></ul>
-      </div>
+      </details>
 
-      <div class="footer-col">
+      <div class="footer-col footer-contact">
         <h4 data-i18n="footer_contact_title">Contact</h4>
-        <ul class="footer-list">
-          <li><a id="footerWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a></li>
-        </ul>
-        <h4 data-i18n="footer_langs_title">Langue</h4>
-        <div class="footer-pill-row" id="footerLangRow">
-          <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
-          <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
-          <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
-        </div>
-        <h4 data-i18n="footer_currencies_title">Devise</h4>
-        <div class="footer-pill-row" id="footerCurrencyRow">
-          <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
-          <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
-          <button type="button" class="footer-pill" data-currency="USD">USD</button>
+        <a id="footerWaLink" class="footer-wa" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
+        <div class="footer-prefs">
+          <div>
+            <span class="footer-sublabel" data-i18n="footer_langs_title">Langue</span>
+            <div class="footer-pill-row" id="footerLangRow">
+              <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
+              <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
+              <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
+            </div>
+          </div>
+          <div>
+            <span class="footer-sublabel" data-i18n="footer_currencies_title">Devise</span>
+            <div class="footer-pill-row" id="footerCurrencyRow">
+              <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
+              <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
+              <button type="button" class="footer-pill" data-currency="USD">USD</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -249,7 +251,7 @@
 </div>
 
 <!-- MODAL DÉTAIL -->
-<div id="detail" class="modal">
+<div id="detail" class="modal" onclick="if(event.target===this) closeDetail()">
   <div class="sheet">
     <header>
       <b id="dName" data-i18n="detail_default_title">Détail</b>
@@ -257,19 +259,27 @@
     </header>
     <div class="body">
       <div class="media">
-        <img id="dImg" alt="">
+        <img id="dImg" alt="" onclick="openImageFullscreen(this.src)">
         <button class="img-expand" type="button" onclick="openImageFullscreen(document.getElementById('dImg').src)" data-i18n-title="fullscreen_title" title="Voir en plein écran">
           <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M4 15v5h5"/></svg>
         </button>
+        <div id="dThumbs" class="thumbs" hidden></div>
       </div>
       <div>
+        <div id="dMeta"></div>
         <div class="price" id="dPrice"></div>
-        <div class="field"><label for="dColor" data-i18n="color_label">Couleur</label><input id="dColor" class="input" list="colorSuggestions" data-i18n-placeholder="color_placeholder" placeholder="ex: Orange"/></div>
+        <div class="detail-availability">
+          <span class="avail-dot" aria-hidden="true"></span>
+          <span data-i18n="detail_available">Disponible</span>
+          <span class="sep-dot" aria-hidden="true">·</span>
+          <span data-i18n="detail_lead_time">Délai communiqué par WhatsApp après la commande</span>
+        </div>
+        <div class="field"><label for="dColor" data-i18n="color_label">Couleur</label><input id="dColor" class="input" data-i18n-placeholder="color_placeholder" placeholder="ex: Orange"/></div>
         <div class="field">
           <label for="dSize" data-i18n="size_label">Taille</label>
           <select id="dSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
         </div>
-        <div class="field"><label for="dTissu" data-i18n="fabric_label">Tissu</label><input id="dTissu" class="input" list="fabricSuggestions" data-i18n-placeholder="fabric_placeholder" placeholder="ex: Wax"/></div>
+        <div class="field"><label for="dTissu" data-i18n="fabric_label">Tissu</label><input id="dTissu" class="input" data-i18n-placeholder="fabric_placeholder" placeholder="ex: Wax"/></div>
         <div class="field"><label for="dNote" data-i18n="note_label">Note (facultatif)</label><input id="dNote" class="input" data-i18n-placeholder="note_placeholder" placeholder="ex: manches longues"/></div>
         <div class="field sexe-field">
           <label for="dSexe" data-i18n="sex_label">Sexe</label>
@@ -283,7 +293,7 @@
 </div>
 
 <!-- MODAL CLIENT -->
-<div id="client" class="modal">
+<div id="client" class="modal" onclick="if(event.target===this) closeClient()">
   <div class="sheet" style="max-width:960px">
     <header><b data-i18n="client_title">Mes informations</b><button class="btn ghost" type="button" data-i18n="close" onclick="closeClient()">Fermer</button></header>
     <div class="body" style="grid-template-columns:1fr 1fr">
@@ -292,10 +302,10 @@
         <div class="field"><label for="cPhone" data-i18n="phone_label">Téléphone (WhatsApp)</label><input id="cPhone" class="input" data-i18n-placeholder="phone_placeholder" placeholder="77 123 45 67"></div>
         <div class="field"><label for="cEmail" data-i18n="email_label">E-mail (facultatif)</label><input id="cEmail" type="email" class="input" data-i18n-placeholder="email_placeholder" placeholder="vous@exemple.com"></div>
         <div class="row">
-          <div class="field" style="flex:1"><label for="cCountry" data-i18n="country_label">Pays</label><input id="cCountry" class="input" list="countrySuggestions" data-i18n-placeholder="country_placeholder" placeholder="Sénégal"></div>
-          <div class="field" style="flex:1"><label for="cCity" data-i18n="city_label">Ville</label><input id="cCity" class="input" list="citySuggestions" data-i18n-placeholder="city_placeholder" placeholder="Dakar"></div>
+          <div class="field" style="flex:1"><label for="cCountry" data-i18n="country_label">Pays</label><input id="cCountry" class="input" data-i18n-placeholder="country_placeholder" placeholder="Sénégal"></div>
+          <div class="field" style="flex:1"><label for="cCity" data-i18n="city_label">Ville</label><input id="cCity" class="input" data-i18n-placeholder="city_placeholder" placeholder="Dakar"></div>
         </div>
-        <div class="field"><label for="cDistrict" data-i18n="district_label">Quartier</label><input id="cDistrict" class="input" list="districtSuggestions" data-i18n-placeholder="district_placeholder" placeholder="Sicap Mbao"></div>
+        <div class="field"><label for="cDistrict" data-i18n="district_label">Quartier</label><input id="cDistrict" class="input" data-i18n-placeholder="district_placeholder" placeholder="Sicap Mbao"></div>
 
         <div class="field">
           <label data-i18n="location_label">Localisation de livraison</label>
@@ -363,12 +373,6 @@
   <button class="close" data-i18n-aria="close" aria-label="Fermer" type="button" data-i18n="close" onclick="closeImageViewer(); event.stopPropagation()">Fermer</button>
   <img id="imgViewerImg" data-i18n-alt="lightbox_alt" alt="Aperçu produit"/>
 </div>
-
-<datalist id="colorSuggestions"></datalist>
-<datalist id="fabricSuggestions"></datalist>
-<datalist id="countrySuggestions"></datalist>
-<datalist id="citySuggestions"></datalist>
-<datalist id="districtSuggestions"></datalist>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/config.js"></script>

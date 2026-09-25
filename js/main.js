@@ -29,10 +29,18 @@ document.addEventListener('DOMContentLoaded', () => {
   bindCartOutsideClose();
   bindCartLineActions();
   bindPaymentGrid();
-  bindCurrencySelector();
-  bindLangSelector();
+  /* Le câblage langue/devise du header (change + widget "épique") est
+     centralisé dans initNav() (nav.js), partagé par toutes les pages —
+     voir bindHeaderLangCurrency(). */
   restoreClientInfo();
   if (typeof initNav === 'function') initNav();
+  if (typeof enhanceAutocomplete === 'function') {
+    enhanceAutocomplete(document.getElementById('dColor'), 'suggest_colors');
+    enhanceAutocomplete(document.getElementById('dTissu'), 'suggest_fabrics');
+    enhanceAutocomplete(document.getElementById('cCountry'), 'suggest_countries');
+    enhanceAutocomplete(document.getElementById('cCity'), 'suggest_cities');
+    enhanceAutocomplete(document.getElementById('cDistrict'), 'suggest_districts');
+  }
 
   const orderBtn = document.getElementById('btnOrder');
   if (orderBtn) orderBtn.addEventListener('click', e => { e.preventDefault(); haOrder(); });

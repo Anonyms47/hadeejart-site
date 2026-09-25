@@ -58,10 +58,14 @@ function renderShopMenu() {
     if (host) host.innerHTML = dropHtml;
   });
 
+  /* Le pied de page liste les six catégories réelles uniquement (pas
+     l'entrée "Toutes les pièces", pertinente dans un menu déroulant mais
+     redondante avec le lien "Boutique" déjà présent dans la navigation
+     du footer). */
   const footerHost = document.getElementById('footerShopList');
   if (footerHost) {
-    footerHost.innerHTML = entries.map(c =>
-      `<li><a href="index.html${c.id === 'tous' ? '' : '?category=' + encodeURIComponent(c.id)}#catalogue" onclick="return handleNavLinkClick(event,'category','${escapeHtml(c.id)}')">${escapeHtml(c.label)}</a></li>`
+    footerHost.innerHTML = entries.filter(c => !c.all).map(c =>
+      `<li><a href="index.html?category=${encodeURIComponent(c.id)}#catalogue" onclick="return handleNavLinkClick(event,'category','${escapeHtml(c.id)}')">${escapeHtml(c.label)}</a></li>`
     ).join('');
   }
 }
@@ -119,27 +123,6 @@ function renderNavMenus() {
   renderInfoMenu();
 }
 
-/* ====== Suggestions (datalist) pour pays/ville/quartier/tissu/couleur ======
-   Ces champs restent du texte libre (une adresse ou une couleur ne se
-   limite pas à une liste fermée) mais gagnent un vrai comportement de
-   liste déroulante native, traduite dans la langue active. N'existe que
-   sur la page catalogue : ignoré ailleurs (éléments absents). */
-function renderSuggestionDatalists() {
-  const map = {
-    colorSuggestions: 'suggest_colors',
-    fabricSuggestions: 'suggest_fabrics',
-    countrySuggestions: 'suggest_countries',
-    citySuggestions: 'suggest_cities',
-    districtSuggestions: 'suggest_districts'
-  };
-  Object.keys(map).forEach(id => {
-    const host = document.getElementById(id);
-    if (!host) return;
-    const list = t(map[id]) || [];
-    host.innerHTML = list.map(v => `<option value="${escapeHtml(v)}"></option>`).join('');
-  });
-}
-
 /* ====== Ouverture/fermeture des menus déroulants du header ====== */
 function closeAllNavMenus() {
   document.querySelectorAll('.main-nav .nav-item.open').forEach(item => {
@@ -188,25 +171,59 @@ function bindNavDropdowns() {
   window.addEventListener('pageshow', () => closeAllNavMenus());
 }
 
+/* Échap ferme le panneau le plus "au-dessus" — visionneuse, fiche
+   détail, fiche client — indépendamment des menus (gérés séparément
+   ci-dessus). Un seul écouteur global, appelé une fois. */
+function bindOverlayEscape() {
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeTopmostOverlay();
+  });
+}
+
 /* ====== Menu mobile plein écran ====== */
 function openMobileMenu() {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('hamburgerBtn');
-  if (!menu) return;
-  document.body.classList.add('mobile-menu-open');
+  if (!menu || menu.classList.contains('show')) return;
   menu.classList.add('show');
   if (btn) btn.setAttribute('aria-expanded', 'true');
+  lockBodyScroll();
+  pushOverlayHistory();
   const closeBtn = document.getElementById('mobileMenuClose');
   if (closeBtn) closeBtn.focus();
 }
 
-function closeMobileMenu() {
+function closeMobileMenu(viaPopstate) {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('hamburgerBtn');
-  if (!menu) return;
-  document.body.classList.remove('mobile-menu-open');
+  if (!menu || !menu.classList.contains('show')) return;
   menu.classList.remove('show');
   if (btn) btn.setAttribute('aria-expanded', 'false');
+  unlockBodyScroll();
+  if (!viaPopstate) consumeOverlayHistory();
+}
+
+/* ====== Priorité de fermeture pour Échap / bouton "retour" ======
+   Appelé sur chaque page (catalogue et pages de contenu) : ne ferme que
+   le panneau le plus "au-dessus", du plus imbriqué (visionneuse plein
+   écran, ouverte depuis la fiche produit) au moins imbriqué. Les
+   fonctions référencées n'existent pas toutes sur toutes les pages, d'où
+   les vérifications typeof. */
+function closeTopmostOverlay(viaPopstate) {
+  const lightbox = document.getElementById('imgViewer');
+  if (lightbox && lightbox.classList.contains('show') && typeof closeImageViewer === 'function') {
+    closeImageViewer(viaPopstate); return;
+  }
+  const detail = document.getElementById('detail');
+  if (detail && detail.classList.contains('show') && typeof closeDetail === 'function') {
+    closeDetail(viaPopstate); return;
+  }
+  const client = document.getElementById('client');
+  if (client && client.classList.contains('show') && typeof closeClient === 'function') {
+    closeClient(viaPopstate); return;
+  }
+  const menu = document.getElementById('mobileMenu');
+  if (menu && menu.classList.contains('show')) { closeMobileMenu(viaPopstate); return; }
 }
 
 function bindMobileMenu() {
@@ -215,21 +232,27 @@ function bindMobileMenu() {
   const menu = document.getElementById('mobileMenu');
   if (!openBtn || !menu) return;
 
-  openBtn.addEventListener('click', openMobileMenu);
-  if (closeBtn) closeBtn.addEventListener('click', closeMobileMenu);
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && menu.classList.contains('show')) closeMobileMenu();
-  });
+  /* stopPropagation : sinon le même clic continue sa bulle jusqu'à
+     document, où le clic "en dehors" du menu Boutique/Collections/Infos
+     (voir bindNavDropdowns) referme aussitôt tout — y compris ce menu
+     qu'on vient d'ouvrir. Même précaution que sur les boutons de menu. */
+  openBtn.addEventListener('click', e => { e.stopPropagation(); openMobileMenu(); });
+  if (closeBtn) closeBtn.addEventListener('click', e => { e.stopPropagation(); closeMobileMenu(); });
+  /* Échap : voir bindOverlayEscape(), qui gère tous les panneaux via
+     closeTopmostOverlay() (visionneuse > fiche détail > fiche client >
+     menu mobile). */
 
   const langMobile = document.getElementById('langSelectMobile');
   if (langMobile) {
     langMobile.value = CURRENT_LANG;
     langMobile.addEventListener('change', () => setLang(langMobile.value));
+    if (typeof enhanceSelect === 'function') enhanceSelect(langMobile);
   }
   const curMobile = document.getElementById('currencySelectMobile');
   if (curMobile) {
     curMobile.value = CURRENT_CURRENCY;
     curMobile.addEventListener('change', () => setCurrency(curMobile.value));
+    if (typeof enhanceSelect === 'function') enhanceSelect(curMobile);
   }
 
   const waLink = document.getElementById('mobileWaLink');
@@ -277,8 +300,14 @@ function refreshFooterShortcutsState() {
    de page synchronisés entre eux (un changement fait depuis n'importe
    lequel doit se refléter partout). */
 function syncLangCurrencyControls() {
-  document.querySelectorAll('.lang-select').forEach(sel => { sel.value = CURRENT_LANG; });
-  document.querySelectorAll('.currency-select').forEach(sel => { sel.value = CURRENT_CURRENCY; });
+  document.querySelectorAll('.lang-select').forEach(sel => {
+    sel.value = CURRENT_LANG;
+    if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sel);
+  });
+  document.querySelectorAll('.currency-select').forEach(sel => {
+    sel.value = CURRENT_CURRENCY;
+    if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sel);
+  });
   refreshFooterShortcutsState();
 }
 
@@ -291,12 +320,34 @@ function bumpCartIcon() {
   btn.classList.add('bump');
 }
 
+/* ====== Langue / devise du header (pastilles non-mobiles) ======
+   Câblé ici plutôt que dans checkout.js/main.js (index.html uniquement) :
+   le header et ses sélecteurs sont partagés par TOUTES les pages (Infos,
+   pages légales...), qui n'incluent pas checkout.js/catalogue.js. Sans ce
+   câblage commun, le sélecteur du header restait inerte (aucun
+   "change") en dehors du catalogue. */
+function bindHeaderLangCurrency() {
+  const langSel = document.getElementById('langSelect');
+  if (langSel) {
+    langSel.value = CURRENT_LANG;
+    langSel.addEventListener('change', () => setLang(langSel.value));
+    if (typeof enhanceSelect === 'function') enhanceSelect(langSel);
+  }
+  const curSel = document.getElementById('currencySelect');
+  if (curSel) {
+    curSel.value = CURRENT_CURRENCY;
+    curSel.addEventListener('change', () => setCurrency(curSel.value));
+    if (typeof enhanceSelect === 'function') enhanceSelect(curSel);
+  }
+}
+
 /* ====== Câblage initial (appelé sur toutes les pages) ====== */
 function initNav() {
   renderNavMenus();
-  renderSuggestionDatalists();
   bindNavDropdowns();
+  bindHeaderLangCurrency();
   bindMobileMenu();
   bindFooterShortcuts();
   bindCartButton();
+  bindOverlayEscape();
 }

@@ -12,6 +12,19 @@
   --safran:#F2B90C;
   --emerald:#146356;
   --noir:#1A1A1A;
+
+  /* ====== Échelle de z-index (du plus bas au plus haut) ======
+     Documentée ici pour éviter toute superposition accidentelle :
+     contenu (auto) < header collant < menu Boutique/Collections/Infos <
+     panier < menu mobile plein écran < modales (fiche détail, client) <
+     visionneuse plein écran (ouverte depuis la fiche détail, doit donc
+     toujours passer au-dessus). */
+  --z-header: 60;
+  --z-dropdown: 70;
+  --z-panel: 80;
+  --z-mobile-menu: 200;
+  --z-modal: 300;
+  --z-lightbox: 400;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.5 Poppins,system-ui,Segoe UI,Roboto,Arial}
@@ -25,30 +38,59 @@ body{
   background-size: 24px 24px, 60px 60px, 60px 60px, 120px 120px;
 }
 img{max-width:100%;height:auto;display:block}
-.container{max-width:1100px;margin:0 auto;padding:20px 16px}
+.container{
+  max-width:1100px;margin:0 auto;
+  padding:20px max(16px, env(safe-area-inset-right)) 20px max(16px, env(safe-area-inset-left));
+}
 
-/* ====== HEADER ====== */
+/* ====== HEADER ======
+   Deux états, franchement différents plutôt qu'un simple changement
+   d'opacité : au repos, le header se fond dans le hero (grand, aéré,
+   quasi transparent) ; dès le premier défilement, il se contracte en
+   bandeau premium opaque avec sa propre lisière tissée en pied — comme un
+   ourlet — et l'identité (logo, titre) se resserre avec lui. */
 .header{
   display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;
   background:rgba(246,215,196,.4);backdrop-filter:blur(2px);
   border-bottom:1px solid transparent;
-  z-index:60;
-  transition:background-color .3s ease, backdrop-filter .3s ease, box-shadow .3s ease, border-color .3s ease;
+  z-index:var(--z-header);
+  padding-block:16px;
+  /* Réserve l'encoche/île dynamique en haut : le header colle au tout
+     haut de l'écran dès le défilement, y compris sous cette zone. */
+  padding-top:calc(16px + env(safe-area-inset-top));
+  transition:background-color .35s ease, backdrop-filter .35s ease, box-shadow .35s ease,
+             border-color .35s ease, padding .3s cubic-bezier(.22,.9,.32,1);
+}
+.header::after{
+  /* Lisière tissée en pied de header, façon ourlet — n'apparaît qu'une
+     fois le bandeau contracté, pour marquer nettement la transition. */
+  content:""; position:absolute; left:0; right:0; bottom:-3px; height:3px;
+  background:repeating-linear-gradient(90deg,var(--brand-700) 0 14px,var(--brand) 14px 28px,#f1b37f 28px 42px);
+  opacity:0; transition:opacity .3s ease;
+  pointer-events:none;
 }
 .header.scrolled{
-  background:rgba(246,215,196,.94);backdrop-filter:blur(10px);
-  box-shadow:0 8px 18px rgba(0,0,0,.18);
+  background:rgba(246,215,196,.94);backdrop-filter:blur(14px) saturate(1.1);
+  box-shadow:0 10px 26px rgba(43,30,18,.18);
   border-bottom-color:rgba(0,0,0,.06);
+  padding-block:9px;
 }
+.header.scrolled::after{ opacity:.9; }
 .brand{display:flex;align-items:center;gap:12px}
-.brand .mark{width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 1px 2px rgba(0,0,0,.15) inset;overflow:hidden;position:relative}
+.brand .mark{
+  width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;
+  box-shadow:0 1px 2px rgba(0,0,0,.15) inset;overflow:hidden;position:relative;
+  transition:width .3s cubic-bezier(.22,.9,.32,1), height .3s cubic-bezier(.22,.9,.32,1);
+}
+.header.scrolled .brand .mark{ width:36px; height:36px; }
 .brand .mark::after{
   content:"";position:absolute;inset:0;border-radius:50%;
   background:conic-gradient(from 0deg,var(--brand-700),var(--safran),var(--terracotta),var(--brand-700));
   opacity:.18;mix-blend-mode:multiply;pointer-events:none;
 }
 .brand .mark img{width:100%;height:100%;object-fit:cover;border-radius:50%;position:relative;z-index:1}
-.brand h1{margin:0;font:800 24px Poppins}
+.brand h1{margin:0;font:800 24px Poppins;transition:font-size .3s cubic-bezier(.22,.9,.32,1);}
+.header.scrolled .brand h1{ font-size:19px; }
 .brand h1,
 .hero h2{
   font-family: "Kenia", Poppins, sans-serif;
@@ -56,7 +98,24 @@ img{max-width:100%;height:auto;display:block}
   letter-spacing: .5px;
   text-shadow: 0 1px 0 rgba(0,0,0,.06);
 }
-.badge{font:600 12px Poppins;opacity:.75}
+.badge{
+  /* 80px, pas une valeur ajustée à 1-2 lignes : sur les largeurs moyennes
+     (861-1024px), nav + pastilles langue/devise + panier compressent le
+     bloc marque au point que l'accroche peut passer sur 3 lignes — une
+     limite trop juste coupait alors le texte au repos, pas seulement au
+     scroll (seul moment où elle doit vraiment disparaître, via la règle
+     .scrolled ci-dessous). */
+  font:600 12px Poppins;opacity:.75; position:relative; display:inline-block; padding-bottom:3px;
+  max-height:80px; overflow:hidden; transition:max-height .3s ease, opacity .3s ease, margin .3s ease;
+}
+/* Petit fil discret sous l'accroche, comme une couture — s'efface quand
+   le header se resserre, pour ne garder que l'essentiel. */
+.badge::after{
+  content:""; position:absolute; left:0; bottom:0; height:1px; width:28px;
+  background-image:repeating-linear-gradient(90deg,var(--brand-700) 0 3px,transparent 3px 6px);
+  opacity:.6;
+}
+.header.scrolled .badge{ max-height:0; opacity:0; margin:0; }
 
 .action{display:inline-flex;gap:10px;align-items:center}
 .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;background-image:linear-gradient(180deg,var(--brand),var(--brand-700));color:#fff;padding:10px 16px;font-weight:800;box-shadow:0 8px 18px rgba(0,0,0,.18);cursor:pointer;text-decoration:none;transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;}
@@ -201,14 +260,28 @@ img{max-width:100%;height:auto;display:block}
   .price{font-size:13px}
 }
 
-/* ====== MODALS ====== */
+/* ====== MODALS ======
+   position:fixed + overflow-y:auto sur .modal (plutôt que sur .sheet ou
+   sa seule .body) : si la fiche est plus haute que l'écran (beaucoup de
+   champs + clavier virtuel ouvert), c'est la modale entière qui défile,
+   jamais coupée en haut — le bouton fermer reste donc toujours atteignable
+   par un simple scroll, et au-dessus du header du site grâce au z-index. */
 .modal{
-  position:fixed;inset:0;background:rgba(43,30,18,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50;
+  position:fixed;inset:0;background:rgba(43,30,18,.5);
+  display:flex;align-items:flex-start;justify-content:center;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  padding:max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  z-index:var(--z-modal);
   opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility 0s linear .22s;
 }
 .modal.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .22s ease}
-.sheet{background:#fff;border-radius:18px;max-width:860px;width:100%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-.sheet header{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#fff7f1;border-bottom:1px solid #0001}
+@media(min-height:640px){ .modal{ padding-top:max(48px, env(safe-area-inset-top)); } }
+.sheet{background:#fff;border-radius:18px;max-width:860px;width:100%;margin:auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.sheet header{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;background:#fff7f1;border-bottom:1px solid #0001;
+  position:sticky;top:0;z-index:2; /* toujours visible : le bouton fermer ne se fait jamais scroller hors champ */
+}
+.sheet header .btn.ghost{ flex:0 0 auto; }
 .sheet .body{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:18px}
 @media(max-width:780px){.sheet .body{grid-template-columns:1fr}}
 .sheet .media{position:relative;background:#00000008;border-radius:14px;padding:8px;margin-bottom:12px}
@@ -217,31 +290,127 @@ img{max-width:100%;height:auto;display:block}
 @media (max-width: 480px){ .sheet .media img{ max-height: 35vh !important; } }
 .sheet .media .img-expand{
   position: absolute; right: 12px; top: 12px;
+  min-width:40px; min-height:40px;
   background: rgba(255,255,255,.9); border: 0; border-radius: 10px; padding: 8px;
   cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.12);
 }
 .sheet .media .img-expand:hover{ background:#fff; }
+.sheet .media .img-expand:focus-visible{ outline:3px solid #ffcf9c; outline-offset:2px; }
 .sheet .media .img-expand svg{ width: 18px; height: 18px; stroke:#5b3b1f; fill:none; }
+.sheet .media img#dImg{ cursor:zoom-in; }
+
+/* --- Galerie de vignettes (fiche détail) --- */
+.thumbs{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.thumbs .thumb{
+  width:56px; height:56px; padding:0; border-radius:10px; overflow:hidden; cursor:pointer;
+  border:2px solid transparent; background:#f4cdb7; flex:0 0 auto;
+  transition:border-color .15s, transform .1s ease;
+}
+.thumbs .thumb img{ width:100%; height:100%; object-fit:cover; }
+.thumbs .thumb:hover{ transform:translateY(-2px); }
+.thumbs .thumb:focus-visible{ outline:3px solid #ffcf9c; outline-offset:1px; }
+.thumbs .thumb.active{ border-color:var(--brand-700); box-shadow:0 4px 10px rgba(0,0,0,.15); }
+
+/* --- Étiquettes catégorie/collection + disponibilité (fiche détail) --- */
+.detail-tags{ display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 10px; }
+.tag{
+  display:inline-flex; align-items:center; font:700 12px Poppins; padding:5px 11px; border-radius:999px;
+  background:#fff1e4; color:var(--brand-700); border:1px solid #f0d9bd;
+}
+.tag-collection{ background:#eaf3ef; color:var(--emerald); border-color:#cfe6dc; }
+.detail-availability{
+  display:flex; align-items:center; flex-wrap:wrap; gap:8px; font:600 13px Poppins; color:#4a6b52; margin:0 0 14px;
+}
+.detail-availability .avail-dot{ width:9px; height:9px; border-radius:50%; background:#2AA06A; flex:0 0 auto; box-shadow:0 0 0 3px rgba(42,160,106,.18); }
+.detail-availability .sep-dot{ opacity:.4; }
 
 .field{margin:10px 0}
-.field label{display:block;font-weight:700;margin-bottom:6px}
-.input,select,textarea{width:100%;border:1px solid #0002;border-radius:10px;padding:10px 12px;font:600 14px Poppins;background:#fff}
+.field label{display:block;font-weight:800;margin-bottom:6px;font-size:13px;letter-spacing:.3px;color:#5a3b25}
+/* Champs texte + listes déroulantes natives : même habillage "tissu" que
+   les pastilles langue/devise et les chips (fond crème, liseré brandé),
+   pour que TOUTE liste déroulante du site (taille, sexe, variantes, pays,
+   ville, quartier, tissu, couleur...) partage une seule identité visuelle
+   forte plutôt que le style de formulaire générique du navigateur. */
+.input,select,textarea{
+  width:100%;border:1.5px solid #e6d7c8;border-radius:12px;padding:10px 12px;
+  font:600 14px Poppins;color:var(--ink);background:#fff9f4;
+  box-shadow:0 1px 0 rgba(0,0,0,.03) inset;
+  transition:border-color .15s ease, box-shadow .2s ease, background-color .15s ease, transform .08s ease;
+}
+.input:hover,select:hover,textarea:hover{ border-color:var(--brand); background:#fffdfb; }
+.input:focus,select:focus,textarea:focus{
+  outline:none; border-color:var(--brand-700); background:#fff;
+  box-shadow:0 0 0 4px rgba(212,122,44,.2), 0 8px 18px rgba(0,0,0,.08);
+}
+/* Zones tactiles confortables (>=44px) sur les champs de formulaire
+   uniquement — pas sur les pastilles compactes langue/devise du header,
+   qui doivent rester fines. */
+.field select, .field .input, .field textarea{ min-height:44px; }
+.field .epic-select{ display:block; width:100%; }
+/* Flèche brandée cohérente sur TOUTES les listes déroulantes natives du
+   site (taille, sexe, variantes...), pas seulement les pastilles
+   langue/devise — comportement 100% natif (clavier, tactile, lecteurs
+   d'écran) conservé, seul l'habillage change. La flèche change de teinte
+   et s'anime légèrement au survol/focus pour rester vivante. */
+select{
+  appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="%239e5317" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
+  padding-right:38px; cursor:pointer; font-weight:700;
+  transition:border-color .15s, box-shadow .15s, transform .08s ease, background-color .15s ease;
+}
+select:hover{ border-color:var(--brand); }
+/* :not(.select-pill) : les pastilles langue/devise gèrent leur propre
+   flèche (taille/position différentes) plus bas — éviter que cette règle,
+   plus spécifique qu'une simple classe à cause du pseudo-état, ne l'écrase. */
+select:not(.select-pill):hover{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="%23d47a2c" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
+select:not(.select-pill):focus{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6" stroke="%239e5317" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
+select:active{ transform:translateY(1px); }
+/* Champs à suggestions libres (pays, ville, quartier, tissu, couleur) :
+   même famille visuelle que les selects, avec la même flèche brandée (qui
+   s'inverse quand le panneau est ouvert) — texte libre toujours possible,
+   voir .epic-autocomplete dans ui.js pour le panneau. */
+.epic-autocomplete{ position:relative; display:block; width:100%; }
+.field .epic-autocomplete{ display:block; width:100%; }
+.epic-autocomplete input{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="%239e5317" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
+  padding-right:38px; transition:border-color .15s ease, box-shadow .2s ease, background-color .15s ease, background-image .1s ease;
+}
+.epic-autocomplete input:hover{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" stroke="%23d47a2c" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
+.epic-autocomplete input:focus, .epic-autocomplete input[aria-expanded="true"]{
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6" stroke="%239e5317" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
 
-/* Lightbox plein écran */
+/* Lightbox plein écran (au-dessus de tout, y compris la modale fiche
+   détail : elle peut s'ouvrir depuis celle-ci). */
 .lightbox{
-  position: fixed; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: 9999;
+  position: fixed; inset: 0; background: rgba(0,0,0,.88); display: flex; align-items: center; justify-content: center; z-index: var(--z-lightbox);
+  padding:max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   visibility:hidden; opacity:0; pointer-events:none; transition:opacity 0s linear .18s,visibility 0s linear .18s;
 }
 .lightbox.show{ visibility:visible; opacity:1; pointer-events:auto; transition:opacity .18s ease; }
-.lightbox img{max-width: 95vw; max-height: 92vh; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.55);}
-.lightbox .close{position: fixed; top: 16px; right: 16px; background: rgba(255,255,255,.92); border:0; border-radius: 10px; padding: 8px 10px; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.18);}
+.lightbox img{max-width: 95vw; max-height: 92vh; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.55); cursor:zoom-out;}
+.lightbox .close{
+  position: fixed; top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right));
+  min-width:44px; min-height:44px; padding:10px 16px; font-weight:800;
+  background: rgba(255,255,255,.92); border:0; border-radius: 12px; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.18);
+}
 .lightbox .close:hover{ background:#fff; }
+.lightbox .close:focus-visible{ outline:3px solid #ffcf9c; outline-offset:2px; }
 
 /* ====== PANIER ====== */
 .cart{display:inline-flex}
 .panel{
-  position:fixed;right:14px;top:64px;background:#fff;border:1px solid #0001;border-radius:16px;
-  box-shadow:0 16px 30px rgba(0,0,0,.25);padding:14px;max-width:320px;width:92vw;
+  position:fixed;right:max(14px, env(safe-area-inset-right));top:64px;background:#fff;border:1px solid #0001;border-radius:16px;
+  box-shadow:0 16px 30px rgba(0,0,0,.25);padding:14px;max-width:320px;width:92vw;max-height:min(600px, 80vh);overflow-y:auto;
+  z-index:var(--z-panel);
   visibility:hidden;opacity:0;pointer-events:none;transition:opacity 0s linear .18s,visibility 0s linear .18s;
 }
 .panel.show{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .18s ease}
@@ -251,8 +420,9 @@ img{max-width:100%;height:auto;display:block}
 .small{font-size:12px;opacity:.75}
 .sep{height:1px;background:#0001;margin:10px 0}
 
-.trash{ background: transparent; border: 0; padding: 6px; border-radius: 8px; cursor: pointer; }
+.trash{ background: transparent; border: 0; padding: 6px; border-radius: 8px; cursor: pointer; min-width:36px; min-height:36px; display:grid; place-items:center; }
 .trash:hover{ background: #0000000d; }
+.trash:focus-visible{ outline:3px solid #ffcf9c; outline-offset:1px; }
 .trash svg{ width: 18px; height: 18px; stroke: #B43D2A; fill: none; }
 
 /* ====== FACTURE (canvas hors écran) ====== */
@@ -287,7 +457,6 @@ img{max-width:100%;height:auto;display:block}
 }
 
 @media (max-width: 780px){
-  #client .sheet header{ position: sticky; top: 0; z-index: 2; }
   #client .sheet .body{ grid-template-columns: 1fr !important; margin: 10px; padding: 14px; }
 }
 @media (max-width: 420px){
@@ -345,44 +514,214 @@ img{max-width:100%;height:auto;display:block}
   background-repeat:no-repeat; background-position:right 8px center; background-size:14px;
   transition:transform .08s ease, background-color .15s, border-color .15s, box-shadow .15s;
 }
-.select-pill:hover{ background-color:#ffeede; transform:translateY(-1px); }
-.select-pill:focus-visible{ outline:3px solid #ffcf9c; outline-offset:2px; }
-@media (max-width:520px){
-  .header{ flex-wrap:wrap; row-gap:10px; }
-  .select-pill{ min-width:64px; padding:6px 24px 6px 10px; font-size:12px; }
+.select-pill:hover{ background-color:#ffeede; border-color:var(--brand); transform:translateY(-1px); box-shadow:0 6px 14px rgba(0,0,0,.1); }
+.select-pill:focus-visible{ outline:3px solid #ffcf9c; outline-offset:2px; border-color:var(--brand-700); }
+.select-pill:active{ transform:translateY(0) scale(.97); }
+/* En dessous de 860px, les pastilles langue/devise du bandeau quittent la
+   barre compacte (voir .action .epic-select plus bas) : plus besoin de
+   les rétrécir ni de faire passer le header sur deux lignes. */
+
+/* ====== Listes déroulantes "épiques" (langue / devise) ======
+   Le rendu OUVERT d'un <select> natif (liste système grise, surlignage
+   bleu du navigateur) n'est pas stylable en CSS, quel que soit l'habillage
+   donné à l'état fermé. On remplace donc ce popup par un vrai bouton +
+   liste ARIA (role="listbox"), dans le même langage visuel que le menu
+   Boutique/Collections/Infos (liseré tissé, lisière qui se déploie,
+   coche pour l'option active). Le <select> d'origine reste cependant dans
+   le DOM : valeur, événement "change" et logique JS existante (setLang,
+   setCurrency...) ne changent pas d'un octet. */
+.epic-select{ position:relative; display:inline-flex; }
+.epic-select-native{ display:none; }
+.epic-select-trigger{
+  display:inline-flex; align-items:center; justify-content:space-between; gap:6px;
+  font-family:Poppins; cursor:pointer;
+  /* Look "champ de formulaire" par défaut (taille, sexe, variantes dans la
+     fiche détail) — .select-pill ci-dessous prend le dessus pour les
+     pastilles langue/devise du header et du menu mobile. */
+  width:100%; border:1.5px solid #e6d7c8; border-radius:12px; padding:10px 12px;
+  font-weight:600; font-size:14px; color:var(--ink); background:#fff9f4; min-height:44px;
+  box-shadow:0 1px 0 rgba(0,0,0,.03) inset;
+  transition:border-color .15s ease, box-shadow .2s ease, background-color .15s ease;
 }
+.epic-select-trigger:hover{ border-color:var(--brand); background:#fffdfb; transform:translateY(-1px); box-shadow:0 6px 14px rgba(43,30,18,.08); }
+.epic-select.open .epic-select-trigger, .epic-select-trigger:focus-visible{
+  outline:none; border-color:var(--brand-700); background:#fff; transform:none;
+  box-shadow:0 0 0 4px rgba(212,122,44,.2), 0 10px 22px rgba(43,30,18,.12);
+}
+.epic-select-trigger.select-pill{
+  /* min-height 44px : c'est ce bouton, et non plus le <select> natif, qui
+     reçoit désormais le clic/toucher — la pastille doit donc respecter la
+     même zone tactile que le panier/hamburger du header, même si elle
+     reste visuellement fine (voir .select-pill:hover/:focus-visible). */
+  width:auto; min-height:44px; box-shadow:none; background-image:none; padding:8px 10px 8px 12px;
+}
+.epic-select-trigger.select-pill:hover{ box-shadow:0 6px 14px rgba(0,0,0,.1); }
+.epic-select.open .epic-select-trigger.select-pill{ box-shadow:none; outline:3px solid #ffcf9c; outline-offset:2px; }
+.epic-select-label{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.epic-select-trigger .chev{
+  width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.4; flex:0 0 auto;
+  transition:transform .28s cubic-bezier(.34,1.56,.64,1);
+}
+.epic-select-trigger:hover .chev{ transform:translateY(1px); }
+.epic-select.open .epic-select-trigger .chev{ transform:rotate(180deg); }
+.epic-select.open .epic-select-trigger:hover .chev{ transform:rotate(180deg); }
+/* Portail : la liste est déplacée en fin de <body> et positionnée en
+   "fixed" (coordonnées calculées en JS depuis le bouton) plutôt qu'en
+   absolute sous son déclencheur — indispensable pour qu'elle ne soit
+   jamais rognée par l'overflow:hidden de la fiche détail/modale client.
+   z-index au niveau de la visionneuse plein écran : une liste ouverte
+   doit toujours dominer, y compris par-dessus une modale. */
+.epic-select-list{
+  position:fixed; z-index:var(--z-lightbox);
+  max-height:280px; overflow-y:auto; overflow-x:hidden;
+  background:
+    radial-gradient(120% 60px at 50% 0%, rgba(212,122,44,.07), transparent 70%),
+    linear-gradient(180deg, #fffefc, #fff9f2);
+  border:1px solid #f0d9bd; border-radius:18px; padding:12px 8px 8px;
+  box-shadow:0 24px 48px -12px rgba(43,30,18,.35), 0 2px 6px rgba(43,30,18,.08), 0 0 0 1px rgba(255,255,255,.6) inset;
+  opacity:0; visibility:hidden; transform:translateY(-10px) scale(.96); pointer-events:none;
+  transition:opacity .2s ease, transform .22s cubic-bezier(.22,.9,.32,1), visibility 0s linear .2s;
+}
+/* Fine trame tissée en filigrane, à peine perceptible, pour que même le
+   fond du panneau porte la signature textile Hadeej'Art. */
+.epic-select-list::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:-1;
+  opacity:.5;
+  background-image:repeating-linear-gradient(45deg, rgba(212,122,44,.05) 0 5px, transparent 5px 11px);
+}
+.epic-select-list::before{
+  content:""; display:block; position:sticky; top:0; height:4px; margin:0 2px 10px; border-radius:4px;
+  background:repeating-linear-gradient(90deg,var(--brand-700) 0 8px,var(--brand) 8px 16px,#f1b37f 16px 24px);
+  opacity:.85; z-index:1;
+}
+.epic-select-list.open-up{ transform:translateY(10px) scale(.96); }
+.epic-select-list.show{
+  opacity:1; visibility:visible; transform:none; pointer-events:auto;
+  transition:opacity .2s ease, transform .22s cubic-bezier(.22,.9,.32,1);
+}
+.epic-select-list::-webkit-scrollbar{ width:8px; }
+.epic-select-list::-webkit-scrollbar-track{ background:transparent; }
+.epic-select-list::-webkit-scrollbar-thumb{ background:#e6d7c8; border-radius:8px; border:2px solid #fffefc; }
+.epic-select-list::-webkit-scrollbar-thumb:hover{ background:var(--brand); }
+
+.epic-select-option{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; position:relative;
+  min-height:44px; box-sizing:border-box;
+  padding:9px 12px 9px 16px; margin:2px 0; border-radius:12px; font:600 14px Poppins; color:var(--ink); cursor:pointer;
+  transition:background .16s ease, color .16s ease, transform .12s ease;
+}
+.epic-select-option::before{
+  content:""; position:absolute; left:2px; top:7px; bottom:7px; width:3px; border-radius:3px;
+  background:linear-gradient(180deg,var(--safran),var(--brand-700)); transform:scaleY(0); transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.epic-select-option .swatch-dot{
+  width:15px; height:15px; border-radius:50%; flex:0 0 auto; margin-right:2px;
+  box-shadow:0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.08), inset 0 0 0 1px rgba(0,0,0,.06);
+}
+.epic-select-option > span{ display:flex; align-items:center; gap:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.epic-select-option:hover, .epic-select-option.focus{
+  background:linear-gradient(135deg,#fff1e4,#ffe6cf); color:var(--brand-700); transform:translateX(3px);
+}
+.epic-select-option:hover::before, .epic-select-option.focus::before{ transform:scaleY(1); }
+.epic-select-option.active{
+  font-weight:800; color:#fff;
+  background:linear-gradient(135deg,var(--brand),var(--brand-700));
+  box-shadow:0 6px 16px rgba(196,109,32,.35);
+}
+.epic-select-option.active:hover, .epic-select-option.active.focus{ transform:translateX(3px); filter:brightness(1.04); }
+.epic-select-option.active::before{ transform:scaleY(1); background:#fff; opacity:.85; }
+.epic-select-option .chk{ width:16px; height:16px; flex:0 0 auto; stroke:var(--brand-700); stroke-width:3; fill:none; opacity:0; transform:scale(.5); transition:opacity .15s ease, transform .2s cubic-bezier(.34,1.56,.64,1); }
+.epic-select-option.active .chk{ opacity:1; transform:scale(1); stroke:#fff; }
+
+/* Entrée en cascade des options à l'ouverture — une seule identité
+   d'animation avec les cartes produit et le menu Boutique/Collections. */
+@media (prefers-reduced-motion: no-preference){
+  .epic-select-list.show .epic-select-option{
+    animation: epicOptionIn .22s cubic-bezier(.22,.9,.32,1) both;
+    animation-delay: calc(var(--i, 0) * 22ms);
+  }
+  @keyframes epicOptionIn{ from{ opacity:0; transform:translateY(-4px); } to{ opacity:1; transform:translateY(0); } }
+}
+.mobile-menu-prefs .epic-select{ display:block; width:100%; }
+.mobile-menu-prefs .epic-select-trigger{ width:100%; min-height:44px; }
 
 /* ====== Navigation principale (Boutique / Collections) ====== */
-.main-nav{ display:flex; align-items:center; gap:6px; }
+.main-nav{ display:flex; align-items:center; gap:2px; }
 .nav-link{
   display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; cursor:pointer;
-  font:700 15px Poppins; color:var(--ink); padding:10px 12px; border-radius:10px;
+  font:700 15px Poppins; color:var(--ink); padding:10px 14px; border-radius:10px; position:relative;
   transition:background .15s, color .15s;
 }
+/* Petit fil qui se déroule sous l'item au survol/ouverture, comme un point
+   de couture qu'on tire — plus vivant qu'un simple fond qui change. */
+.nav-link::after{
+  content:""; position:absolute; left:14px; right:14px; bottom:5px; height:2px; border-radius:2px;
+  background:linear-gradient(90deg,var(--brand),var(--brand-700));
+  transform:scaleX(0); transform-origin:center; transition:transform .22s cubic-bezier(.22,.9,.32,1);
+}
 .nav-link:hover, .nav-link:focus-visible{ background:rgba(255,255,255,.55); color:var(--brand-700); }
+.nav-link:hover::after, .nav-link:focus-visible::after, .nav-item.open .nav-link::after{ transform:scaleX(1); }
 .nav-item.open .nav-link{ background:rgba(255,255,255,.75); color:var(--brand-700); }
-.nav-link .chev{ width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.4; transition:transform .2s ease; }
+.nav-link .chev{ width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2.4; transition:transform .28s cubic-bezier(.34,1.56,.64,1); }
 .nav-item.open .nav-link .chev{ transform:rotate(180deg); }
 
 .nav-item{ position:relative; }
 .dropdown{
-  position:absolute; top:calc(100% + 8px); left:0; min-width:230px; z-index:70;
-  background:#fff; border:1px solid #0001; border-radius:16px; padding:10px;
-  box-shadow:0 18px 40px rgba(0,0,0,.2);
-  opacity:0; visibility:hidden; transform:translateY(-8px) scale(.98); pointer-events:none;
-  transition:opacity .18s ease, transform .18s cubic-bezier(.22,.9,.32,1), visibility 0s linear .18s;
+  position:absolute; top:calc(100% + 8px); left:0; min-width:230px; z-index:var(--z-dropdown);
+  max-height:min(420px, 70vh); overflow-y:auto; overflow-x:hidden;
+  background:
+    radial-gradient(120% 60px at 50% 0%, rgba(212,122,44,.07), transparent 70%),
+    linear-gradient(180deg, #fffefc, #fff9f2);
+  border:1px solid #f0d9bd; border-radius:18px; padding:14px 10px 10px;
+  box-shadow:0 24px 48px -12px rgba(43,30,18,.32), 0 2px 6px rgba(43,30,18,.08), 0 0 0 1px rgba(255,255,255,.6) inset;
+  opacity:0; visibility:hidden; transform:translateY(-10px) scale(.96); pointer-events:none;
+  transition:opacity .2s ease, transform .22s cubic-bezier(.22,.9,.32,1), visibility 0s linear .2s;
 }
 .nav-item.open .dropdown{
   opacity:1; visibility:visible; transform:none; pointer-events:auto;
-  transition:opacity .18s ease, transform .18s cubic-bezier(.22,.9,.32,1);
+  transition:opacity .2s ease, transform .22s cubic-bezier(.22,.9,.32,1);
 }
+/* Trame tissée en filigrane + liseré en tête, même identité que les
+   listes "épiques" (langue/devise/taille) — un seul et même système
+   visuel de liste déroulante sur tout le site. */
+.dropdown::after{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:-1; opacity:.5;
+  background-image:repeating-linear-gradient(45deg, rgba(212,122,44,.05) 0 5px, transparent 5px 11px);
+}
+.dropdown::before{
+  content:""; display:block; position:sticky; top:0; height:5px; margin:0 2px 10px; border-radius:4px;
+  background:repeating-linear-gradient(90deg,var(--brand-700) 0 10px,var(--brand) 10px 20px,#f1b37f 20px 30px);
+  opacity:.85; z-index:1;
+}
+.dropdown::-webkit-scrollbar{ width:8px; }
+.dropdown::-webkit-scrollbar-track{ background:transparent; }
+.dropdown::-webkit-scrollbar-thumb{ background:#e6d7c8; border-radius:8px; border:2px solid #fffefc; }
+.dropdown::-webkit-scrollbar-thumb:hover{ background:var(--brand); }
 .nav-drop-item{
   display:flex; align-items:center; gap:10px; width:100%; border:0; background:transparent; cursor:pointer;
-  text-align:left; padding:8px; border-radius:10px; font:600 14px Poppins; color:var(--ink);
-  text-decoration:none; transition:background .15s, transform .1s ease;
+  text-align:left; padding:8px 10px 8px 12px; margin:2px 0; border-radius:12px; font:600 14px Poppins; color:var(--ink);
+  text-decoration:none; position:relative; transition:background .16s ease, color .16s ease, transform .12s ease;
 }
-.nav-drop-item:hover, .nav-drop-item:focus-visible{ background:#fff1e4; transform:translateX(2px); }
-.nav-drop-item.current{ background:#fff1e4; font-weight:800; color:var(--brand-700); }
+/* Accent de gauche qui se déploie au survol/focus, comme une lisière de
+   tissu qu'on tire — plus vivant qu'un simple changement de fond. */
+.nav-drop-item::before{
+  content:""; position:absolute; left:0; top:8px; bottom:8px; width:3px; border-radius:3px;
+  background:linear-gradient(180deg,var(--safran),var(--brand-700)); transform:scaleY(0); transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.nav-drop-item:hover, .nav-drop-item:focus-visible{
+  background:linear-gradient(135deg,#fff1e4,#ffe6cf); color:var(--brand-700); transform:translateX(3px);
+}
+.nav-drop-item:hover::before, .nav-drop-item:focus-visible::before{ transform:scaleY(1); }
+.nav-drop-item.current{
+  font-weight:800; color:#fff;
+  background:linear-gradient(135deg,var(--brand),var(--brand-700));
+  box-shadow:0 6px 16px rgba(196,109,32,.35);
+}
+.nav-drop-item.current::before{ transform:scaleY(1); background:#fff; opacity:.85; }
+.nav-drop-item.current .swatch{ box-shadow:0 0 0 2px rgba(255,255,255,.7) inset; }
+@media (prefers-reduced-motion: no-preference){
+  .nav-item.open .nav-drop-item{ animation: epicOptionIn .22s cubic-bezier(.22,.9,.32,1) both; animation-delay: calc(var(--i, 0) * 25ms); }
+}
 .nav-drop-item .swatch{
   width:32px; height:32px; border-radius:9px; flex:0 0 auto; background-size:cover; background-position:center;
   background-color:#f4cdb7;
@@ -406,36 +745,107 @@ img{max-width:100%;height:auto;display:block}
 
 /* ====== Bouton menu mobile (hamburger) + menu plein écran ====== */
 .hamburger{
-  display:none; flex-direction:column; justify-content:center; gap:5px;
-  width:42px; height:42px; border:0; border-radius:12px; background:#fff6ee; cursor:pointer;
-  border:1.5px solid #e6d7c8;
+  display:none; flex-direction:column; justify-content:center; align-items:center; gap:5px;
+  width:44px; height:44px; border:0; border-radius:12px; background:#fff6ee; cursor:pointer;
+  border:1.5px solid #e6d7c8; flex:0 0 auto; position:relative;
+  transition:background .2s ease, border-color .2s ease, transform .15s ease;
 }
-.hamburger span{ display:block; height:2px; width:20px; margin:0 auto; background:#5a3b25; border-radius:2px; transition:transform .2s ease, opacity .2s ease; }
+.hamburger:hover{ background:#ffeede; border-color:var(--brand); }
+.hamburger:active{ transform:scale(.94); }
+.hamburger:focus-visible{ outline:3px solid #ffcf9c; outline-offset:2px; }
+.hamburger span{
+  display:block; height:2px; width:20px; background:#5a3b25; border-radius:2px;
+  transition:transform .28s cubic-bezier(.22,.9,.32,1), opacity .2s ease, width .2s ease;
+}
+/* Morph en croix quand le menu est ouvert — reflète l'état ARIA réel du
+   bouton (aria-expanded), sans JS supplémentaire. */
+.hamburger[aria-expanded="true"] span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+.hamburger[aria-expanded="true"] span:nth-child(2){ opacity:0; width:0; }
+.hamburger[aria-expanded="true"] span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+/* En dessous de 860px, les pastilles langue/devise quittent la barre
+   compacte du header : elles restent pleinement fonctionnelles, mais
+   uniquement dans le menu plein écran (.mobile-menu-prefs) — un bandeau
+   mobile dégagé plutôt que surchargé, header à une seule ligne. */
+@media (max-width:860px){
+  .action > .epic-select{ display:none; }
+}
 
 .mobile-menu{
-  position:fixed; inset:0; z-index:200; background:var(--paper);
+  position:fixed; inset:0; z-index:var(--z-mobile-menu);
+  background:
+    radial-gradient(120% 40% at 50% 0%, rgba(212,122,44,.1), transparent 65%),
+    var(--paper);
   display:flex; flex-direction:column;
   opacity:0; visibility:hidden; transform:translateY(-12px); pointer-events:none;
-  transition:opacity .22s ease, transform .22s cubic-bezier(.22,.9,.32,1), visibility 0s linear .22s;
+  transition:opacity .26s ease, transform .26s cubic-bezier(.22,.9,.32,1), visibility 0s linear .26s;
 }
-.mobile-menu.show{ opacity:1; visibility:visible; transform:none; pointer-events:auto; transition:opacity .22s ease, transform .22s cubic-bezier(.22,.9,.32,1); }
-.mobile-menu-head{ display:flex; align-items:center; justify-content:space-between; padding:16px; border-bottom:1px solid #0001; }
+.mobile-menu.show{ opacity:1; visibility:visible; transform:none; pointer-events:auto; transition:opacity .26s ease, transform .26s cubic-bezier(.22,.9,.32,1); }
+.mobile-menu-head{
+  display:flex; align-items:center; justify-content:space-between; padding:16px; position:relative;
+  padding-top:max(16px, env(safe-area-inset-top)); padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right));
+  flex:0 0 auto;
+}
+/* Lisière tissée sous l'en-tête du menu — l'entrée dans l'univers
+   Hadeej'Art commence dès l'ouverture, pas seulement dans le contenu. */
+.mobile-menu-head::after{
+  content:""; position:absolute; left:16px; right:16px; bottom:0; height:3px; border-radius:3px;
+  background:repeating-linear-gradient(90deg,var(--brand-700) 0 12px,var(--brand) 12px 24px,#f1b37f 24px 36px);
+  opacity:.85;
+}
 .mobile-menu-head .brand{ display:flex; align-items:center; gap:10px; }
 .mobile-menu-head .brand .mark{ width:36px; height:36px; }
 .mobile-menu-head h1{ margin:0; font:800 20px Poppins; }
-.mobile-menu-close{ width:40px; height:40px; border-radius:12px; border:0; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.12); cursor:pointer; display:grid; place-items:center; }
+.mobile-menu-close{ width:44px; height:44px; border-radius:12px; border:0; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.12); cursor:pointer; display:grid; place-items:center; transition:transform .15s ease, background .15s ease; }
+.mobile-menu-close:hover{ background:#fff1e4; }
+.mobile-menu-close:active{ transform:scale(.92); }
 .mobile-menu-close svg{ width:18px; height:18px; stroke:#5a3b25; stroke-width:2.4; fill:none; }
-.mobile-menu-body{ flex:1; overflow-y:auto; padding:18px; -webkit-overflow-scrolling:touch; }
-.mobile-menu-body section{ margin-bottom:22px; }
-.mobile-menu-body h3{ margin:0 0 10px; text-transform:uppercase; font-size:13px; letter-spacing:.6px; color:var(--brand-700); }
+.mobile-menu-close:focus-visible{ outline:3px solid #ffcf9c; outline-offset:2px; }
+.mobile-menu-body{
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;
+  padding:20px 18px; padding-left:max(18px, env(safe-area-inset-left)); padding-right:max(18px, env(safe-area-inset-right));
+  padding-bottom:max(18px, env(safe-area-inset-bottom));
+}
+.mobile-menu-body section{ margin-bottom:24px; }
+.mobile-menu-body h3{
+  margin:0 0 10px; text-transform:uppercase; font-size:12px; letter-spacing:1px; color:var(--brand-700);
+  display:inline-flex; align-items:center; gap:8px;
+}
+/* Petite puce façon bouton-pression de tissu devant chaque titre de
+   section — un repère artisanal discret plutôt qu'un simple texte nu. */
+.mobile-menu-body h3::before{
+  content:""; width:7px; height:7px; border-radius:50%;
+  background:linear-gradient(135deg,var(--safran),var(--brand-700));
+}
 .mobile-menu-list{ display:flex; flex-direction:column; gap:2px; }
-.mobile-menu-list .nav-drop-item{ font-size:16px; padding:12px 8px; }
+.mobile-menu-list .nav-drop-item{ font-size:16px; padding:13px 10px; min-height:44px; }
 .mobile-menu-prefs{ display:flex; gap:16px; }
 .mobile-menu-prefs .field{ flex:1; margin:0; }
 .mobile-menu-prefs label{ display:block; font-weight:700; margin-bottom:6px; font-size:13px; }
-.mobile-menu-prefs select{ width:100%; }
-.mobile-menu-cta{ width:100%; justify-content:center; text-decoration:none; }
-body.mobile-menu-open{ overflow:hidden; }
+.mobile-menu-prefs select{ width:100%; min-height:44px; }
+.mobile-menu-cta{
+  width:100%; justify-content:center; text-decoration:none; min-height:48px;
+  font-size:15px; gap:10px;
+}
+.mobile-menu-cta::before{
+  content:"💬"; font-size:16px; line-height:1;
+}
+body.scroll-locked{ overflow:hidden; }
+
+@media (prefers-reduced-motion: no-preference){
+  /* Les sections du menu entrent en cascade légère, comme les cartes du
+     catalogue — perceptible seulement à l'ouverture (pas à chaque re-rendu
+     de langue), grâce à l'animation liée au conteneur .show. */
+  .mobile-menu.show .mobile-menu-body > section,
+  .mobile-menu.show .mobile-menu-cta{
+    animation: epicOptionIn .32s cubic-bezier(.22,.9,.32,1) both;
+  }
+  .mobile-menu.show .mobile-menu-body > section:nth-child(1){ animation-delay:.03s; }
+  .mobile-menu.show .mobile-menu-body > section:nth-child(2){ animation-delay:.08s; }
+  .mobile-menu.show .mobile-menu-body > section:nth-child(3){ animation-delay:.13s; }
+  .mobile-menu.show .mobile-menu-body > section:nth-child(4){ animation-delay:.18s; }
+  .mobile-menu.show .mobile-menu-cta{ animation-delay:.22s; }
+}
 
 @media (max-width:860px){
   .main-nav{ display:none; }
@@ -454,72 +864,181 @@ body.mobile-menu-open{ overflow:hidden; }
 #detail.gendered .sexe-field{display:none !important}
 @media(max-width:768px){#detailOptions{display:block !important}}
 
-/* ====== PIED DE PAGE — signature de marque ====== */
+/* ====== PIED DE PAGE — signature de marque ======
+   Rupture volontaire avec le reste du site, clair : un grand pan sombre et
+   chaud, comme l'envers d'un tissu wax richement teint, avec une seule
+   étiquette de vêtement (claire sur fond sombre) cousue en haut — plutôt
+   qu'une accumulation de cartes et de motifs. Quatre zones au maximum :
+   signature de marque, navigation essentielle, univers boutique,
+   contact/action — voir le HTML pour le découpage exact. */
 .site-footer{
-  position:relative; margin:32px 0 10px; padding:34px 26px 20px;
-  background:var(--paper); border-radius:20px 20px 0 0; box-shadow:0 -12px 30px rgba(0,0,0,.08);
-  font-size:13px; color:#5a4634;
+  --f-ink:#f5e8d8; --f-ink-dim:rgba(245,232,216,.68); --f-line:rgba(245,232,216,.14);
+  --f-accent:var(--safran);
+  position:relative; margin:56px 0 0; padding:70px 32px 26px;
+  background:linear-gradient(165deg,#2b1c10 0%,#20140a 55%,#170e06 100%);
+  border-radius:32px 32px 0 0; box-shadow:0 -20px 48px rgba(0,0,0,.28);
+  font-size:13.5px; color:var(--f-ink-dim); overflow:hidden;
 }
-/* Ligne décorative façon étiquette de tissu, en haut du pied de page */
+/* Trame tissée en filigrane, très discrète — la seule texture de fond,
+   pour ne pas alourdir un pan par ailleurs volontairement sobre. */
 .site-footer::before{
-  content:""; position:absolute; left:0; right:0; top:0; height:8px; border-radius:20px 20px 0 0; overflow:hidden;
-  background:repeating-linear-gradient(90deg,var(--brand-700) 0 12px,var(--brand) 12px 24px,#f1b37f 24px 36px);
-  opacity:.85;
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.05;
+  background-image:repeating-linear-gradient(45deg, var(--f-ink) 0 6px, transparent 6px 14px);
 }
-.site-footer a{ color:var(--brand-700); font-weight:700; text-decoration:none; }
-.site-footer a:hover{ text-decoration:underline; }
+/* Étiquette de vêtement cousue en haut du pied de page : claire sur fond
+   sombre, comme une vraie étiquette de marque sur l'envers d'un tissu —
+   l'élément visuel signature de ce footer, unique et non générique. */
+.site-footer::after{
+  content:"Hadeej’Art"; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  background:var(--paper); color:var(--brand-700);
+  font:800 12px "Kenia",Poppins; letter-spacing:1.5px; text-transform:uppercase;
+  padding:7px 28px 9px; border-radius:0 0 12px 12px; box-shadow:0 10px 20px rgba(0,0,0,.3);
+}
+.site-footer a{ color:var(--f-ink); font-weight:700; text-decoration:none; }
+.site-footer .footer-list a,
+.site-footer .footer-wa{ color:var(--f-ink-dim); }
 
 .footer-grid{
-  display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr 1.2fr; gap:24px; padding-bottom:22px;
+  position:relative; display:grid; grid-template-columns:1.4fr 1fr 1fr 1.1fr; gap:34px 28px; padding-bottom:30px;
 }
-@media(max-width:1020px){ .footer-grid{ grid-template-columns:1fr 1fr 1fr; } }
-@media(max-width:640px){ .footer-grid{ grid-template-columns:1fr 1fr; } }
-@media(max-width:420px){ .footer-grid{ grid-template-columns:1fr; } }
+@media(max-width:1020px){
+  .footer-grid{ grid-template-columns:1fr 1fr; row-gap:30px; }
+  .footer-contact{ grid-column:1 / -1; }
+}
+@media(max-width:640px){ .footer-grid{ grid-template-columns:1fr; } }
 
-.footer-brand{ grid-column:1 / 2; }
-@media(max-width:1020px){ .footer-brand{ grid-column:1 / -1; max-width:520px; } }
-.footer-logo{ width:52px; height:52px; border-radius:50%; overflow:hidden; border:2px solid var(--brand-700); background:#fff; margin-bottom:10px; }
+/* ---- Zone 1 : signature de marque ---- */
+.footer-brand{ position:relative; grid-column:1 / 2; }
+@media(max-width:1020px){ .footer-brand{ grid-column:1 / -1; max-width:440px; } }
+.footer-logo{ width:58px; height:58px; border-radius:50%; overflow:hidden; border:2px solid var(--f-accent); background:var(--paper); margin-bottom:16px; box-shadow:0 10px 22px rgba(0,0,0,.3); }
 .footer-logo img{ width:100%; height:100%; object-fit:cover; }
 .footer-tagline{
-  margin:0 0 6px; font-family:"Kenia",Poppins,sans-serif; font-size:20px; font-weight:800; color:var(--brand-700); letter-spacing:.3px;
+  position:relative; display:inline-block; margin:0 0 14px; font-family:"Kenia",Poppins,sans-serif;
+  font-size:32px; line-height:1.1; font-weight:800; color:var(--f-accent); letter-spacing:.3px;
 }
-.footer-about{ margin:0; line-height:1.6; opacity:.85; max-width:340px; }
+/* Trait manuscrit sous la signature — la "griffe" de la maison, seul
+   ornement de cette zone. */
+.footer-tagline::after{
+  content:""; position:absolute; left:1px; right:-6px; bottom:-8px; height:6px;
+  background:radial-gradient(var(--f-accent) 1.5px,transparent 2.3px) 0 0/12px 6px repeat-x;
+  opacity:.6;
+}
+/* Grand guillemet en filigrane : la phrase émotionnelle devient une
+   citation de maison, pas juste un paragraphe de description. */
+.footer-about{
+  position:relative; margin:0; padding-left:22px; line-height:1.7; max-width:340px; font-size:13.5px; font-style:italic; color:var(--f-ink-dim);
+}
+.footer-about::before{
+  content:"“"; position:absolute; left:-6px; top:-14px; font:800 46px "Kenia",Poppins; color:var(--f-accent); opacity:.35; font-style:normal;
+}
 
-.footer-col h4{ margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.7px; color:var(--brand-700); }
-.footer-col h4:not(:first-child){ margin-top:18px; }
-.footer-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px; }
-.footer-list + .footer-list{ margin-top:7px; }
-.footer-list li a{ color:#5a4634; font-weight:600; }
-.footer-list li a:hover{ color:var(--brand-700); }
-.footer-list li a[aria-current="page"]{ color:var(--brand-700); }
-.footer-list:empty::after{ content:attr(data-empty); opacity:.6; font-weight:500; }
+/* ---- En-têtes de zone : sobres, une seule fois le même traitement pour
+   les 4 zones (accordéons compris) — pas de pastille ni de fond coloré,
+   juste une majuscule espacée et un trait qui la souligne. ---- */
+.footer-col > h4,
+.footer-accordion > summary{
+  margin:0 0 16px; font-size:12px; text-transform:uppercase; letter-spacing:1.6px; color:#fff; font-weight:800;
+  padding-bottom:8px; border-bottom:1px solid var(--f-line);
+}
+.footer-sublabel{
+  margin:18px 0 10px; font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--f-accent); font-weight:800;
+}
+.footer-accordion > summary + .footer-sublabel{ margin-top:4px; }
 
-.footer-pill-row{ display:flex; gap:6px; flex-wrap:wrap; }
+.footer-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:11px; }
+.footer-list + .footer-sublabel{ margin-top:20px; }
+.footer-list li a{
+  position:relative; font-weight:600; padding-left:0; transition:padding-left .18s ease, color .15s ease;
+}
+.footer-list li a::before{
+  content:"–"; position:absolute; left:-16px; opacity:0; transition:opacity .18s ease, left .18s ease; color:var(--f-accent);
+}
+.footer-list li a:hover, .footer-list li a:focus-visible{ color:#fff; padding-left:16px; }
+.footer-list li a:hover::before, .footer-list li a:focus-visible::before{ opacity:1; left:0; }
+.footer-list li a[aria-current="page"]{ color:var(--f-accent); }
+.footer-list:empty::after{ content:attr(data-empty); opacity:.55; font-weight:500; font-style:italic; }
+
+/* ---- Zones 2 et 3 en accordéon natif (<details>/<summary>) : ouvertes
+   par défaut (rien ne change visuellement sur ordinateur), mais
+   réductibles d'un tapotement sur mobile — clavier et lecteurs d'écran
+   gérés nativement, sans JavaScript ni second système de navigation. ---- */
+.footer-accordion{ border:0; }
+.footer-accordion > summary{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; list-style:none;
+  transition:color .15s ease;
+}
+.footer-accordion > summary::-webkit-details-marker{ display:none; }
+.footer-accordion > summary:hover{ color:var(--f-accent); }
+.footer-accordion > summary:focus-visible{ outline:2px solid var(--f-accent); outline-offset:4px; border-radius:2px; }
+/* Flèche : seul indice qu'il s'agit d'un accordéon (le bouton hamburger
+   du header a déjà ce langage visuel de "chevron qui se retourne"). */
+.footer-accordion > summary::after{
+  content:""; width:9px; height:9px; flex:0 0 auto; margin-left:auto;
+  border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(45deg);
+  transition:transform .25s cubic-bezier(.22,.9,.32,1);
+}
+.footer-accordion[open] > summary::after{ transform:rotate(-135deg); }
+@media (prefers-reduced-motion: no-preference){
+  .footer-accordion[open] .footer-list,
+  .footer-accordion[open] .footer-sublabel{
+    animation: epicOptionIn .22s ease both;
+  }
+}
+
+/* ---- Zone 4 : contact et action ---- */
+.footer-contact{ display:flex; flex-direction:column; }
+.footer-wa{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; margin:2px 0 22px;
+  background:linear-gradient(135deg,var(--brand),var(--brand-700)); color:#fff !important; font-weight:800;
+  padding:12px 18px; border-radius:999px; min-height:44px; box-shadow:0 10px 24px rgba(0,0,0,.3);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.footer-wa::before{ content:"💬"; font-size:15px; line-height:1; }
+.footer-wa:hover{ transform:translateY(-2px); box-shadow:0 14px 28px rgba(0,0,0,.35); }
+.footer-prefs{ display:flex; gap:22px; flex-wrap:wrap; }
+
+.footer-pill-row{ display:flex; gap:7px; flex-wrap:wrap; }
 .footer-pill{
-  border:1.5px solid #e6d7c8; background:#fff6ee; color:#5a3b25; font-weight:700; font-size:12px;
-  padding:6px 10px; border-radius:999px; cursor:pointer; transition:background .15s, transform .08s ease, color .15s, border-color .15s;
+  border:1.5px solid var(--f-line); background:rgba(255,255,255,.06); color:var(--f-ink); font-weight:700; font-size:12px;
+  padding:8px 12px; min-height:36px; border-radius:999px; cursor:pointer; transition:background .15s, transform .08s ease, color .15s, border-color .15s, box-shadow .15s;
 }
-.footer-pill:hover{ background:#ffeede; transform:translateY(-1px); }
-.footer-pill.active{ background:var(--brand-700); color:#fff; border-color:var(--brand-700); }
+.footer-pill:hover{ background:rgba(255,255,255,.14); transform:translateY(-1px); }
+.footer-pill:focus-visible{ outline:2px solid var(--f-accent); outline-offset:2px; }
+.footer-pill.active{ background:linear-gradient(135deg,var(--brand),var(--brand-700)); color:#fff; border-color:transparent; box-shadow:0 4px 12px rgba(0,0,0,.3); }
+@media(max-width:760px){ .footer-pill{ padding:11px 16px; font-size:13px; min-height:44px; } }
 
 .footer-payments{
-  display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:16px 0; border-top:1px dashed #d8c4ae;
+  position:relative; display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:22px 0;
+  border-top:1px solid var(--f-line);
 }
-.footer-payments-title{ font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--brand-700); }
+.footer-payments-title{ font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--f-accent); }
 .footer-payments-row{ display:flex; gap:8px; flex-wrap:wrap; }
 .footer-pay-badge{
-  display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid #0001; border-radius:999px;
-  padding:5px 12px; font-weight:700; font-size:12px; color:#5a4634;
+  display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.06); border:1px solid var(--f-line); border-radius:999px;
+  padding:7px 14px; font-weight:700; font-size:12px; color:var(--f-ink);
+  transition:transform .15s ease, background .15s ease;
 }
+.footer-pay-badge:hover{ transform:translateY(-2px); background:rgba(255,255,255,.1); }
 
 .footer-legal{
-  display:flex; gap:16px; flex-wrap:wrap; align-items:center; padding:14px 0; border-top:1px dashed #d8c4ae; font-size:12px;
+  position:relative; display:flex; gap:18px; flex-wrap:wrap; align-items:center; padding:18px 0; font-size:12px;
+  border-top:1px solid var(--f-line);
 }
-.footer-legal > span:first-child{ font-weight:800; text-transform:uppercase; letter-spacing:.5px; opacity:.6; }
+.footer-legal > span:first-child{ font-weight:800; text-transform:uppercase; letter-spacing:1px; opacity:.55; color:var(--f-ink); }
+.footer-legal a{ color:var(--f-ink-dim); font-weight:600; }
+.footer-legal a:hover{ color:#fff; }
 
-.footer-copyright{ margin:14px 0 0; text-align:center; opacity:.65; }
+/* Petit fil de couture avant le copyright — dernier détail cousu main. */
+.footer-copyright::before{
+  content:""; display:block; width:52px; height:2px; margin:0 auto 14px; border-radius:2px;
+  background:var(--f-accent); opacity:.5;
+}
+.footer-copyright{ margin:18px 0 0; text-align:center; opacity:.5; color:var(--f-ink); font-size:12px; }
 
-@media(max-width:640px){ .site-footer{ padding:26px 16px 16px; } }
+@media(max-width:640px){
+  .site-footer{ padding:56px 18px 20px; margin-top:40px; border-radius:24px 24px 0 0; }
+  .footer-tagline{ font-size:27px; }
+}
 
 /* ======================================================================
    ====== MISE EN SCÈNE ÉDITORIALE — mouvement, couture, ambiance Dakar
@@ -583,6 +1102,15 @@ body.mobile-menu-open{ overflow:hidden; }
     transform-origin:left center;
   }
   @keyframes threadUnroll { from{ transform:scaleX(0) } to{ transform:scaleX(1) } }
+
+  /* --- Galerie fiche détail : image principale douce au changement de
+     vignette (classe relancée en JS, comme le rebond du panier) --- */
+  .sheet .media img#dImg.switching{ animation: galleryFade .25s ease both; }
+  @keyframes galleryFade { from{ opacity:.35 } to{ opacity:1 } }
+
+  /* --- Pastille "disponible" : léger battement --- */
+  .detail-availability .avail-dot{ animation: availPulse 2.4s ease-in-out infinite; }
+  @keyframes availPulse { 0%,100%{ box-shadow:0 0 0 3px rgba(42,160,106,.18) } 50%{ box-shadow:0 0 0 6px rgba(42,160,106,.1) } }
 }
 
 /* --- État de chargement du catalogue : trame "wax" qui patiente --- */

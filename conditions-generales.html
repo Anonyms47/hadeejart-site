@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title data-i18n="page_title_terms">Conditions générales de vente — Hadeej’Art</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Kenia&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -159,41 +159,43 @@
         <p class="footer-about" data-i18n="footer_about">Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.</p>
       </div>
 
-      <div class="footer-col">
-        <h4 data-i18n="footer_nav_title">Navigation</h4>
+      <details class="footer-col footer-accordion" open>
+        <summary data-i18n="footer_nav_title">Navigation</summary>
         <ul class="footer-list">
           <li><a href="index.html" data-i18n="footer_home_link">Accueil</a></li>
-          <li><a href="index.html#catalogue" data-i18n="catalogue">Catalogue</a></li>
+          <li><a href="index.html#catalogue" data-i18n="nav_shop">Boutique</a></li>
         </ul>
         <ul class="footer-list" id="footerInfoList"></ul>
-      </div>
+      </details>
 
-      <div class="footer-col">
-        <h4 data-i18n="footer_categories_title">Catégories</h4>
+      <details class="footer-col footer-accordion" open>
+        <summary data-i18n="footer_shop_universe_title">Univers boutique</summary>
+        <h5 class="footer-sublabel" data-i18n="footer_categories_title">Catégories</h5>
         <ul class="footer-list" id="footerShopList"></ul>
-      </div>
-
-      <div class="footer-col">
-        <h4 data-i18n="footer_collections_title">Collections</h4>
+        <h5 class="footer-sublabel" data-i18n="footer_collections_title">Collections</h5>
         <ul class="footer-list" id="footerCollectionsList"></ul>
-      </div>
+      </details>
 
-      <div class="footer-col">
+      <div class="footer-col footer-contact">
         <h4 data-i18n="footer_contact_title">Contact</h4>
-        <ul class="footer-list">
-          <li><a id="footerWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a></li>
-        </ul>
-        <h4 data-i18n="footer_langs_title">Langue</h4>
-        <div class="footer-pill-row" id="footerLangRow">
-          <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
-          <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
-          <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
-        </div>
-        <h4 data-i18n="footer_currencies_title">Devise</h4>
-        <div class="footer-pill-row" id="footerCurrencyRow">
-          <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
-          <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
-          <button type="button" class="footer-pill" data-currency="USD">USD</button>
+        <a id="footerWaLink" class="footer-wa" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
+        <div class="footer-prefs">
+          <div>
+            <span class="footer-sublabel" data-i18n="footer_langs_title">Langue</span>
+            <div class="footer-pill-row" id="footerLangRow">
+              <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
+              <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
+              <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
+            </div>
+          </div>
+          <div>
+            <span class="footer-sublabel" data-i18n="footer_currencies_title">Devise</span>
+            <div class="footer-pill-row" id="footerCurrencyRow">
+              <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
+              <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
+              <button type="button" class="footer-pill" data-currency="USD">USD</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

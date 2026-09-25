@@ -65,6 +65,7 @@ const UI_STRINGS = {
     sex_label: 'Sexe', sex_unisex: 'Unisexe', sex_male: 'Homme', sex_female: 'Femme',
     add_to_cart: 'Ajouter au panier',
     variant_with: 'Avec pantalon', variant_without: 'Sans pantalon',
+    detail_available: 'Disponible', detail_lead_time: 'Délai communiqué par WhatsApp après la commande',
 
     client_title: 'Mes informations',
     name_label: 'Nom complet', name_placeholder: 'ex: Aïcha Diop',
@@ -91,6 +92,8 @@ const UI_STRINGS = {
     suggest_districts: ['Plateau', 'Médina', 'Sicap Mbao', 'Parcelles Assainies', 'Ouakam', 'Ngor', 'Yoff', 'Mermoz', 'Sacré-Cœur', 'Liberté', 'Grand Yoff', 'Almadies'],
     suggest_fabrics: ['Wax', 'Bazin', 'Bogolan', 'Lin', 'Coton', 'Soie', 'Dentelle', 'Velours'],
     suggest_colors: ['Orange', 'Bleu', 'Rouge', 'Vert', 'Jaune', 'Noir', 'Blanc', 'Rose', 'Violet', 'Marron', 'Doré', 'Beige'],
+    autocomplete_empty: 'Aucune suggestion — votre saisie sera conservée',
+    autocomplete_use_value: v => `Utiliser « ${v} »`,
 
     map_reverse_searching: 'Recherche de l’adresse…',
     map_address_found: 'Adresse détectée.',
@@ -136,6 +139,7 @@ const UI_STRINGS = {
     footer_tagline: 'Portez votre histoire',
     footer_about: 'Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.',
     footer_nav_title: 'Navigation', footer_home_link: 'Accueil',
+    footer_shop_universe_title: 'Univers boutique',
     footer_categories_title: 'Catégories', footer_collections_title: 'Collections',
     footer_contact_title: 'Contact', footer_langs_title: 'Langue',
     footer_currencies_title: 'Devise', footer_payments_title: 'Paiement accepté',
@@ -288,6 +292,7 @@ const UI_STRINGS = {
     sex_label: 'Gender', sex_unisex: 'Unisex', sex_male: 'Men', sex_female: 'Women',
     add_to_cart: 'Add to cart',
     variant_with: 'With trousers', variant_without: 'Without trousers',
+    detail_available: 'In stock', detail_lead_time: 'Delivery time confirmed on WhatsApp after your order',
 
     client_title: 'My details',
     name_label: 'Full name', name_placeholder: 'e.g. Aïcha Diop',
@@ -314,6 +319,8 @@ const UI_STRINGS = {
     suggest_districts: ['Plateau', 'Médina', 'Sicap Mbao', 'Parcelles Assainies', 'Ouakam', 'Ngor', 'Yoff', 'Mermoz', 'Sacré-Cœur', 'Liberté', 'Grand Yoff', 'Almadies'],
     suggest_fabrics: ['Wax', 'Bazin', 'Bogolan', 'Linen', 'Cotton', 'Silk', 'Lace', 'Velvet'],
     suggest_colors: ['Orange', 'Blue', 'Red', 'Green', 'Yellow', 'Black', 'White', 'Pink', 'Purple', 'Brown', 'Gold', 'Beige'],
+    autocomplete_empty: 'No suggestions — your entry will be kept',
+    autocomplete_use_value: v => `Use "${v}"`,
 
     map_reverse_searching: 'Looking up the address…',
     map_address_found: 'Address detected.',
@@ -359,6 +366,7 @@ const UI_STRINGS = {
     footer_tagline: 'Wear your story',
     footer_about: 'Hadeej’Art designs authentic wax pieces, thoughtfully crafted, so every outfit tells a story.',
     footer_nav_title: 'Navigation', footer_home_link: 'Home',
+    footer_shop_universe_title: 'Shop universe',
     footer_categories_title: 'Categories', footer_collections_title: 'Collections',
     footer_contact_title: 'Contact', footer_langs_title: 'Language',
     footer_currencies_title: 'Currency', footer_payments_title: 'Accepted payments',
@@ -511,6 +519,7 @@ const UI_STRINGS = {
     sex_label: 'Xeet', sex_unisex: 'Ñëpp', sex_male: 'Góor', sex_female: 'Jigéen',
     add_to_cart: 'Yokk ko ci panier bi',
     variant_with: 'Ak tubéey', variant_without: 'Amul tubéey',
+    detail_available: 'Am na', detail_lead_time: 'Waxtu livraison dañu koy wax ci WhatsApp ginnaaw commande bi',
 
     client_title: 'Sama xibaar',
     name_label: 'Tur wu mat', name_placeholder: 'misaal: Aïcha Diop',
@@ -537,6 +546,8 @@ const UI_STRINGS = {
     suggest_districts: ['Plateau', 'Médina', 'Sicap Mbao', 'Parcelles Assainies', 'Ouakam', 'Ngor', 'Yoff', 'Mermoz', 'Sacré-Cœur', 'Liberté', 'Grand Yoff', 'Almadies'],
     suggest_fabrics: ['Wax', 'Bazin', 'Bogolan', 'Lin', 'Coton', 'Soie', 'Dentelle', 'Velours'],
     suggest_colors: ['Oranj', 'Ble', 'Xonq', 'Wert', 'Jonn', 'Ñuul', 'Weex', 'Roos', 'Vale', 'Maron', 'Wurus', 'Beige'],
+    autocomplete_empty: 'Amul soxla — dañuy denc li nga bind',
+    autocomplete_use_value: v => `Jëfandikoo « ${v} »`,
 
     map_reverse_searching: 'Di seet adres bi…',
     map_address_found: 'Adres bi gis nañu.',
@@ -582,6 +593,7 @@ const UI_STRINGS = {
     footer_tagline: 'Solu sa taariix',
     footer_about: 'Hadeej’Art dafay defar yëf wax yu dëggu, defar ko bu baax, ngir benn taariix féeñ ci nataal bu nekk.',
     footer_nav_title: 'Navigasiyoŋ', footer_home_link: 'Xët wu njëkk',
+    footer_shop_universe_title: 'Àddina bitik bi',
     footer_categories_title: 'Wàll yi', footer_collections_title: 'Koleksiyoŋ yi',
     footer_contact_title: 'Jokkoo', footer_langs_title: 'Làkk',
     footer_currencies_title: 'Xaalis', footer_payments_title: 'Fay bu ñu nangu',
