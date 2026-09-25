@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Sandales wax">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef3e6"/><stop offset="1" stop-color="#cfdcbb"/></linearGradient>
+    <pattern id="wax" width="64" height="64" patternUnits="userSpaceOnUse">
+      <rect width="64" height="64" fill="#2f6b3a"/>
+      <circle cx="32" cy="32" r="22" fill="#e8a317"/><circle cx="32" cy="32" r="12" fill="#f5e8d8"/><circle cx="32" cy="32" r="4" fill="#b5432a"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <g transform="translate(0,40)">
+    <ellipse cx="400" cy="760" rx="260" ry="18" fill="#2b1c10" opacity=".14"/>
+    <path d="M120 690 Q110 600 210 560 L560 500 Q690 480 690 600 Q690 700 560 720 L210 740 Q130 745 120 690 Z" fill="#b98a5a" stroke="#2b1c10" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M150 700 Q140 630 220 600 L560 545 Q660 530 660 610 Q660 690 560 705 L220 725 Q160 728 150 700 Z" fill="#e2c39a"/>
+    <path d="M300 585 Q360 430 470 528" fill="none" stroke="url(#wax)" stroke-width="58" stroke-linecap="round"/>
+    <path d="M300 585 Q360 430 470 528" fill="none" stroke="#2b1c10" stroke-width="7" stroke-linecap="round" opacity=".55"/>
+    <path d="M520 520 Q600 480 640 570" fill="none" stroke="url(#wax)" stroke-width="44" stroke-linecap="round"/>
+    <path d="M520 520 Q600 480 640 570" fill="none" stroke="#2b1c10" stroke-width="6" stroke-linecap="round" opacity=".55"/>
+  </g>
+</svg>

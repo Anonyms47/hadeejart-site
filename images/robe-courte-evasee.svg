@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Robe courte évasée">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbf0c9"/><stop offset="1" stop-color="#f1d98a"/></linearGradient>
+    <pattern id="wax" width="80" height="80" patternUnits="userSpaceOnUse">
+      <rect width="80" height="80" fill="#f2b705"/>
+      <path d="M40 6 L74 40 L40 74 L6 40 Z" fill="#2f6b3a"/>
+      <path d="M40 20 L60 40 L40 60 L20 40 Z" fill="#f5e8d8"/>
+      <circle cx="40" cy="40" r="7" fill="#b5432a"/>
+      <circle cx="0" cy="0" r="9" fill="#2b1c10"/><circle cx="80" cy="0" r="9" fill="#2b1c10"/>
+      <circle cx="0" cy="80" r="9" fill="#2b1c10"/><circle cx="80" cy="80" r="9" fill="#2b1c10"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <ellipse cx="400" cy="800" rx="230" ry="24" fill="#2b1c10" opacity=".12"/>
+  <path d="M330 200 L305 150 M470 200 L495 150" stroke="#2b1c10" stroke-width="10" stroke-linecap="round"/>
+  <path d="M322 200 Q400 250 478 200 L495 340 Q400 366 305 340 Z" fill="url(#wax)" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M305 340 Q400 366 495 340 L620 770 Q400 810 180 770 Z" fill="url(#wax)" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M300 350 Q400 380 500 350" stroke="#2b1c10" stroke-width="14" fill="none"/>
+  <path d="M190 752 Q400 796 610 752" stroke="#b5432a" stroke-width="9" fill="none"/>
+</svg>

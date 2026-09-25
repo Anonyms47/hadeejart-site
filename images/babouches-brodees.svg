@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Babouches brodées">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3ead8"/><stop offset="1" stop-color="#dcc79c"/></linearGradient>
+    <linearGradient id="leather" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2b04a"/><stop offset="1" stop-color="#b98422"/></linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <ellipse cx="400" cy="770" rx="270" ry="20" fill="#2b1c10" opacity=".14"/>
+  <path d="M110 700 Q120 560 260 540 Q330 530 380 480 Q470 400 700 610 Q760 670 700 705 Q400 760 110 700 Z" fill="url(#leather)" stroke="#2b1c10" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M110 700 Q400 760 700 705 Q740 690 725 660 Q400 720 118 668 Z" fill="#7a4b21" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M300 560 Q420 500 520 560" fill="#2b1c10" opacity=".85"/>
+  <g fill="none" stroke="#fff6dd" stroke-width="5" stroke-linecap="round">
+    <path d="M470 545 Q560 555 640 610"/><path d="M500 530 Q590 545 665 600"/>
+    <circle cx="560" cy="590" r="10"/><circle cx="600" cy="612" r="7"/>
+    <path d="M200 620 q20 -22 40 0 q20 22 40 0 q20 -22 40 0"/>
+  </g>
+</svg>

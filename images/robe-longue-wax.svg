@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Robe longue wax">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7ead6"/><stop offset="1" stop-color="#ecd2aa"/></linearGradient>
+    <pattern id="wax" width="90" height="90" patternUnits="userSpaceOnUse">
+      <rect width="90" height="90" fill="#b5432a"/>
+      <circle cx="45" cy="45" r="34" fill="#e8a317"/><circle cx="45" cy="45" r="24" fill="#1f3a5f"/>
+      <circle cx="45" cy="45" r="13" fill="#f5e8d8"/><circle cx="45" cy="45" r="5" fill="#b5432a"/>
+      <circle cx="0" cy="0" r="14" fill="#f5e8d8"/><circle cx="90" cy="0" r="14" fill="#f5e8d8"/>
+      <circle cx="0" cy="90" r="14" fill="#f5e8d8"/><circle cx="90" cy="90" r="14" fill="#f5e8d8"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <ellipse cx="400" cy="930" rx="230" ry="26" fill="#2b1c10" opacity=".12"/>
+  <path d="M330 150 L300 110 M470 150 L500 110" stroke="#2b1c10" stroke-width="10" stroke-linecap="round"/>
+  <path d="M320 150 Q400 200 480 150 L500 300 Q400 330 300 300 Z" fill="url(#wax)" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M300 300 Q400 330 500 300 L640 900 Q400 940 160 900 Z" fill="url(#wax)" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M296 310 Q400 345 504 310" stroke="#2b1c10" stroke-width="16" fill="none" opacity=".85"/>
+  <path d="M170 880 Q400 925 630 880" stroke="#e8a317" stroke-width="10" fill="none"/>
+</svg>
