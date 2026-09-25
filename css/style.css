@@ -51,16 +51,27 @@ img{max-width:100%;height:auto;display:block}
    ourlet — et l'identité (logo, titre) se resserre avec lui. */
 .header{
   display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;
-  background:rgba(246,215,196,.4);backdrop-filter:blur(2px);
-  border-bottom:1px solid transparent;
+  background:linear-gradient(180deg,rgba(255,244,230,.72),rgba(246,215,196,.35));backdrop-filter:blur(2px);
+  /* Au repos : un pointillé de couture sous le header, comme un ourlet
+     piqué à la main — il devient lisière tissée une fois le bandeau contracté. */
+  border-bottom:1.5px dashed rgba(122,75,33,.35);
   z-index:var(--z-header);
-  padding-block:16px;
+  padding-block:20px;
   /* Réserve l'encoche/île dynamique en haut : le header colle au tout
      haut de l'écran dès le défilement, y compris sous cette zone. */
-  padding-top:calc(16px + env(safe-area-inset-top));
-  transition:background-color .35s ease, backdrop-filter .35s ease, box-shadow .35s ease,
+  padding-top:calc(20px + env(safe-area-inset-top));
+  transition:background .35s ease, backdrop-filter .35s ease, box-shadow .35s ease,
              border-color .35s ease, padding .3s cubic-bezier(.22,.9,.32,1);
 }
+/* Trame de tissu discrète, visible seulement au repos (le bandeau
+   contracté, lui, est uni et lisible avant tout). */
+.header::before{
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:repeating-linear-gradient(45deg,rgba(181,67,42,.07) 0 2px,transparent 2px 10px),
+             repeating-linear-gradient(-45deg,rgba(232,163,23,.08) 0 2px,transparent 2px 10px);
+  transition:opacity .3s ease;
+}
+.header.scrolled::before{ opacity:0; }
 .header::after{
   /* Lisière tissée en pied de header, façon ourlet — n'apparaît qu'une
      fois le bandeau contracté, pour marquer nettement la transition. */
@@ -70,28 +81,38 @@ img{max-width:100%;height:auto;display:block}
   pointer-events:none;
 }
 .header.scrolled{
-  background:rgba(246,215,196,.94);backdrop-filter:blur(14px) saturate(1.1);
-  box-shadow:0 10px 26px rgba(43,30,18,.18);
-  border-bottom-color:rgba(0,0,0,.06);
-  padding-block:9px;
+  background:rgba(250,232,213,.96);backdrop-filter:blur(14px) saturate(1.1);
+  box-shadow:0 12px 28px rgba(80,40,10,.24);
+  border-bottom-color:transparent;
+  padding-block:8px;
+  padding-top:calc(8px + env(safe-area-inset-top));
 }
 .header.scrolled::after{ opacity:.9; }
-.brand{display:flex;align-items:center;gap:12px}
+/* La marque est un vrai lien vers l'accueil (fonctionne sans JavaScript). */
+.brand{display:flex;align-items:center;gap:14px;color:inherit;text-decoration:none;border-radius:16px;min-width:0;min-height:44px}
+.brand:focus-visible{ outline:3px solid #ffcf9c; outline-offset:4px; }
+.brand-text{ display:flex; flex-direction:column; align-items:flex-start; min-width:0; }
+.brand .badge{ white-space:nowrap; max-width:100%; text-overflow:ellipsis; }
+/* Entre 861 et 1100 px, nav + sélecteurs + panier occupent la barre : l'accroche
+   cède la place plutôt que de passer sur plusieurs lignes et gonfler le header. */
+@media (min-width:861px) and (max-width:1100px){ .brand .badge{ display:none; } }
+.brand-name{ display:block; line-height:1.05; }
 .brand .mark{
-  width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;
-  box-shadow:0 1px 2px rgba(0,0,0,.15) inset;overflow:hidden;position:relative;
-  transition:width .3s cubic-bezier(.22,.9,.32,1), height .3s cubic-bezier(.22,.9,.32,1);
+  width:58px;height:58px;border-radius:50%;background:#fff;display:grid;place-items:center;
+  box-shadow:0 0 0 3px rgba(232,163,23,.55), 0 6px 14px rgba(80,40,10,.25);overflow:hidden;position:relative;flex:0 0 auto;
+  transition:width .3s cubic-bezier(.22,.9,.32,1), height .3s cubic-bezier(.22,.9,.32,1), box-shadow .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1);
 }
-.header.scrolled .brand .mark{ width:36px; height:36px; }
+.brand:hover .mark{ transform:rotate(-6deg) scale(1.05); }
+.header.scrolled .brand .mark{ width:38px; height:38px; box-shadow:0 0 0 2px rgba(232,163,23,.5), 0 3px 8px rgba(80,40,10,.2); }
 .brand .mark::after{
   content:"";position:absolute;inset:0;border-radius:50%;
   background:conic-gradient(from 0deg,var(--brand-700),var(--safran),var(--terracotta),var(--brand-700));
   opacity:.18;mix-blend-mode:multiply;pointer-events:none;
 }
 .brand .mark img{width:100%;height:100%;object-fit:cover;border-radius:50%;position:relative;z-index:1}
-.brand h1{margin:0;font:800 24px Poppins;transition:font-size .3s cubic-bezier(.22,.9,.32,1);}
-.header.scrolled .brand h1{ font-size:19px; }
-.brand h1,
+.brand-name{margin:0;font:800 30px Poppins;transition:font-size .3s cubic-bezier(.22,.9,.32,1);}
+.header.scrolled .brand-name{ font-size:20px; }
+.brand-name,
 .hero h2{
   font-family: "Kenia", Poppins, sans-serif;
   font-weight: 800;
@@ -649,15 +670,31 @@ select:active{ transform:translateY(1px); }
 .main-nav{ display:flex; align-items:center; gap:2px; }
 .nav-link{
   display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; cursor:pointer;
-  font:700 15px Poppins; color:var(--ink); padding:10px 14px; border-radius:10px; position:relative;
+  font:700 15px Poppins; color:var(--ink); padding:10px 14px; min-height:44px; border-radius:10px; position:relative;
   transition:background .15s, color .15s;
 }
 /* Petit fil qui se déroule sous l'item au survol/ouverture, comme un point
    de couture qu'on tire — plus vivant qu'un simple fond qui change. */
 .nav-link::after{
-  content:""; position:absolute; left:14px; right:14px; bottom:5px; height:2px; border-radius:2px;
-  background:linear-gradient(90deg,var(--brand),var(--brand-700));
-  transform:scaleX(0); transform-origin:center; transition:transform .22s cubic-bezier(.22,.9,.32,1);
+  content:""; position:absolute; left:14px; right:14px; bottom:5px; height:3px; border-radius:2px;
+  /* Fil piqué : tirets réguliers, comme un point avant. */
+  background:repeating-linear-gradient(90deg,var(--brand-700) 0 6px,transparent 6px 10px);
+  transform:scaleX(0); transform-origin:left center; transition:transform .3s cubic-bezier(.22,.9,.32,1);
+}
+/* Page active : le fil est tiré en continu, en safran, et un petit nœud
+   marque la fin — indicateur permanent, sans dépendre du survol. */
+.nav-item.is-current > .nav-link{ color:var(--brand-700); }
+.nav-item.is-current > .nav-link::after{
+  transform:scaleX(1); height:3px;
+  background:linear-gradient(90deg,var(--safran),var(--brand-700));
+}
+.nav-item.is-current > .nav-link::before{
+  content:""; position:absolute; right:12px; bottom:2px; width:8px; height:8px; border-radius:50%;
+  background:var(--safran); box-shadow:0 0 0 2px #fff6ea;
+}
+@media (prefers-reduced-motion: no-preference){
+  .nav-item.is-current > .nav-link::after{ animation:navThread .7s cubic-bezier(.22,.9,.32,1) both; }
+  @keyframes navThread{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
 }
 .nav-link:hover, .nav-link:focus-visible{ background:rgba(255,255,255,.55); color:var(--brand-700); }
 .nav-link:hover::after, .nav-link:focus-visible::after, .nav-item.open .nav-link::after{ transform:scaleX(1); }
@@ -795,7 +832,7 @@ select:active{ transform:translateY(1px); }
 }
 .mobile-menu-head .brand{ display:flex; align-items:center; gap:10px; }
 .mobile-menu-head .brand .mark{ width:36px; height:36px; }
-.mobile-menu-head h1{ margin:0; font:800 20px Poppins; }
+.mobile-menu-head .brand-name{ margin:0; font-size:22px; }
 .mobile-menu-close{ width:44px; height:44px; border-radius:12px; border:0; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,.12); cursor:pointer; display:grid; place-items:center; transition:transform .15s ease, background .15s ease; }
 .mobile-menu-close:hover{ background:#fff1e4; }
 .mobile-menu-close:active{ transform:scale(.92); }
@@ -850,6 +887,24 @@ body.scroll-locked{ overflow:hidden; }
 @media (max-width:860px){
   .main-nav{ display:none; }
   .hamburger{ display:flex; }
+  /* Barre mobile compacte : la marque et le panier passent avant tout. */
+  .header{ padding-block:12px; padding-top:calc(12px + env(safe-area-inset-top)); gap:10px; }
+  .header.scrolled{ padding-block:6px; padding-top:calc(6px + env(safe-area-inset-top)); }
+  .brand{ gap:10px; }
+  .brand .mark{ width:46px; height:46px; }
+  .header.scrolled .brand .mark{ width:34px; height:34px; }
+  .brand-name{ font-size:24px; }
+  .header.scrolled .brand-name{ font-size:19px; }
+}
+/* Sur les petits écrans, l'accroche cède la place : seul le logo et le nom
+   restent, pour une barre lisible d'un coup d'œil. */
+@media (max-width:640px){
+  .brand .badge{ display:none; }
+  .brand-name{ font-size:22px; }
+}
+@media (max-width:360px){
+  .brand-name{ font-size:20px; }
+  .brand .mark{ width:40px; height:40px; }
 }
 @media (min-width:861px){
   .mobile-menu{ display:none; }
@@ -874,10 +929,10 @@ body.scroll-locked{ overflow:hidden; }
 .site-footer{
   --f-ink:#f5e8d8; --f-ink-dim:rgba(245,232,216,.68); --f-line:rgba(245,232,216,.14);
   --f-accent:var(--safran);
-  position:relative; margin:56px 0 0; padding:70px 32px 26px;
+  position:relative; margin:36px 0 0; padding:40px 28px 12px; display:grid; grid-template-columns:1fr auto; column-gap:24px;
   background:linear-gradient(165deg,#2b1c10 0%,#20140a 55%,#170e06 100%);
   border-radius:32px 32px 0 0; box-shadow:0 -20px 48px rgba(0,0,0,.28);
-  font-size:13.5px; color:var(--f-ink-dim); overflow:hidden;
+  font-size:13px; color:var(--f-ink-dim); overflow:hidden;
 }
 /* Trame tissée en filigrane, très discrète — la seule texture de fond,
    pour ne pas alourdir un pan par ailleurs volontairement sobre. */
@@ -891,45 +946,55 @@ body.scroll-locked{ overflow:hidden; }
 .site-footer::after{
   content:"Hadeej’Art"; position:absolute; top:0; left:50%; transform:translateX(-50%);
   background:var(--paper); color:var(--brand-700);
-  font:800 12px "Kenia",Poppins; letter-spacing:1.5px; text-transform:uppercase;
-  padding:7px 28px 9px; border-radius:0 0 12px 12px; box-shadow:0 10px 20px rgba(0,0,0,.3);
+  font:800 11px "Kenia",Poppins; letter-spacing:1.5px; text-transform:uppercase;
+  padding:4px 22px 6px; border-radius:0 0 10px 10px; box-shadow:0 10px 20px rgba(0,0,0,.3);
 }
 .site-footer a{ color:var(--f-ink); font-weight:700; text-decoration:none; }
 .site-footer .footer-list a,
 .site-footer .footer-wa{ color:var(--f-ink-dim); }
 
 .footer-grid{
-  position:relative; display:grid; grid-template-columns:1.4fr 1fr 1fr 1.1fr; gap:34px 28px; padding-bottom:30px;
+  position:relative; grid-column:1 / -1; display:grid; grid-template-columns:1.25fr 1fr 1.15fr 1.05fr; gap:14px 24px; padding-bottom:16px;
+  border-bottom:1px solid var(--f-line);
 }
 @media(max-width:1020px){
-  .footer-grid{ grid-template-columns:1fr 1fr; row-gap:30px; }
-  .footer-contact{ grid-column:1 / -1; }
+  /* Deux colonnes : marque | contact en haut, navigation | boutique dessous. */
+  .footer-grid{ grid-template-columns:1fr 1fr; row-gap:16px; }
+  .footer-brand{ grid-column:1; grid-row:1; }
+  .footer-contact{ grid-column:2; grid-row:1; }
 }
-@media(max-width:640px){ .footer-grid{ grid-template-columns:1fr; } }
+@media(max-width:640px){
+  .footer-grid{ grid-template-columns:1fr; }
+  .footer-brand, .footer-contact{ grid-column:auto; grid-row:auto; }
+}
+/* Tablettes tactiles : en-têtes d'accordéon à hauteur de doigt. */
+@media(max-width:1020px){
+  .footer-accordion > summary{ min-height:44px; box-sizing:border-box; padding-block:0 4px; }
+}
 
 /* ---- Zone 1 : signature de marque ---- */
-.footer-brand{ position:relative; grid-column:1 / 2; }
-@media(max-width:1020px){ .footer-brand{ grid-column:1 / -1; max-width:440px; } }
-.footer-logo{ width:58px; height:58px; border-radius:50%; overflow:hidden; border:2px solid var(--f-accent); background:var(--paper); margin-bottom:16px; box-shadow:0 10px 22px rgba(0,0,0,.3); }
+.footer-brand{ position:relative; grid-column:1 / 2; display:grid; grid-template-columns:auto 1fr; column-gap:12px; align-items:center; align-content:start; }
+
+.footer-logo{ width:46px; height:46px; border-radius:50%; overflow:hidden; border:2px solid var(--f-accent); background:var(--paper); margin:0; box-shadow:0 6px 14px rgba(0,0,0,.3); }
 .footer-logo img{ width:100%; height:100%; object-fit:cover; }
 .footer-tagline{
-  position:relative; display:inline-block; margin:0 0 14px; font-family:"Kenia",Poppins,sans-serif;
-  font-size:32px; line-height:1.1; font-weight:800; color:var(--f-accent); letter-spacing:.3px;
+  position:relative; display:inline-block; justify-self:start; margin:0 0 6px; font-family:"Kenia",Poppins,sans-serif;
+  font-size:25px; line-height:1.1; font-weight:800; color:var(--f-accent); letter-spacing:.3px;
 }
 /* Trait manuscrit sous la signature — la "griffe" de la maison, seul
    ornement de cette zone. */
 .footer-tagline::after{
-  content:""; position:absolute; left:1px; right:-6px; bottom:-8px; height:6px;
+  content:""; position:absolute; left:1px; right:-6px; bottom:-7px; height:6px;
   background:radial-gradient(var(--f-accent) 1.5px,transparent 2.3px) 0 0/12px 6px repeat-x;
   opacity:.6;
 }
 /* Grand guillemet en filigrane : la phrase émotionnelle devient une
    citation de maison, pas juste un paragraphe de description. */
 .footer-about{
-  position:relative; margin:0; padding-left:22px; line-height:1.7; max-width:340px; font-size:13.5px; font-style:italic; color:var(--f-ink-dim);
+  position:relative; grid-column:1 / -1; margin:10px 0 0; padding-left:20px; line-height:1.5; max-width:330px; font-size:12.5px; font-style:italic; color:var(--f-ink-dim);
 }
 .footer-about::before{
-  content:"“"; position:absolute; left:-6px; top:-14px; font:800 46px "Kenia",Poppins; color:var(--f-accent); opacity:.35; font-style:normal;
+  content:"“"; position:absolute; left:-4px; top:-10px; font:800 38px "Kenia",Poppins; color:var(--f-accent); opacity:.35; font-style:normal;
 }
 
 /* ---- En-têtes de zone : sobres, une seule fois le même traitement pour
@@ -937,16 +1002,17 @@ body.scroll-locked{ overflow:hidden; }
    juste une majuscule espacée et un trait qui la souligne. ---- */
 .footer-col > h4,
 .footer-accordion > summary{
-  margin:0 0 16px; font-size:12px; text-transform:uppercase; letter-spacing:1.6px; color:#fff; font-weight:800;
-  padding-bottom:8px; border-bottom:1px solid var(--f-line);
+  margin:0 0 9px; font-size:12px; text-transform:uppercase; letter-spacing:1.6px; color:#fff; font-weight:800;
+  padding-bottom:6px; border-bottom:1px solid var(--f-line);
 }
 .footer-sublabel{
-  margin:18px 0 10px; font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--f-accent); font-weight:800;
+  margin:10px 0 6px; font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:var(--f-accent); font-weight:800;
 }
 .footer-accordion > summary + .footer-sublabel{ margin-top:4px; }
 
-.footer-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:11px; }
-.footer-list + .footer-sublabel{ margin-top:20px; }
+.footer-list{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px 14px; }
+.footer-list + .footer-list{ margin-top:5px; }
+.footer-list + .footer-sublabel{ margin-top:10px; }
 .footer-list li a{
   position:relative; font-weight:600; padding-left:0; transition:padding-left .18s ease, color .15s ease;
 }
@@ -956,7 +1022,7 @@ body.scroll-locked{ overflow:hidden; }
 .footer-list li a:hover, .footer-list li a:focus-visible{ color:#fff; padding-left:16px; }
 .footer-list li a:hover::before, .footer-list li a:focus-visible::before{ opacity:1; left:0; }
 .footer-list li a[aria-current="page"]{ color:var(--f-accent); }
-.footer-list:empty::after{ content:attr(data-empty); opacity:.55; font-weight:500; font-style:italic; }
+.footer-list:empty::after{ grid-column:1 / -1; content:attr(data-empty); opacity:.55; font-weight:500; font-style:italic; }
 
 /* ---- Zones 2 et 3 en accordéon natif (<details>/<summary>) : ouvertes
    par défaut (rien ne change visuellement sur ordinateur), mais
@@ -988,19 +1054,20 @@ body.scroll-locked{ overflow:hidden; }
 /* ---- Zone 4 : contact et action ---- */
 .footer-contact{ display:flex; flex-direction:column; }
 .footer-wa{
-  display:inline-flex; align-items:center; justify-content:center; gap:8px; margin:2px 0 22px;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px; margin:0 0 12px;
   background:linear-gradient(135deg,var(--brand),var(--brand-700)); color:#fff !important; font-weight:800;
-  padding:12px 18px; border-radius:999px; min-height:44px; box-shadow:0 10px 24px rgba(0,0,0,.3);
+  padding:9px 16px; border-radius:999px; min-height:44px; box-shadow:0 10px 24px rgba(0,0,0,.3);
   transition:transform .15s ease, box-shadow .15s ease;
 }
 .footer-wa::before{ content:"💬"; font-size:15px; line-height:1; }
 .footer-wa:hover{ transform:translateY(-2px); box-shadow:0 14px 28px rgba(0,0,0,.35); }
-.footer-prefs{ display:flex; gap:22px; flex-wrap:wrap; }
+.footer-prefs{ display:flex; gap:8px 16px; flex-wrap:wrap; }
+.footer-prefs .footer-sublabel{ display:block; margin:0 0 4px; }
 
 .footer-pill-row{ display:flex; gap:7px; flex-wrap:wrap; }
 .footer-pill{
   border:1.5px solid var(--f-line); background:rgba(255,255,255,.06); color:var(--f-ink); font-weight:700; font-size:12px;
-  padding:8px 12px; min-height:36px; border-radius:999px; cursor:pointer; transition:background .15s, transform .08s ease, color .15s, border-color .15s, box-shadow .15s;
+  padding:5px 11px; min-height:30px; border-radius:999px; cursor:pointer; transition:background .15s, transform .08s ease, color .15s, border-color .15s, box-shadow .15s;
 }
 .footer-pill:hover{ background:rgba(255,255,255,.14); transform:translateY(-1px); }
 .footer-pill:focus-visible{ outline:2px solid var(--f-accent); outline-offset:2px; }
@@ -1008,21 +1075,19 @@ body.scroll-locked{ overflow:hidden; }
 @media(max-width:760px){ .footer-pill{ padding:11px 16px; font-size:13px; min-height:44px; } }
 
 .footer-payments{
-  position:relative; display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:22px 0;
-  border-top:1px solid var(--f-line);
+  position:relative; display:flex; align-items:center; gap:8px 12px; flex-wrap:wrap; padding:12px 0 8px;
 }
 .footer-payments-title{ font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--f-accent); }
 .footer-payments-row{ display:flex; gap:8px; flex-wrap:wrap; }
 .footer-pay-badge{
   display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.06); border:1px solid var(--f-line); border-radius:999px;
-  padding:7px 14px; font-weight:700; font-size:12px; color:var(--f-ink);
+  padding:4px 11px; font-weight:700; font-size:12px; color:var(--f-ink);
   transition:transform .15s ease, background .15s ease;
 }
 .footer-pay-badge:hover{ transform:translateY(-2px); background:rgba(255,255,255,.1); }
 
 .footer-legal{
-  position:relative; display:flex; gap:18px; flex-wrap:wrap; align-items:center; padding:18px 0; font-size:12px;
-  border-top:1px solid var(--f-line);
+  position:relative; display:flex; gap:6px 16px; flex-wrap:wrap; align-items:center; justify-content:flex-end; padding:12px 0 8px; font-size:12px;
 }
 .footer-legal > span:first-child{ font-weight:800; text-transform:uppercase; letter-spacing:1px; opacity:.55; color:var(--f-ink); }
 .footer-legal a{ color:var(--f-ink-dim); font-weight:600; }
@@ -1030,14 +1095,34 @@ body.scroll-locked{ overflow:hidden; }
 
 /* Petit fil de couture avant le copyright — dernier détail cousu main. */
 .footer-copyright::before{
-  content:""; display:block; width:52px; height:2px; margin:0 auto 14px; border-radius:2px;
+  content:""; display:block; width:40px; height:2px; margin:0 auto 6px; border-radius:2px;
   background:var(--f-accent); opacity:.5;
 }
-.footer-copyright{ margin:18px 0 0; text-align:center; opacity:.5; color:var(--f-ink); font-size:12px; }
+.footer-copyright{ grid-column:1 / -1; margin:2px 0 0; text-align:center; opacity:.5; color:var(--f-ink); font-size:12px; }
 
+@media(max-width:900px){
+  .site-footer{ grid-template-columns:1fr; }
+  .footer-legal{ justify-content:flex-start; padding-top:4px; }
+}
 @media(max-width:640px){
-  .site-footer{ padding:56px 18px 20px; margin-top:40px; border-radius:24px 24px 0 0; }
-  .footer-tagline{ font-size:27px; }
+  .site-footer{ padding:34px 16px 10px; margin-top:28px; border-radius:22px 22px 0 0; }
+  .footer-grid{ gap:0; padding-bottom:6px; }
+  .footer-brand{ padding-bottom:12px; }
+  .footer-tagline{ font-size:23px; }
+  .footer-about{ max-width:none; }
+  /* Accordéons compacts : la zone entière est la cible tactile (44 px). */
+  .footer-accordion > summary{ margin:0; padding:12px 0; min-height:44px; box-sizing:border-box; }
+  .footer-accordion[open] > summary{ margin-bottom:8px; }
+  .footer-accordion{ border-bottom:1px solid var(--f-line); padding-bottom:0; }
+  .footer-accordion[open]{ padding-bottom:10px; }
+  .footer-accordion > summary{ border-bottom:0; }
+  .footer-contact{ padding-top:14px; }
+  .footer-contact > h4{ display:none; }
+  .footer-list li a{ display:inline-flex; align-items:center; min-height:32px; }
+  .footer-payments{ padding:10px 0 6px; }
+  .footer-payments-title{ width:100%; }
+  .footer-pay-badge{ padding:3px 9px; }
+  .footer-legal{ padding:2px 0 6px; }
 }
 
 /* ======================================================================
@@ -1171,9 +1256,38 @@ body.scroll-locked{ overflow:hidden; }
 .back-link:hover{ text-decoration:underline; }
 
 /* --- Texte éditorial "Notre histoire" --- */
-.story-body{ max-width:760px; margin:0 auto; }
-.story-body p{ font-size:1.05rem; line-height:1.8; margin:0 0 18px; }
-.story-cta-row{ text-align:center; margin-top:8px; }
+/* ---- Notre histoire : récit en chapitres, décalés comme des pages de
+   carnet, rythmés par une citation en tissu sombre. ---- */
+.story{ max-width:860px; margin:0 auto; display:flex; flex-direction:column; gap:22px; }
+.story-chapter{
+  position:relative; background:var(--paper); border-radius:20px; padding:22px 26px 22px 92px;
+  box-shadow:0 14px 30px rgba(80,40,10,.14); max-width:640px;
+}
+.story-chapter:nth-of-type(even){ align-self:flex-end; }
+.story-num{
+  position:absolute; left:22px; top:14px; font:800 46px/1 Kenia,Poppins; color:var(--safran); opacity:.9;
+}
+.story-num::after{
+  content:""; position:absolute; left:4px; right:4px; bottom:-8px; height:3px;
+  background:repeating-linear-gradient(90deg,var(--brand-700) 0 6px,transparent 6px 10px);
+}
+.story-chapter h2{ margin:0 0 8px; font:800 22px/1.2 Kenia,Poppins; color:var(--brand-700); }
+.story-chapter p{ margin:0; line-height:1.75; font-size:1.02rem; color:#3a2a1c; }
+.story-quote{
+  margin:6px 0; padding:26px 28px; border-radius:22px; text-align:center;
+  background:linear-gradient(165deg,#2b1c10,#170e06); box-shadow:0 18px 36px rgba(0,0,0,.25);
+  position:relative; overflow:hidden;
+}
+.story-quote::before{
+  content:"“"; position:absolute; left:18px; top:-6px; font:800 90px/1 Kenia,Poppins; color:var(--safran); opacity:.3;
+}
+.story-quote p{ margin:0; position:relative; font:800 clamp(24px,5vw,38px)/1.15 Kenia,Poppins; color:var(--safran); }
+.story-cta-row{ text-align:center; margin-top:6px; }
+@media(max-width:600px){
+  .story-chapter{ padding:18px 18px 18px 18px; max-width:none; align-self:stretch !important; }
+  .story-num{ position:relative; left:auto; top:auto; display:inline-block; font-size:36px; margin-bottom:16px; }
+  .story-num::after{ left:0; right:0; }
+}
 
 /* --- État vide générique (Journal, Collections sans résultat...) --- */
 .empty-state{

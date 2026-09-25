@@ -28,38 +28,36 @@
 
 <div class="container" id="top">
   <!-- HEADER -->
-  <div class="header" id="siteHeader" aria-label="Barre supérieure">
-    <div class="brand" aria-label="Identité Hadeej’Art">
-      <div class="mark">
-        <img src="images/logo.png" alt="Logo Hadeej’Art">
-      </div>
-      <div>
-        <h1>Hadeej’Art</h1>
-        <div class="badge" data-i18n="badge">Pièces stylées & authentiquement africaines</div>
-      </div>
-    </div>
+  <div class="header" id="siteHeader" data-i18n-aria="header_aria" aria-label="Barre supérieure">
+    <a class="brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
+      <span class="mark"><img src="images/logo.png" alt=""></span>
+      <span class="brand-text">
+        <span class="brand-name">Hadeej’Art</span>
+        <span class="badge" data-i18n="badge">Pièces stylées & authentiquement africaines</span>
+      </span>
+    </a>
 
-    <nav class="main-nav" id="mainNav" aria-label="Navigation principale">
+    <nav class="main-nav" id="mainNav" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
       <div class="nav-item" id="navShop">
         <button type="button" class="nav-link" id="navShopBtn" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_shop">Boutique</span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <div class="dropdown" id="navShopMenu" role="menu" aria-label="Boutique"></div>
+        <div class="dropdown" id="navShopMenu" role="menu" data-i18n-aria="nav_shop" aria-label="Boutique"></div>
       </div>
       <div class="nav-item" id="navCollections">
         <button type="button" class="nav-link" id="navCollectionsBtn" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_collections">Collections</span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <div class="dropdown" id="navCollectionsMenu" role="menu" aria-label="Collections"></div>
+        <div class="dropdown" id="navCollectionsMenu" role="menu" data-i18n-aria="nav_collections" aria-label="Collections"></div>
       </div>
       <div class="nav-item" id="navInfo">
         <button type="button" class="nav-link" id="navInfoBtn" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_info">Infos</span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
-        <div class="dropdown" id="navInfoMenu" role="menu" aria-label="Infos"></div>
+        <div class="dropdown" id="navInfoMenu" role="menu" data-i18n-aria="nav_info" aria-label="Infos"></div>
       </div>
     </nav>
 
@@ -86,10 +84,10 @@
   <!-- MENU MOBILE PLEIN ÉCRAN -->
   <div class="mobile-menu" id="mobileMenu">
     <div class="mobile-menu-head">
-      <div class="brand">
-        <div class="mark"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
-        <h1>Hadeej’Art</h1>
-      </div>
+      <a class="brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
+        <span class="mark"><img src="images/logo.png" alt=""></span>
+        <span class="brand-name">Hadeej’Art</span>
+      </a>
       <button type="button" class="mobile-menu-close" id="mobileMenuClose" data-i18n-aria="menu_close" aria-label="Fermer le menu">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>

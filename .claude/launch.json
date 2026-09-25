@@ -4,8 +4,8 @@
     {
       "name": "hadeejart-static",
       "runtimeExecutable": "C:\\Python314\\python.exe",
-      "runtimeArgs": ["-m", "http.server", "5530"],
-      "port": 5530
+      "runtimeArgs": ["-m", "http.server", "5560"],
+      "port": 5560
     }
   ]
 }

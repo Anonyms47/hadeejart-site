@@ -33,6 +33,9 @@ function pickLang(row, field) {
 const UI_STRINGS = {
   fr: {
     badge: 'Pièces stylées & authentiquement africaines',
+    home_aria: 'Retour à l’accueil',
+    header_aria: 'Barre supérieure',
+    nav_main_aria: 'Navigation principale',
     lang_label: 'Langue', currency_label: 'Devise',
     cart: 'Panier',
 
@@ -162,6 +165,9 @@ const UI_STRINGS = {
     story_hero_lead: 'Hadeej’Art est née d’un amour du wax et de l’envie de porter une histoire, pas seulement un vêtement.',
     story_p1: 'Chaque pièce Hadeej’Art part d’un tissu choisi avec soin — wax, bazin, bogolan — et d’une idée : que la mode africaine se porte au quotidien, moderne et sans compromis sur l’authenticité.',
     story_p2: 'Nos créations sont pensées à Dakar et confectionnées avec soin. Chaque commande est personnalisable : couleur, taille, tissu, et une petite note libre pour la couturière. Chaque pièce est unique.',
+    story_ch1_title: 'Le tissu',
+    story_ch2_title: 'L’atelier',
+    story_ch3_title: 'L’identité',
     story_p3: 'Nous croyons à une mode qui raconte quelque chose : un héritage, une fierté, une identité. C’est le sens de notre devise — Portez votre histoire.',
     story_cta: 'Découvrir la boutique',
 
@@ -260,6 +266,9 @@ const UI_STRINGS = {
 
   en: {
     badge: 'Stylish, authentically African pieces',
+    home_aria: 'Back to home',
+    header_aria: 'Top bar',
+    nav_main_aria: 'Main navigation',
     lang_label: 'Language', currency_label: 'Currency',
     cart: 'Cart',
 
@@ -389,6 +398,9 @@ const UI_STRINGS = {
     story_hero_lead: 'Hadeej’Art was born from a love of wax fabric and the desire to wear a story, not just a garment.',
     story_p1: 'Every Hadeej’Art piece starts with a carefully chosen fabric — wax, bazin, bogolan — and one idea: African fashion should be worn every day, modern and true to its authenticity.',
     story_p2: 'Our pieces are designed in Dakar and crafted with care. Every order is customisable: colour, size, fabric, and a free note for the seamstress. Every piece is unique.',
+    story_ch1_title: 'The fabric',
+    story_ch2_title: 'The workshop',
+    story_ch3_title: 'The identity',
     story_p3: 'We believe in fashion that tells a story — a heritage, a pride, an identity. That’s the meaning behind our motto: Wear your story.',
     story_cta: 'Discover the shop',
 
@@ -487,6 +499,9 @@ const UI_STRINGS = {
 
   wo: {
     badge: 'Yëf yu rafet, wone askan wi Afrig',
+    home_aria: 'Dellu ci kër gi',
+    header_aria: 'Bar bi ci kaw',
+    nav_main_aria: 'Navigasiyoŋ bu mag bi',
     lang_label: 'Làkk', currency_label: 'Xaalis',
     cart: 'Panier',
 
@@ -616,6 +631,9 @@ const UI_STRINGS = {
     story_hero_lead: 'Hadeej’Art dafa juddu ci bëgg-bëgg wax ak coobareg wax sa taariix, du rekk yëf.',
     story_p1: 'Yëf bu nekk ci Hadeej’Art dafay tambali ci tisu bu ñu tann bu baax — wax, bazin, bogolan — ak benn xalaat: mode Afrig war na wonewu bes bu nekk, moderne te dëggu ci boppam.',
     story_p2: 'Sunuy yëf ñu défar leen Dakar, te ñu defar leen bu baax. Commande bu nekk mën nga ko defar ni sa neex: melo, tay, tisu, ak ab nott ngir couturière bi. Yëf bu nekk am na boppam.',
+    story_ch1_title: 'Yére yi',
+    story_ch2_title: 'Atelier bi',
+    story_ch3_title: 'Sunu jikko',
     story_p3: 'Nu wóolu mode buy wax dara — jaboot, mbégte, boppam. Loolu mooy sunu wax-wax: Solu sa taariix.',
     story_cta: 'Xool bitik bi',
 

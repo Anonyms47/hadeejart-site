@@ -341,8 +341,56 @@ function bindHeaderLangCurrency() {
   }
 }
 
+/* ====== Indicateur de page active dans la navigation du header ======
+   Déduit du nom de fichier : pas de second système de navigation, juste une
+   classe posée sur l'entrée de menu qui contient la page courante. */
+function markCurrentNav() {
+  const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  const map = {
+    'index.html': 'navShop', 'collections.html': 'navCollections',
+    'notre-histoire.html': 'navInfo', 'journal.html': 'navInfo', 'contact.html': 'navInfo', 'faq.html': 'navInfo'
+  };
+  const id = map[file];
+  document.querySelectorAll('.main-nav .nav-item').forEach(item => {
+    const on = item.id === id;
+    item.classList.toggle('is-current', on);
+    const btn = item.querySelector('.nav-link');
+    if (btn) { if (on) btn.setAttribute('aria-current', 'true'); else btn.removeAttribute('aria-current'); }
+  });
+}
+
+/* Le logo est un vrai lien (href="index.html", fonctionne sans JS). Sur
+   l'accueil, on remonte simplement en haut plutôt que de recharger. */
+function bindBrandLink() {
+  document.querySelectorAll('a.brand').forEach(a => {
+    a.addEventListener('click', e => {
+      const file = location.pathname.split('/').pop();
+      if (file !== '' && file !== 'index.html') return;
+      e.preventDefault();
+      const menu = document.getElementById('mobileMenu');
+      if (menu && menu.classList.contains('show') && typeof closeMobileMenu === 'function') closeMobileMenu();
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  });
+}
+
+/* Accordéons du pied de page : ouverts sur ordinateur, repliés sur mobile
+   (le pied de page y est ainsi bien plus court). Sans JS, ils restent
+   ouverts (attribut open dans le HTML). L'utilisateur garde la main : on ne
+   resynchronise qu'au franchissement du seuil. */
+function bindFooterAccordions() {
+  const mq = window.matchMedia('(max-width: 640px)');
+  const sync = () => document.querySelectorAll('.footer-accordion').forEach(d => { d.open = !mq.matches; });
+  sync();
+  if (mq.addEventListener) mq.addEventListener('change', sync);
+}
+
 /* ====== Câblage initial (appelé sur toutes les pages) ====== */
 function initNav() {
+  markCurrentNav();
+  bindBrandLink();
+  bindFooterAccordions();
   renderNavMenus();
   bindNavDropdowns();
   bindHeaderLangCurrency();
