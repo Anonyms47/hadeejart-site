@@ -189,7 +189,12 @@ async function haOrder() {
     }
     if (!shared) {
       const msg = encodeURIComponent(buildOrderMessage(orderRef, location));
-      window.open(`https://wa.me/${SITE_WA_NUMBER}?text=${msg}`, '_blank');
+      const waUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${msg}`;
+      /* Après plusieurs étapes asynchrones (enregistrement, facture), certains
+         navigateurs mobiles bloquent l'ouverture d'une nouvelle fenêtre : on
+         bascule alors sur la page courante, la commande étant déjà enregistrée. */
+      const popup = window.open(waUrl, '_blank');
+      if (!popup) window.location.href = waUrl;
     }
 
     closeClient();

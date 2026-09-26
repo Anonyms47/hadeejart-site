@@ -1598,3 +1598,19 @@ a.nav-link{ text-decoration:none; }
     --ico:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.6 9.3c-.6-.8-1.6-1.3-2.6-1.3-1.5 0-2.6.8-2.6 2s1.1 1.7 2.6 2 2.6.8 2.6 2-1.1 2-2.6 2c-1 0-2-.5-2.6-1.3"/><path d="M12 6.4V8M12 16v1.6"/></svg>');
   }
 }
+
+/* ====== Carte de livraison : liste de résultats de recherche ====== */
+.map-results{
+  list-style:none; margin:0 0 8px; padding:4px; max-height:220px; overflow-y:auto; overscroll-behavior:contain;
+  background:#fff; border:1.5px solid #e6d7c8; border-radius:14px; box-shadow:0 8px 20px rgba(43,30,18,.1);
+}
+.map-results[hidden]{ display:none; }
+.map-result{
+  display:flex; flex-direction:column; gap:2px; min-height:44px; padding:8px 12px; border-radius:10px; cursor:pointer;
+  transition:background .12s ease;
+}
+.map-result strong{ font:700 14px var(--font-body); color:var(--ink); }
+.map-result span{ font:500 12px var(--font-body); color:#7a624f; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.map-result:hover, .map-result:focus-visible{ background:#fff1e4; outline:none; }
+.map-result[aria-selected="true"]{ background:#ffe9d3; box-shadow:inset 3px 0 0 var(--brand); }
+#btnLocateMe[aria-busy="true"]{ opacity:.7; cursor:progress; }

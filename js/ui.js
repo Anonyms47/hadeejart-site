@@ -21,6 +21,19 @@ function bindHeaderScrollShadow() {
    existante (valeur, écouteurs "change", setLang/setCurrency...)
    continue de fonctionner sans aucune modification. Idempotent : peut
    être appelée plusieurs fois sans effet si déjà transformé. */
+/* Une seule liste déroulante ouverte à la fois : chaque liste (select ou
+   autocomplétion) s'enregistre ici en s'ouvrant et referme la précédente.
+   Nécessaire car le clic sur un déclencheur ne remonte pas jusqu'à document
+   (stopPropagation), donc le « clic en dehors » des autres ne se déclenche pas. */
+let _epicActiveClose = null;
+function _epicClaim(closeFn) {
+  if (_epicActiveClose && _epicActiveClose !== closeFn) _epicActiveClose();
+  _epicActiveClose = closeFn;
+}
+function _epicRelease(closeFn) {
+  if (_epicActiveClose === closeFn) _epicActiveClose = null;
+}
+
 function enhanceSelect(select) {
   if (!select || select.dataset.epicSelect) return;
   select.dataset.epicSelect = '1';
@@ -131,6 +144,7 @@ function enhanceSelect(select) {
 
   function open() {
     if (wrap.classList.contains('open')) return;
+    _epicClaim(close);
     renderOptions();
     positionList();
     wrap.classList.add('open');
@@ -139,6 +153,7 @@ function enhanceSelect(select) {
   }
   function close() {
     if (!wrap.classList.contains('open')) return;
+    _epicRelease(close);
     wrap.classList.remove('open');
     listbox.classList.remove('show');
     btn.setAttribute('aria-expanded', 'false');
@@ -332,6 +347,7 @@ function enhanceAutocomplete(input, suggestKey) {
 
   function isOpen() { return listbox.classList.contains('show'); }
   function open() {
+    _epicClaim(close);
     renderList();
     position();
     listbox.classList.add('show');
@@ -339,6 +355,7 @@ function enhanceAutocomplete(input, suggestKey) {
   }
   function close() {
     if (!isOpen()) return;
+    _epicRelease(close);
     listbox.classList.remove('show');
     input.setAttribute('aria-expanded', 'false');
     input.removeAttribute('aria-activedescendant');
