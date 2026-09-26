@@ -54,6 +54,6 @@ function closeModal(overlay) {
 
 function fmtDate(iso) {
   if (!iso) return '';
-  try { return new Date(iso).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }); }
+  try { return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); }
   catch (e) { return iso; }
 }
