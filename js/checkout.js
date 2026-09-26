@@ -163,6 +163,10 @@ async function haOrder() {
       }))
     };
 
+    /* Nouvelle commande : on repart d'une référence et d'une facture vierges
+       (sinon une commande hors-ligne réutiliserait celles de la précédente). */
+    window.LAST_INVOICE_ID = null;
+    window.LAST_INVOICE_BLOB = null;
     let orderRef = null;
     try {
       const result = await placeOrderRemote(payload);
@@ -181,23 +185,28 @@ async function haOrder() {
          vers WhatsApp, qui reste la source de vérité opérationnelle. */
     }
 
-    if (typeof buildInvoiceImage === 'function') await buildInvoiceImage();
+    /* Message WhatsApp composé AVANT de vider le panier. Il part vers le
+       numéro de Hadeej'Art (jamais vers un contact au choix). */
+    const message = buildOrderMessage(orderRef, location) + '\n' + t('wa_invoice_note');
+    const waUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(message)}`;
+    const ref = orderRef || window.LAST_INVOICE_ID;
 
-    let shared = false;
-    if (typeof shareInvoiceWhatsApp === 'function') {
-      shared = await shareInvoiceWhatsApp(() => buildOrderMessage(orderRef, location));
-    }
-    if (!shared) {
-      const msg = encodeURIComponent(buildOrderMessage(orderRef, location));
-      const waUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${msg}`;
-      /* Après plusieurs étapes asynchrones (enregistrement, facture), certains
-         navigateurs mobiles bloquent l'ouverture d'une nouvelle fenêtre : on
-         bascule alors sur la page courante, la commande étant déjà enregistrée. */
-      const popup = window.open(waUrl, '_blank');
-      if (!popup) window.location.href = waUrl;
-    }
+    if (typeof buildInvoiceImage === 'function') await buildInvoiceImage();
+    window.LAST_INVOICE_BLOB = (typeof invoiceBlob === 'function') ? await invoiceBlob() : null;
+
+    /* 1) télécharge la facture, 2) vide le panier, 3) écran de confirmation
+       avec le numéro de commande, 4) ouvre WhatsApp vers Hadeej'Art. */
+    if (typeof downloadInvoice === 'function') await downloadInvoice();
+    window.LAST_ORDER = { ref, waUrl };
 
     closeClient();
+    if (typeof clearCart === 'function') clearCart();
+    openOrderDone();
+
+    /* Certains navigateurs mobiles bloquent l'ouverture automatique après
+       des étapes asynchrones : le bouton « Confirmer sur WhatsApp » de
+       l'écran de confirmation prend alors le relais. */
+    try { window.open(waUrl, '_blank'); } catch (e) { /* bloqué : le bouton suffit */ }
     return true;
   } catch (err) {
     console.error('haOrder error:', err);
@@ -205,5 +214,59 @@ async function haOrder() {
     return false;
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = t('place_order_btn'); }
+  }
+}
+
+/* ====== Écran de confirmation après commande ====== */
+let _orderDoneUrl = null;
+
+function openOrderDone() {
+  const modal = document.getElementById('orderDone');
+  if (!modal) return;
+  const order = window.LAST_ORDER || {};
+  const refEl = document.getElementById('odRef');
+  if (refEl) refEl.textContent = order.ref || '';
+  const img = document.getElementById('odPreview');
+  if (img) {
+    if (_orderDoneUrl) URL.revokeObjectURL(_orderDoneUrl);
+    _orderDoneUrl = window.LAST_INVOICE_BLOB ? URL.createObjectURL(window.LAST_INVOICE_BLOB) : null;
+    img.src = _orderDoneUrl || '';
+    img.hidden = !_orderDoneUrl;
+  }
+  const wa = document.getElementById('odWhatsapp');
+  if (wa) wa.href = order.waUrl || `https://wa.me/${SITE_WA_NUMBER}`;
+  const copy = document.getElementById('odCopy');
+  if (copy) copy.textContent = t('order_done_copy');
+  modal.classList.add('show');
+  if (typeof lockBodyScroll === 'function') lockBodyScroll();
+  if (typeof pushOverlayHistory === 'function') pushOverlayHistory();
+  const first = document.getElementById('odWhatsapp');
+  if (first) setTimeout(() => first.focus({ preventScroll: true }), 60);
+}
+
+function closeOrderDone(viaPopstate) {
+  const modal = document.getElementById('orderDone');
+  if (!modal || !modal.classList.contains('show')) return;
+  modal.classList.remove('show');
+  if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
+  if (!viaPopstate && typeof consumeOverlayHistory === 'function') consumeOverlayHistory();
+}
+
+/* Retour à la boutique : ferme la confirmation et remonte au catalogue. */
+function orderDoneBackToShop() {
+  closeOrderDone();
+  if (typeof scrollToCatalogue === 'function' && document.getElementById('catalogue')) scrollToCatalogue();
+}
+
+async function orderDoneCopyRef() {
+  const ref = (window.LAST_ORDER || {}).ref || '';
+  const btn = document.getElementById('odCopy');
+  try {
+    await navigator.clipboard.writeText(ref);
+    if (btn) { btn.textContent = t('order_done_copied'); setTimeout(() => { btn.textContent = t('order_done_copy'); }, 2200); }
+  } catch (e) {
+    /* Presse-papiers indisponible : sélectionne le texte pour une copie manuelle */
+    const el = document.getElementById('odRef');
+    if (el && window.getSelection) { const r = document.createRange(); r.selectNodeContents(el); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); }
   }
 }

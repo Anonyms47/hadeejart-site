@@ -204,6 +204,10 @@ function closeTopmostOverlay(viaPopstate) {
   if (lightbox && lightbox.classList.contains('show') && typeof closeImageViewer === 'function') {
     closeImageViewer(viaPopstate); return;
   }
+  const done = document.getElementById('orderDone');
+  if (done && done.classList.contains('show') && typeof closeOrderDone === 'function') {
+    closeOrderDone(viaPopstate); return;
+  }
   const detail = document.getElementById('detail');
   if (detail && detail.classList.contains('show') && typeof closeDetail === 'function') {
     closeDetail(viaPopstate); return;

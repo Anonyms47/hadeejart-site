@@ -1614,3 +1614,50 @@ a.nav-link{ text-decoration:none; }
 .map-result:hover, .map-result:focus-visible{ background:#fff1e4; outline:none; }
 .map-result[aria-selected="true"]{ background:#ffe9d3; box-shadow:inset 3px 0 0 var(--brand); }
 #btnLocateMe[aria-busy="true"]{ opacity:.7; cursor:progress; }
+
+/* ======================================================================
+   ====== PAS DE ZOOM INVOLONTAIRE (téléphone)
+   Safari iOS zoome sur tout champ dont le texte fait moins de 16 px au
+   moment où l'on le sélectionne (pays, ville, quartier, recherche…), puis
+   ne rezoome pas : la page reste décalée. On impose donc 16 px minimum aux
+   champs, et on neutralise le double-tap. (Le zoom par pincement est aussi
+   désactivé dans la balise viewport.) */
+html{ touch-action:manipulation; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+input, select, textarea, button{ touch-action:manipulation; }
+@media (max-width:900px){
+  input, select, textarea, .input, .epic-autocomplete input, #mapSearch, .epic-select-trigger{ font-size:16px; }
+  input::placeholder, textarea::placeholder{ font-size:16px; }
+  .modal{ overscroll-behavior:contain; }
+}
+
+/* ====== Confirmation de commande ====== */
+.order-done{
+  max-width:460px; padding:30px 24px 24px; text-align:center;
+  background:radial-gradient(120% 200px at 50% 0%, rgba(242,185,12,.22), transparent 70%), #fff;
+}
+.od-badge{
+  width:72px; height:72px; margin:0 auto 12px; border-radius:50%; display:grid; place-items:center;
+  background:linear-gradient(135deg,#2AA06A,#1b7a50); box-shadow:0 10px 24px rgba(27,122,80,.35);
+}
+.od-badge svg{ width:38px; height:38px; fill:none; stroke:#fff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.order-done h3{ margin:0 0 14px; font:700 26px/1.15 var(--font-serif); color:var(--ink); }
+.od-label{ margin:0 0 6px; font:700 11px var(--font-body); letter-spacing:.14em; text-transform:uppercase; color:var(--brand-700); }
+.od-ref-row{
+  display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; margin:0 auto 14px; padding:10px 12px;
+  border:2px dashed var(--brand); border-radius:16px; background:#fff7f1;
+}
+.od-ref{ font:800 24px var(--font-body); letter-spacing:.06em; color:var(--brand-700); user-select:all; -webkit-user-select:all; }
+.od-copy{
+  min-height:44px; padding:0 16px; border:1.5px solid #e6d7c8; border-radius:12px; background:#fff; cursor:pointer;
+  font:700 13px var(--font-body); color:var(--brand-700);
+}
+.od-copy:hover{ background:#fff1e4; border-color:var(--brand); }
+.od-text{ margin:0 0 14px; line-height:1.5; color:#4a3423; }
+.od-preview{ width:min(180px,50%); height:auto; margin:0 auto 16px; border-radius:10px; box-shadow:0 10px 26px rgba(43,30,18,.25); border:1px solid #0001; }
+.od-preview[hidden]{ display:none; }
+.od-wa{
+  width:100%; justify-content:center; min-height:54px; font-size:16px; border-radius:16px; text-decoration:none;
+  background-image:linear-gradient(135deg,#25b866,#128c4e); box-shadow:0 12px 26px rgba(18,140,78,.35);
+}
+.od-actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+.od-actions .btn{ flex:1 1 150px; justify-content:center; min-height:46px; }

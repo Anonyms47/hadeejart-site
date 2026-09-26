@@ -66,6 +66,14 @@ function removeFromCart(key) {
   updateCartUI();
 }
 
+/* Vide le panier (après une commande enregistrée). */
+function clearCart() {
+  CART = [];
+  _cartLastAddedKey = null;
+  updateCartUI();
+  closeCart();
+}
+
 function cartItemCount() {
   return CART.reduce((s, l) => s + l.qty, 0);
 }
