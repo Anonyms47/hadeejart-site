@@ -35,6 +35,10 @@ function enhanceSelect(select) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'epic-select-trigger' + (select.classList.contains('select-pill') ? ' select-pill' : '');
+  /* Repère sémantique (langue / devise) : permet au CSS de remplacer le texte
+     de la pastille par une icône dans la barre compacte du header mobile. */
+  if (select.classList.contains('lang-select')) btn.classList.add('is-lang');
+  if (select.classList.contains('currency-select')) btn.classList.add('is-currency');
   btn.setAttribute('aria-haspopup', 'listbox');
   btn.setAttribute('aria-expanded', 'false');
   btn.innerHTML = '<span class="epic-select-label"></span>' +
@@ -371,21 +375,27 @@ function enhanceAutocomplete(input, suggestKey) {
   window.addEventListener('pageshow', () => close());
 }
 
-/* Ferme le panier si on clique/touche en dehors, ou avec Échap */
+/* Tiroir du panier : se ferme au clic sur le voile, sur la croix, avec
+   Échap, et garde le focus clavier prisonnier à l'intérieur tant qu'il est
+   ouvert (Tab / Maj+Tab bouclent sur ses éléments). */
 function bindCartOutsideClose() {
   const panel = document.getElementById('cartPanel');
-  const btn = document.getElementById('cartBtn');
-  if (!panel || !btn) return;
+  const overlay = document.getElementById('cartOverlay');
+  if (!panel) return;
 
-  function maybeClose(e) {
-    if (!panel.classList.contains('show')) return;
-    const t = e.target;
-    if (!panel.contains(t) && !btn.contains(t)) panel.classList.remove('show');
-  }
-  ['pointerdown', 'click', 'touchstart'].forEach(evt => {
-    document.addEventListener(evt, maybeClose, { passive: true });
-  });
+  if (overlay) overlay.addEventListener('click', () => closeCart());
+  const closeBtn = document.getElementById('cartClose');
+  if (closeBtn) closeBtn.addEventListener('click', () => closeCart());
+
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && panel.classList.contains('show')) panel.classList.remove('show');
+    if (!panel.classList.contains('show')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeCart(); return; }
+    if (e.key !== 'Tab') return;
+    const focusables = [...panel.querySelectorAll('button:not([disabled]), a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter(n => n.offsetParent !== null || n === document.activeElement);
+    if (!focusables.length) return;
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !panel.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && (document.activeElement === last || !panel.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
   });
 }

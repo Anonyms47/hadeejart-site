@@ -54,13 +54,8 @@
         </button>
         <div class="dropdown" id="navCollectionsMenu" role="menu" data-i18n-aria="nav_collections" aria-label="Collections"></div>
       </div>
-      <div class="nav-item" id="navInfo">
-        <button type="button" class="nav-link" id="navInfoBtn" aria-haspopup="true" aria-expanded="false">
-          <span data-i18n="nav_info">Infos</span>
-          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="dropdown" id="navInfoMenu" role="menu" data-i18n-aria="nav_info" aria-label="Infos"></div>
-      </div>
+      <a class="nav-link nav-plain" id="navContact" href="contact.html" data-i18n="nav_contact">Contact</a>
+      <a class="nav-link nav-plain" id="navFaq" href="faq.html" data-i18n="nav_faq">FAQ</a>
     </nav>
 
     <div class="action">
@@ -75,7 +70,7 @@
         <option value="USD">USD</option>
       </select>
       <div class="cart">
-        <a id="cartBtn" class="btn" href="index.html"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></a>
+        <a id="cartBtn" class="btn" href="index.html" data-i18n-aria="cart" aria-label="Panier"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></a>
       </div>
       <button type="button" class="hamburger" id="hamburgerBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="menu_open">
         <span></span><span></span><span></span>
@@ -94,42 +89,14 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
-    <div class="mobile-menu-body">
-      <section>
-        <h3 data-i18n="nav_shop">Boutique</h3>
-        <div id="mobileShopList" class="mobile-menu-list"></div>
-      </section>
-      <section>
-        <h3 data-i18n="nav_collections">Collections</h3>
-        <div id="mobileCollectionsList" class="mobile-menu-list"></div>
-      </section>
-      <section>
-        <h3 data-i18n="nav_info">Infos</h3>
-        <div id="mobileInfoList" class="mobile-menu-list"></div>
-      </section>
-      <section class="mobile-menu-prefs">
-        <div class="field">
-          <label data-i18n="lang_label">Langue</label>
-          <select id="langSelectMobile" class="select-pill lang-select">
-            <option value="fr">🇫🇷 FR</option>
-            <option value="en">🇬🇧 EN</option>
-            <option value="wo">🇸🇳 WO</option>
-          </select>
-        </div>
-        <div class="field">
-          <label data-i18n="currency_label">Devise</label>
-          <select id="currencySelectMobile" class="select-pill currency-select">
-            <option value="FCFA">FCFA</option>
-            <option value="EUR">EUR</option>
-            <option value="USD">USD</option>
-          </select>
-        </div>
-      </section>
-      <a class="btn mobile-menu-cta" id="mobileWaLink" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
-    </div>
+    <nav class="mobile-menu-body mobile-links" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
+      <a class="mobile-link" href="index.html#catalogue"><span class="mobile-link-num" aria-hidden="true">01</span><span class="mobile-link-label" data-i18n="nav_shop">Boutique</span></a>
+      <a class="mobile-link" href="collections.html"><span class="mobile-link-num" aria-hidden="true">02</span><span class="mobile-link-label" data-i18n="nav_collections">Collections</span></a>
+      <a class="mobile-link" href="contact.html"><span class="mobile-link-num" aria-hidden="true">03</span><span class="mobile-link-label" data-i18n="nav_contact">Contact</span></a>
+      <a class="mobile-link" href="faq.html"><span class="mobile-link-num" aria-hidden="true">04</span><span class="mobile-link-label" data-i18n="nav_faq">FAQ</span></a>
+    </nav>
   </div>
 
-  <!-- BANDE MOTIF HAUT -->
   <div class="motif-bar motif-top" aria-hidden="true"></div>
 
   <!-- HERO -->
@@ -239,16 +206,29 @@
   </footer>
 </div>
 
-<!-- PANIER -->
-<div id="cartPanel" class="panel">
-  <h4 data-i18n="cart_title">Votre panier</h4>
-  <div id="cartLines"></div>
-  <div class="sep"></div>
-  <div class="line"><span data-i18n="subtotal">Sous-total</span><b id="cartSubtotal">0 FCFA</b></div>
-  <div class="line"><span data-i18n="total">Total</span><b id="cartTotal">0 FCFA</b></div>
-  <div class="sep"></div>
-  <button class="btn" type="button" data-i18n="checkout" onclick="openClient()">Finaliser</button>
-</div>
+<!-- PANIER (tiroir) -->
+<div id="cartOverlay" class="cart-overlay" aria-hidden="true"></div>
+<aside id="cartPanel" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true">
+  <div class="cart-grab" aria-hidden="true"></div>
+  <header class="cart-head">
+    <div class="cart-head-title">
+      <h4 id="cartTitle" data-i18n="cart_title">Votre panier</h4>
+      <span class="cart-count-chip" id="cartCountChip" aria-live="polite">0</span>
+    </div>
+    <button type="button" class="cart-close" id="cartClose" data-i18n-aria="cart_close" aria-label="Fermer le panier">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+  <div class="cart-stitch" aria-hidden="true"></div>
+  <div id="cartLines" class="cart-lines"></div>
+  <footer class="cart-foot" id="cartFoot">
+    <div class="cart-sum"><span data-i18n="subtotal">Sous-total</span><b id="cartSubtotal">0 FCFA</b></div>
+    <div class="cart-sum cart-sum-total"><span data-i18n="total">Total</span><b id="cartTotal">0 FCFA</b></div>
+    <p class="cart-note" data-i18n="cart_note">Livraison et paiement confirmés avec vous sur WhatsApp.</p>
+    <button class="btn cart-checkout" type="button" data-i18n="checkout" onclick="openClient()">Finaliser</button>
+    <button class="cart-continue" type="button" data-i18n="cart_continue" onclick="closeCart()">Continuer mes achats</button>
+  </footer>
+</aside>
 
 <!-- MODAL DÉTAIL -->
 <div id="detail" class="modal" onclick="if(event.target===this) closeDetail()">

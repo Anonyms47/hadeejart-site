@@ -10,13 +10,12 @@
    purement CSS :hover).
    ====================================================================== */
 
-/* Pages de contenu fixes (pas de données Supabase) : accessibles depuis
-   le header (menu "Infos"), le menu mobile et le footer. */
+/* Pages de contenu fixes (pas de données Supabase) listées dans la
+   navigation du pied de page. Le header et le menu mobile pointent, eux,
+   directement vers Boutique, Collections, Contact et FAQ (liens simples). */
 function infoPageEntries() {
   return [
-    { id: 'story', href: 'notre-histoire.html', label: t('nav_our_story') },
     { id: 'collections-page', href: 'collections.html', label: t('nav_collections_page') },
-    { id: 'journal', href: 'journal.html', label: t('nav_journal') },
     { id: 'contact', href: 'contact.html', label: t('nav_contact') },
     { id: 'faq', href: 'faq.html', label: t('nav_faq') }
   ];
@@ -93,18 +92,9 @@ function renderCollectionsMenu() {
   }
 }
 
-function renderInfoMenu() {
+function renderInfoMenu() { /* liste du pied de page uniquement */
   const entries = infoPageEntries();
   const path = (location.pathname.split('/').pop() || 'index.html');
-  const dropHtml = entries.map((p, i) => `
-    <a href="${p.href}" class="nav-drop-item${path === p.href ? ' current' : ''}" style="--i:${i}">
-      <span class="swatch swatch-generic" aria-hidden="true"></span>
-      <span>${escapeHtml(p.label)}</span>
-    </a>`).join('');
-  ['navInfoMenu', 'mobileInfoList'].forEach(id => {
-    const host = document.getElementById(id);
-    if (host) host.innerHTML = dropHtml;
-  });
 
   const footerHost = document.getElementById('footerInfoList');
   if (footerHost) {
@@ -263,6 +253,11 @@ function bindMobileMenu() {
 function bindCartButton() {
   const btn = document.getElementById('cartBtn');
   if (!btn) return;
+  if (document.getElementById('cartPanel')) {
+    btn.setAttribute('aria-haspopup', 'dialog');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', 'cartPanel');
+  }
   btn.addEventListener('click', e => {
     if (typeof toggleCart === 'function' && document.getElementById('cartPanel')) {
       e.preventDefault();
@@ -346,16 +341,24 @@ function bindHeaderLangCurrency() {
    classe posée sur l'entrée de menu qui contient la page courante. */
 function markCurrentNav() {
   const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-  const map = {
-    'index.html': 'navShop', 'collections.html': 'navCollections',
-    'notre-histoire.html': 'navInfo', 'journal.html': 'navInfo', 'contact.html': 'navInfo', 'faq.html': 'navInfo'
-  };
-  const id = map[file];
-  document.querySelectorAll('.main-nav .nav-item').forEach(item => {
-    const on = item.id === id;
+  const home = file === 'index.html' || file === '';
+  /* Entrées du header : Boutique et Collections (menus), Contact et FAQ
+     (liens simples). Sur l'accueil, "Boutique" est l'entrée courante. */
+  const currentId = home ? 'navShop' : ({ 'collections.html': 'navCollections', 'contact.html': 'navContact', 'faq.html': 'navFaq' })[file];
+  document.querySelectorAll('.main-nav .nav-item, .main-nav .nav-plain').forEach(item => {
+    const on = item.id === currentId;
     item.classList.toggle('is-current', on);
-    const btn = item.querySelector('.nav-link');
-    if (btn) { if (on) btn.setAttribute('aria-current', 'true'); else btn.removeAttribute('aria-current'); }
+    const btn = item.matches('.nav-link') ? item : item.querySelector('.nav-link');
+    if (btn) {
+      if (on) btn.setAttribute('aria-current', item.matches('.nav-plain') ? 'page' : 'true');
+      else btn.removeAttribute('aria-current');
+    }
+  });
+  /* Menu mobile : le lien de la page courante est mis en avant. */
+  document.querySelectorAll('.mobile-link').forEach(a => {
+    const target = (a.getAttribute('href') || '').split('#')[0].toLowerCase();
+    const isCurrent = target === file || (home && target === 'index.html');
+    if (isCurrent) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
 }
 

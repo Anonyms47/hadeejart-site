@@ -13,6 +13,8 @@ function openClient() {
   if (!CART.length) { openCart(); return; }
   const modal = document.getElementById('client');
   if (modal.classList.contains('show')) return;
+  /* Le tiroir du panier laisse la place à la fiche client. */
+  if (typeof closeCart === 'function') closeCart();
   modal.classList.add('show');
   if (typeof lockBodyScroll === 'function') lockBodyScroll();
   if (typeof pushOverlayHistory === 'function') pushOverlayHistory();

@@ -59,6 +59,18 @@ const UI_STRINGS = {
 
     cart_title: 'Votre panier', empty_cart: 'Panier vide',
     subtotal: 'Sous-total', total: 'Total', checkout: 'Finaliser',
+    cart_close: 'Fermer le panier',
+    cart_note: 'Livraison et paiement confirmés avec vous sur WhatsApp.',
+    cart_continue: 'Continuer mes achats',
+    cart_empty_title: 'Votre panier est vide',
+    cart_empty_text: 'Choisissez une pièce qui raconte votre histoire.',
+    cart_empty_cta: 'Découvrir la boutique',
+    cart_qty_label: 'Quantité',
+    cart_qty_dec: 'Diminuer la quantité',
+    cart_qty_inc: 'Augmenter la quantité',
+    cart_remove: 'Retirer du panier',
+    cart_item_one: 'article', cart_item_many: 'articles',
+    cart_unit: 'l’unité',
 
     detail_default_title: 'Détail', close: 'Fermer', fullscreen_title: 'Voir en plein écran',
     color_label: 'Couleur', color_placeholder: 'ex: Orange',
@@ -148,28 +160,15 @@ const UI_STRINGS = {
     footer_currencies_title: 'Devise', footer_payments_title: 'Paiement accepté',
     footer_legal_title: 'Informations légales',
 
-    nav_info: 'Infos', nav_our_story: 'Notre histoire', nav_collections_page: 'Toutes les collections',
-    nav_journal: 'Journal', nav_contact: 'Contact', nav_faq: 'FAQ',
+    nav_collections_page: 'Toutes les collections',
+    nav_contact: 'Contact', nav_faq: 'FAQ',
 
     page_title_home: 'Hadeej’Art — Boutique',
-    page_title_story: 'Notre histoire — Hadeej’Art',
     page_title_collections: 'Collections — Hadeej’Art',
-    page_title_journal: 'Journal — Hadeej’Art',
     page_title_contact: 'Contact — Hadeej’Art',
     page_title_faq: 'Questions fréquentes — Hadeej’Art',
     page_title_terms: 'Conditions générales de vente — Hadeej’Art',
     page_title_privacy: 'Politique de confidentialité — Hadeej’Art',
-
-    /* ---- Page "Notre histoire" ---- */
-    story_hero_title: 'Notre histoire',
-    story_hero_lead: 'Hadeej’Art est née d’un amour du wax et de l’envie de porter une histoire, pas seulement un vêtement.',
-    story_p1: 'Chaque pièce Hadeej’Art part d’un tissu choisi avec soin — wax, bazin, bogolan — et d’une idée : que la mode africaine se porte au quotidien, moderne et sans compromis sur l’authenticité.',
-    story_p2: 'Nos créations sont pensées à Dakar et confectionnées avec soin. Chaque commande est personnalisable : couleur, taille, tissu, et une petite note libre pour la couturière. Chaque pièce est unique.',
-    story_ch1_title: 'Le tissu',
-    story_ch2_title: 'L’atelier',
-    story_ch3_title: 'L’identité',
-    story_p3: 'Nous croyons à une mode qui raconte quelque chose : un héritage, une fierté, une identité. C’est le sens de notre devise — Portez votre histoire.',
-    story_cta: 'Découvrir la boutique',
 
     /* ---- Page "Collections" ---- */
     collectionspage_title: 'Nos collections',
@@ -178,12 +177,6 @@ const UI_STRINGS = {
     collectionspage_empty_title: 'Aucune collection publiée pour le moment',
     collectionspage_empty_text: 'Revenez bientôt : de nouvelles sélections arrivent régulièrement. En attendant, tout le catalogue est à découvrir.',
     collectionspage_empty_cta: 'Voir tout le catalogue',
-
-    /* ---- Page "Journal" ---- */
-    journal_title: 'Journal',
-    journal_lead: 'Les coulisses de l’atelier, nos inspirations et nos nouveautés.',
-    journal_empty_title: 'Aucun article publié pour le moment',
-    journal_empty_text: 'Le journal Hadeej’Art arrive bientôt — revenez faire un tour !',
 
     /* ---- Page "Contact" ---- */
     contact_title: 'Contact',
@@ -292,6 +285,18 @@ const UI_STRINGS = {
 
     cart_title: 'Your cart', empty_cart: 'Cart is empty',
     subtotal: 'Subtotal', total: 'Total', checkout: 'Checkout',
+    cart_close: 'Close cart',
+    cart_note: 'Delivery and payment are confirmed with you on WhatsApp.',
+    cart_continue: 'Continue shopping',
+    cart_empty_title: 'Your cart is empty',
+    cart_empty_text: 'Pick a piece that tells your story.',
+    cart_empty_cta: 'Discover the shop',
+    cart_qty_label: 'Quantity',
+    cart_qty_dec: 'Decrease quantity',
+    cart_qty_inc: 'Increase quantity',
+    cart_remove: 'Remove from cart',
+    cart_item_one: 'item', cart_item_many: 'items',
+    cart_unit: 'each',
 
     detail_default_title: 'Details', close: 'Close', fullscreen_title: 'View fullscreen',
     color_label: 'Colour', color_placeholder: 'e.g. Orange',
@@ -381,28 +386,15 @@ const UI_STRINGS = {
     footer_currencies_title: 'Currency', footer_payments_title: 'Accepted payments',
     footer_legal_title: 'Legal information',
 
-    nav_info: 'Info', nav_our_story: 'Our Story', nav_collections_page: 'All collections',
-    nav_journal: 'Journal', nav_contact: 'Contact', nav_faq: 'FAQ',
+    nav_collections_page: 'All collections',
+    nav_contact: 'Contact', nav_faq: 'FAQ',
 
     page_title_home: 'Hadeej’Art — Shop',
-    page_title_story: 'Our Story — Hadeej’Art',
     page_title_collections: 'Collections — Hadeej’Art',
-    page_title_journal: 'Journal — Hadeej’Art',
     page_title_contact: 'Contact — Hadeej’Art',
     page_title_faq: 'Frequently asked questions — Hadeej’Art',
     page_title_terms: 'Terms of sale — Hadeej’Art',
     page_title_privacy: 'Privacy policy — Hadeej’Art',
-
-    /* ---- "Our Story" page ---- */
-    story_hero_title: 'Our Story',
-    story_hero_lead: 'Hadeej’Art was born from a love of wax fabric and the desire to wear a story, not just a garment.',
-    story_p1: 'Every Hadeej’Art piece starts with a carefully chosen fabric — wax, bazin, bogolan — and one idea: African fashion should be worn every day, modern and true to its authenticity.',
-    story_p2: 'Our pieces are designed in Dakar and crafted with care. Every order is customisable: colour, size, fabric, and a free note for the seamstress. Every piece is unique.',
-    story_ch1_title: 'The fabric',
-    story_ch2_title: 'The workshop',
-    story_ch3_title: 'The identity',
-    story_p3: 'We believe in fashion that tells a story — a heritage, a pride, an identity. That’s the meaning behind our motto: Wear your story.',
-    story_cta: 'Discover the shop',
 
     /* ---- "Collections" page ---- */
     collectionspage_title: 'Our collections',
@@ -411,12 +403,6 @@ const UI_STRINGS = {
     collectionspage_empty_title: 'No published collections yet',
     collectionspage_empty_text: 'Check back soon: new selections arrive regularly. Meanwhile, the full catalogue is ready to explore.',
     collectionspage_empty_cta: 'View the full catalogue',
-
-    /* ---- "Journal" page ---- */
-    journal_title: 'Journal',
-    journal_lead: 'Behind the scenes of the workshop, our inspirations and our new arrivals.',
-    journal_empty_title: 'No article published yet',
-    journal_empty_text: 'The Hadeej’Art journal is coming soon — come back and check it out!',
 
     /* ---- "Contact" page ---- */
     contact_title: 'Contact',
@@ -525,6 +511,18 @@ const UI_STRINGS = {
 
     cart_title: 'Sa panier', empty_cart: 'Panier bi neen',
     subtotal: 'Wàll', total: 'Lëpp', checkout: 'Jeexal',
+    cart_close: 'Tëj panier bi',
+    cart_note: 'Yóbbu ak fey dinañu ko dëggal ak yaw ci WhatsApp.',
+    cart_continue: 'Dellu ci bitik bi',
+    cart_empty_title: 'Sa panier neen na',
+    cart_empty_text: 'Tànnal yëf bu wax sa taariix.',
+    cart_empty_cta: 'Xool bitik bi',
+    cart_qty_label: 'Limu',
+    cart_qty_dec: 'Wàññi limu bi',
+    cart_qty_inc: 'Yokk limu bi',
+    cart_remove: 'Bogal ko ci panier bi',
+    cart_item_one: 'yëf', cart_item_many: 'yëf',
+    cart_unit: 'bu nekk',
 
     detail_default_title: 'Detay', close: 'Tëj', fullscreen_title: 'Xool ko bu mag',
     color_label: 'Melo', color_placeholder: 'misaal: Orange',
@@ -614,28 +612,17 @@ const UI_STRINGS = {
     footer_currencies_title: 'Xaalis', footer_payments_title: 'Fay bu ñu nangu',
     footer_legal_title: 'Xibaar yu araame',
 
-    nav_info: 'Xibaar', nav_our_story: 'Sunu taariix', nav_collections_page: 'Koleksiyoŋ yépp',
-    nav_journal: 'Jurnal', nav_contact: 'Jokkoo', nav_faq: 'FAQ',
+    nav_collections_page: 'Koleksiyoŋ yépp',
+    nav_contact: 'Jokkoo', nav_faq: 'FAQ',
 
     page_title_home: 'Hadeej’Art — Bitik',
-    page_title_story: 'Sunu taariix — Hadeej’Art',
     page_title_collections: 'Koleksiyoŋ yi — Hadeej’Art',
-    page_title_journal: 'Jurnal — Hadeej’Art',
     page_title_contact: 'Jokkoo — Hadeej’Art',
     page_title_faq: 'Laaj yu ñuy laaj lu bari — Hadeej’Art',
     page_title_terms: 'Balluwaay yu jaay — Hadeej’Art',
     page_title_privacy: 'Politig ci sutura — Hadeej’Art',
 
     /* ---- Xët "Sunu taariix" ---- */
-    story_hero_title: 'Sunu taariix',
-    story_hero_lead: 'Hadeej’Art dafa juddu ci bëgg-bëgg wax ak coobareg wax sa taariix, du rekk yëf.',
-    story_p1: 'Yëf bu nekk ci Hadeej’Art dafay tambali ci tisu bu ñu tann bu baax — wax, bazin, bogolan — ak benn xalaat: mode Afrig war na wonewu bes bu nekk, moderne te dëggu ci boppam.',
-    story_p2: 'Sunuy yëf ñu défar leen Dakar, te ñu defar leen bu baax. Commande bu nekk mën nga ko defar ni sa neex: melo, tay, tisu, ak ab nott ngir couturière bi. Yëf bu nekk am na boppam.',
-    story_ch1_title: 'Yére yi',
-    story_ch2_title: 'Atelier bi',
-    story_ch3_title: 'Sunu jikko',
-    story_p3: 'Nu wóolu mode buy wax dara — jaboot, mbégte, boppam. Loolu mooy sunu wax-wax: Solu sa taariix.',
-    story_cta: 'Xool bitik bi',
 
     /* ---- Xët "Koleksiyoŋ yi" ---- */
     collectionspage_title: 'Sunuy koleksiyoŋ',
@@ -646,10 +633,6 @@ const UI_STRINGS = {
     collectionspage_empty_cta: 'Xool katalog bi yépp',
 
     /* ---- Xët "Jurnal" ---- */
-    journal_title: 'Jurnal',
-    journal_lead: 'Li xew ci sunu atelier, sunuy xalaat ak yu bees yi.',
-    journal_empty_title: 'Amul benn xibaar bu ñu génne léegi',
-    journal_empty_text: 'Jurnal Hadeej’Art dina ñëw léegi — ñëwaat!',
 
     /* ---- Xët "Jokkoo" ---- */
     contact_title: 'Jokkoo',
