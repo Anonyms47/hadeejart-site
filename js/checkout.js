@@ -199,9 +199,12 @@ async function haOrder() {
     if (typeof downloadInvoice === 'function') await downloadInvoice();
     window.LAST_ORDER = { ref, waUrl };
 
-    closeClient();
+    /* Passage de relais d'historique : la fiche client cède son entrée
+       d'historique à l'écran de confirmation (sinon le « retour » du navigateur,
+       asynchrone, dépilerait la nouvelle entrée et pourrait faire quitter la page). */
+    closeClient(true);
     if (typeof clearCart === 'function') clearCart();
-    openOrderDone();
+    openOrderDone(true);
 
     /* Certains navigateurs mobiles bloquent l'ouverture automatique après
        des étapes asynchrones : le bouton « Confirmer sur WhatsApp » de
@@ -220,7 +223,7 @@ async function haOrder() {
 /* ====== Écran de confirmation après commande ====== */
 let _orderDoneUrl = null;
 
-function openOrderDone() {
+function openOrderDone(reuseHistory) {
   const modal = document.getElementById('orderDone');
   if (!modal) return;
   const order = window.LAST_ORDER || {};
@@ -239,7 +242,7 @@ function openOrderDone() {
   if (copy) copy.textContent = t('order_done_copy');
   modal.classList.add('show');
   if (typeof lockBodyScroll === 'function') lockBodyScroll();
-  if (typeof pushOverlayHistory === 'function') pushOverlayHistory();
+  if (!reuseHistory && typeof pushOverlayHistory === 'function') pushOverlayHistory();
   const first = document.getElementById('odWhatsapp');
   if (first) setTimeout(() => first.focus({ preventScroll: true }), 60);
 }
