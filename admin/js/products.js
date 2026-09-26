@@ -4,13 +4,47 @@
 
 let PRODUCTS_CATEGORIES_CACHE = [];
 
-async function uploadProductImage(file, folder) {
-  const okTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  if (!okTypes.includes(file.type)) throw new Error('Format d’image non supporté (jpg, png, webp, gif).');
-  if (file.size > 5 * 1024 * 1024) throw new Error('Image trop lourde (5 Mo max).');
+/* Redimensionne et compresse une photo avant l'envoi : les photos de téléphone
+   pèsent 3 à 10 Mo et 4000 px de large, ce qui ralentirait le site pour tous
+   les visiteurs. On garde 1800 px maximum (largement net sur un écran de
+   téléphone ou d'ordinateur) en JPEG qualité 86 — en général 200 à 500 Ko.
+   Les images déjà légères et les GIF sont envoyés tels quels. */
+const IMAGE_MAX_SIDE = 1800;
+const IMAGE_SKIP_UNDER = 700 * 1024;
 
-  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${slugify(file.name)}`;
-  const { error } = await sb.storage.from('product-images').upload(path, file, { upsert: false });
+async function prepareImage(file) {
+  if (file.type === 'image/gif') return file;
+  let bitmap;
+  try { bitmap = await createImageBitmap(file); } catch (e) { return file; }
+  const longest = Math.max(bitmap.width, bitmap.height);
+  if (longest <= IMAGE_MAX_SIDE && file.size <= IMAGE_SKIP_UNDER) { bitmap.close && bitmap.close(); return file; }
+  const scale = Math.min(1, IMAGE_MAX_SIDE / longest);
+  const w = Math.round(bitmap.width * scale), h = Math.round(bitmap.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';           /* fond blanc : le JPEG n'a pas de transparence */
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close && bitmap.close();
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.86));
+  if (!blob || blob.size >= file.size) return file;   /* pas de gain : on garde l'original */
+  const base = String(file.name || 'photo').replace(/\.[^.]+$/, '');
+  return new File([blob], base + '.jpg', { type: 'image/jpeg' });
+}
+
+async function uploadProductImage(originalFile, folder) {
+  const okTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!okTypes.includes(originalFile.type)) throw new Error('Format d’image non supporté (jpg, png, webp, gif).');
+  if (originalFile.size > 25 * 1024 * 1024) throw new Error('Image trop lourde (25 Mo max avant compression).');
+
+  const file = await prepareImage(originalFile);
+  if (file.size > 5 * 1024 * 1024) throw new Error('Image encore trop lourde après compression (5 Mo max).');
+
+  const ext = (file.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+  const base = slugify(String(file.name || 'photo').replace(/\.[^.]+$/, '')) || 'photo';
+  const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${base}.${ext}`;
+  const { error } = await sb.storage.from('product-images').upload(path, file, { upsert: false, contentType: file.type, cacheControl: '31536000' });
   if (error) throw error;
   const { data } = sb.storage.from('product-images').getPublicUrl(path);
   return data.publicUrl;
