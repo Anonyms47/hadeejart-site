@@ -212,13 +212,7 @@ img{max-width:100%;height:auto;display:block}
   background: repeating-linear-gradient(90deg,var(--brand-700) 0 16px,var(--brand) 16px 32px,#f1b37f 32px 48px);
   animation: slidePattern 12s linear infinite;
 }
-.motif-bar::after{
-  content:"";
-  position:absolute; inset:0; opacity:.9;
-  background:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='22' viewBox='0 0 120 22'><rect width='120' height='22' fill='none'/><path d='M10 6 l6 5 -6 5 M26 6 l6 5 -6 5 M42 6 l6 5 -6 5 M58 6 l6 5 -6 5 M74 6 l6 5 -6 5 M90 6 l6 5 -6 5 M106 6 l6 5 -6 5' stroke='%232b1e12' stroke-width='2' fill='none'/><path d='M18 5 l4 6 h-8z M34 5 l4 6 h-8z M50 5 l4 6 h-8z M66 5 l4 6 h-8z M82 5 l4 6 h-8z M98 5 l4 6 h-8z' fill='%23ffe7d7'/><circle cx='6' cy='11' r='1.6' fill='%232b1e12'/><circle cx='22' cy='11' r='1.6' fill='%232b1e12'/><circle cx='38' cy='11' r='1.6' fill='%232b1e12'/><circle cx='54' cy='11' r='1.6' fill='%232b1e12'/><circle cx='70' cy='11' r='1.6' fill='%232b1e12'/><circle cx='86' cy='11' r='1.6' fill='%232b1e12'/><circle cx='102' cy='11' r='1.6' fill='%232b1e12'/></svg>") 0 0/120px 22px repeat-x;
-  animation: slidePattern 18s linear infinite;
-}
+/* Bande de motif : uniquement le fil de couleurs qui défile (les chevrons ont été retirés). */
 .motif-top{ margin: 10px 0 18px; }
 .motif-bottom{ margin: 26px 0 12px; }
 @keyframes slidePattern { from{ background-position:0 0, 0 0 } to{ background-position:120px 0, 120px 0 } }
@@ -407,6 +401,15 @@ select:active{ transform:translateY(1px); }
 }
 .epic-autocomplete input:focus, .epic-autocomplete input[aria-expanded="true"]{
   background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 15l-6-6-6 6" stroke="%239e5317" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+}
+/* Une seule flèche, à droite : les règles :hover/:focus de .input utilisent le
+   raccourci « background », qui remet répétition et taille par défaut et
+   faisait répéter la flèche sur toute la largeur du champ. */
+.epic-autocomplete input,
+.epic-autocomplete input:hover,
+.epic-autocomplete input:focus,
+.epic-autocomplete input[aria-expanded="true"]{
+  background-repeat:no-repeat !important; background-position:right 12px center !important; background-size:16px 16px !important;
 }
 
 /* Lightbox plein écran (au-dessus de tout, y compris la modale fiche
