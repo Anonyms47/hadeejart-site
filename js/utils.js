@@ -62,3 +62,28 @@ window.addEventListener('popstate', () => {
     if (typeof closeTopmostOverlay === 'function') closeTopmostOverlay(true);
   }
 });
+
+/* ======================================================================
+   Pas de zoom involontaire (iPhone / Android)
+   Safari iOS ignore « user-scalable=no » et « maximum-scale » : le pincement
+   à deux doigts et le double appui zoomaient encore la page (notamment dans
+   la fiche produit). On bloque donc ces gestes ici, en laissant intacts la
+   carte de livraison (Leaflet gère son propre zoom), les champs et les
+   boutons (pour ne pas avaler des appuis rapides sur « + » ou « − »).
+   ====================================================================== */
+(function bindNoZoom() {
+  const stop = e => e.preventDefault();
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => document.addEventListener(evt, stop, { passive: false }));
+  document.addEventListener('touchmove', e => {
+    if ((e.touches && e.touches.length > 1) || (typeof e.scale === 'number' && e.scale !== 1)) {
+      if (!(e.target.closest && e.target.closest('.leaflet-container'))) e.preventDefault();
+    }
+  }, { passive: false });
+  let lastTap = 0;
+  document.addEventListener('touchend', e => {
+    const now = Date.now();
+    const interactive = e.target.closest && e.target.closest('input, textarea, select, button, a, label, summary, [role="option"], .leaflet-container');
+    if (now - lastTap < 350 && !interactive) e.preventDefault();
+    lastTap = now;
+  }, { passive: false });
+})();

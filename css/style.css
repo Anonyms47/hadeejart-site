@@ -1622,8 +1622,10 @@ a.nav-link{ text-decoration:none; }
    ne rezoome pas : la page reste décalée. On impose donc 16 px minimum aux
    champs, et on neutralise le double-tap. (Le zoom par pincement est aussi
    désactivé dans la balise viewport.) */
-html{ touch-action:manipulation; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
-input, select, textarea, button{ touch-action:manipulation; }
+html, body{ touch-action:pan-x pan-y; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+.modal, .sheet, .cart-drawer, .mobile-menu, .lightbox{ touch-action:pan-y; }
+.leaflet-container{ touch-action:none; }
+input, select, textarea, button{ touch-action:pan-x pan-y; }
 @media (max-width:900px){
   input, select, textarea, .input, .epic-autocomplete input, #mapSearch, .epic-select-trigger{ font-size:16px; }
   input::placeholder, textarea::placeholder{ font-size:16px; }
