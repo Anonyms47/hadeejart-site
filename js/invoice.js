@@ -25,13 +25,20 @@ function line(x1, y1, x2, y2, c, w) {
   INV.beginPath(); INV.moveTo(x1, y1); INV.lineTo(x2, y2); INV.stroke();
 }
 function text(str, x, y, fs = 16, fw = '600', c = '#2b1e12', align = 'left') {
-  INV.font = `${fw} ${fs}px Poppins`;
+  INV.font = `${fw} ${fs}px "DM Sans", sans-serif`;
   INV.fillStyle = c;
   INV.textAlign = align;
   INV.fillText(str, x, y);
 }
 
 async function buildInvoiceImage() {
+  /* Le canvas ne déclenche pas le chargement de la police web : on s'assure
+     qu'elle est prête (toutes graisses) avant de dessiner la facture. */
+  try {
+    if (document.fonts && document.fonts.load) {
+      await Promise.all([document.fonts.load('400 20px "DM Sans"'), document.fonts.load('800 20px "DM Sans"')]);
+    }
+  } catch (e) { /* repli silencieux : police système */ }
   INV.clearRect(0, 0, NAT_W, NAT_H);
 
   const PAD = 36;
@@ -43,7 +50,7 @@ async function buildInvoiceImage() {
   INV.restore();
 
   INV.save(); INV.globalAlpha = .05; INV.fillStyle = "#9e5317";
-  INV.font = "800 66px Poppins";
+  INV.font = "800 66px \"DM Sans\", sans-serif";
   for (let i = 180; i < NAT_H; i += 210) { INV.fillText("Hadeej’Art", 220, i); }
   INV.restore();
 
