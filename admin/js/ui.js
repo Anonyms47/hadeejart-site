@@ -156,7 +156,9 @@
   new MutationObserver(() => {
     if (queued) return;
     queued = true;
-    requestAnimationFrame(() => { queued = false; scan(document.body); cleanup(); });
+    /* setTimeout plutôt que requestAnimationFrame : ce dernier est suspendu dans un onglet
+       en arrière-plan, et les listes n'y seraient jamais transformées. */
+    setTimeout(() => { queued = false; scan(document.body); cleanup(); }, 30);
   }).observe(document.documentElement, { childList: true, subtree: true });
 
   document.addEventListener('DOMContentLoaded', () => scan(document.body));
