@@ -185,10 +185,14 @@ async function openProductForm(id) {
     <header><h3>${id ? 'Modifier' : 'Nouveau'} produit</h3><button class="icon-btn" id="closeProdModal">✕</button></header>
     <div class="body">
       <div class="field"><label>Nom (FR) *</label><input id="pNameFr" value="${escapeHtml(row.name_fr)}"></div>
-      <div class="grid-2">
-        <div class="field"><label>Nom (EN)</label><input id="pNameEn" value="${escapeHtml(row.name_en || '')}"></div>
-        <div class="field"><label>Nom (WO)</label><input id="pNameWo" value="${escapeHtml(row.name_wo || '')}"></div>
-      </div>
+      <details class="translations">
+        <summary>Traductions anglais et wolof <small>(automatiques)</small></summary>
+        <p class="hint">Écrivez seulement en français : l’anglais et le wolof sont créés tout seuls à l’enregistrement. Corrigez-les ici si besoin, votre correction est alors conservée.</p>
+        <div class="grid-2">
+          <div class="field"><label>Nom (EN)</label><input id="pNameEn" value="${escapeHtml(row.name_en || '')}" placeholder="Automatique"></div>
+          <div class="field"><label>Nom (WO)</label><input id="pNameWo" value="${escapeHtml(row.name_wo || '')}" placeholder="Automatique"></div>
+        </div>
+      </details>
       <div class="grid-2">
         <div class="field"><label>Catégorie</label>
           <select id="pCategory"><option value="">— Aucune —</option>
@@ -273,23 +277,50 @@ async function openProductForm(id) {
 
       let variantOptions = null;
       if (overlay.querySelector('#pHasVariant').checked) {
-        const choices = [...overlay.querySelectorAll('.variant-choice')].map(row => ({
-          value: row.querySelector('.vc-value').value.trim(),
-          label_fr: row.querySelector('.vc-label').value.trim(),
-          price_fcfa: parseFloat(row.querySelector('.vc-fcfa').value) || null,
-          price_eur: parseFloat(row.querySelector('.vc-eur').value) || null,
-          price_usd: parseFloat(row.querySelector('.vc-usd').value) || null
-        })).filter(c => c.value);
-        if (choices.length) {
-          variantOptions = { id: 'optionKimono', label_fr: overlay.querySelector('#voLabel').value.trim() || 'Option', choices };
+        const oldVo = row.variant_options || {};
+        const oldChoices = (oldVo.choices || []);
+        const choices = await Promise.all([...overlay.querySelectorAll('.variant-choice')].map(async r => {
+          const value = r.querySelector('.vc-value').value.trim();
+          const labelFr = r.querySelector('.vc-label').value.trim();
+          const old = oldChoices.find(c => c.value === value) || {};
+          return {
+            value,
+            label_fr: labelFr,
+            label_en: await resolveTranslation(labelFr, 'en', old.label_en, old.label_fr, old.label_en),
+            label_wo: await resolveTranslation(labelFr, 'wo', old.label_wo, old.label_fr, old.label_wo),
+            price_fcfa: parseFloat(r.querySelector('.vc-fcfa').value) || null,
+            price_eur: parseFloat(r.querySelector('.vc-eur').value) || null,
+            price_usd: parseFloat(r.querySelector('.vc-usd').value) || null
+          };
+        }));
+        const valid = choices.filter(c => c.value);
+        if (valid.length) {
+          const voFr = overlay.querySelector('#voLabel').value.trim() || 'Option';
+          variantOptions = {
+            id: 'optionKimono', label_fr: voFr,
+            label_en: await resolveTranslation(voFr, 'en', oldVo.label_en, oldVo.label_fr, oldVo.label_en),
+            label_wo: await resolveTranslation(voFr, 'wo', oldVo.label_wo, oldVo.label_fr, oldVo.label_wo),
+            choices: valid
+          };
         }
       }
 
+      /* Traductions automatiques (voir js/translate.js) */
+      const fabricFr = overlay.querySelector('#pFabricFr').value.trim();
+      const [nameEn, nameWo, fabricEn, fabricWo] = await Promise.all([
+        resolveTranslation(nameFr, 'en', overlay.querySelector('#pNameEn').value, row.name_fr, row.name_en),
+        resolveTranslation(nameFr, 'wo', overlay.querySelector('#pNameWo').value, row.name_fr, row.name_wo),
+        resolveTranslation(fabricFr, 'en', row.fabric_en, row.fabric_fr, row.fabric_en),
+        resolveTranslation(fabricFr, 'wo', row.fabric_wo, row.fabric_fr, row.fabric_wo)
+      ]);
+
       const payload = {
         name_fr: nameFr,
-        name_en: overlay.querySelector('#pNameEn').value.trim() || null,
-        name_wo: overlay.querySelector('#pNameWo').value.trim() || null,
-        fabric_fr: overlay.querySelector('#pFabricFr').value.trim() || null,
+        name_en: nameEn,
+        name_wo: nameWo,
+        fabric_fr: fabricFr || null,
+        fabric_en: fabricFr ? fabricEn : null,
+        fabric_wo: fabricFr ? fabricWo : null,
         category_id: overlay.querySelector('#pCategory').value || null,
         status: overlay.querySelector('#pStatus').value,
         colors, sizes,

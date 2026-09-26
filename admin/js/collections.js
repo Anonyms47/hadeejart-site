@@ -74,10 +74,14 @@ async function openCollectionForm(id) {
     <header><h3>${id ? 'Modifier' : 'Nouvelle'} collection</h3><button class="icon-btn" id="closeCollModal">✕</button></header>
     <div class="body">
       <div class="field"><label>Nom (FR)</label><input id="colNameFr" value="${escapeHtml(row.name_fr)}"></div>
-      <div class="grid-2">
-        <div class="field"><label>Nom (EN)</label><input id="colNameEn" value="${escapeHtml(row.name_en || '')}"></div>
-        <div class="field"><label>Nom (WO)</label><input id="colNameWo" value="${escapeHtml(row.name_wo || '')}"></div>
-      </div>
+      <details class="translations">
+        <summary>Traductions anglais et wolof <small>(automatiques)</small></summary>
+        <p class="hint">Écrivez seulement en français : l’anglais et le wolof sont créés tout seuls à l’enregistrement. Corrigez-les ici si besoin, votre correction est alors conservée.</p>
+        <div class="grid-2">
+          <div class="field"><label>Nom (EN)</label><input id="colNameEn" value="${escapeHtml(row.name_en || '')}" placeholder="Automatique"></div>
+          <div class="field"><label>Nom (WO)</label><input id="colNameWo" value="${escapeHtml(row.name_wo || '')}" placeholder="Automatique"></div>
+        </div>
+      </details>
       <div class="field"><label>Description (FR)</label><textarea id="colDesc" rows="3">${escapeHtml(row.description_fr || '')}</textarea></div>
       <div class="grid-2">
         <div class="field"><label>Statut</label>
@@ -121,10 +125,14 @@ async function openCollectionForm(id) {
       const file = overlay.querySelector('#colCoverFile').files[0];
       if (file) coverUrl = await uploadProductImage(file, 'collections');
 
+      const [nameEn, nameWo] = await Promise.all([
+        resolveTranslation(nameFr, 'en', overlay.querySelector('#colNameEn').value, row.name_fr, row.name_en),
+        resolveTranslation(nameFr, 'wo', overlay.querySelector('#colNameWo').value, row.name_fr, row.name_wo)
+      ]);
       const payload = {
         name_fr: nameFr,
-        name_en: overlay.querySelector('#colNameEn').value.trim() || null,
-        name_wo: overlay.querySelector('#colNameWo').value.trim() || null,
+        name_en: nameEn,
+        name_wo: nameWo,
         description_fr: overlay.querySelector('#colDesc').value.trim() || null,
         status: overlay.querySelector('#colStatus').value,
         cover_image_url: coverUrl,
