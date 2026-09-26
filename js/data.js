@@ -10,6 +10,9 @@ const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
 /* "Tous" + les 6 catégories chargées depuis la base (voir api.js). */
 let CATEGORIES = [{ id: 'tous', label: t('all') }];
+/* Catégories désactivées (« bientôt disponibles ») : cachées de la boutique,
+   annoncées par une petite phrase sous les filtres. */
+let COMING_SOON_CATEGORIES = [];
 let PRODUCTS = [];
 let COLLECTIONS = [];
 let CATALOG_LOADED = false;
@@ -46,8 +49,9 @@ function applyCatalogData(categoryRows, productRows, collectionRows) {
   productRows = RAW_PRODUCTS;
   collectionRows = RAW_COLLECTIONS;
 
+  COMING_SOON_CATEGORIES = (categoryRows || []).filter(c => c.active === false).map(c => pickLang(c, 'name'));
   CATEGORIES = [{ id: 'tous', label: t('all') }].concat(
-    (categoryRows || []).map(c => ({ id: c.slug, label: pickLang(c, 'name'), _row: c }))
+    (categoryRows || []).filter(c => c.active !== false).map(c => ({ id: c.slug, label: pickLang(c, 'name'), _row: c }))
   );
 
   COLLECTIONS = (collectionRows || []).map(c => ({

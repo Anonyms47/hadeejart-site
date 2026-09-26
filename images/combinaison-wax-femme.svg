@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000" role="img" aria-label="Combinaison wax femme">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8e4dc"/><stop offset="1" stop-color="#e9bfae"/></linearGradient>
+    <pattern id="wax" width="88" height="88" patternUnits="userSpaceOnUse">
+      <rect width="88" height="88" fill="#146356"/>
+      <circle cx="44" cy="44" r="33" fill="#f2b90c"/><circle cx="44" cy="44" r="22" fill="#fff7f1"/>
+      <circle cx="44" cy="44" r="11" fill="#b5432a"/>
+      <path d="M0 0 L22 0 L0 22 Z M88 0 L66 0 L88 22 Z M0 88 L22 88 L0 66 Z M88 88 L66 88 L88 66 Z" fill="#f2b90c"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <ellipse cx="400" cy="940" rx="230" ry="24" fill="#2b1c10" opacity=".13"/>
+  <!-- bretelles -->
+  <path d="M338 130 L330 190 M462 130 L470 190" stroke="#2b1c10" stroke-width="10" stroke-linecap="round"/>
+  <!-- buste -->
+  <path d="M318 186 Q400 236 482 186 L500 330 Q400 372 300 330 Z" fill="url(#wax)" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <!-- ceinture -->
+  <path d="M296 332 Q400 374 504 332 L508 380 Q400 424 292 380 Z" fill="#b5432a" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="400" cy="384" r="14" fill="#f2b90c" stroke="#2b1c10" stroke-width="4"/>
+  <!-- jambes larges -->
+  <path d="M292 380 Q400 424 508 380 L640 900 L476 900 L400 560 L324 900 L160 900 Z" fill="url(#wax)" stroke="#2b1c10" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M400 430 L400 560" stroke="#2b1c10" stroke-width="5" opacity=".5"/>
+  <path d="M168 878 L318 878 M482 878 L632 878" stroke="#f2b90c" stroke-width="10"/>
+</svg>

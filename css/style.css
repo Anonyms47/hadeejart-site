@@ -1663,3 +1663,12 @@ input, select, textarea, button{ touch-action:pan-x pan-y; }
 }
 .od-actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
 .od-actions .btn{ flex:1 1 150px; justify-content:center; min-height:46px; }
+
+
+/* ====== Annonce « bientôt disponibles » sous les filtres du catalogue ====== */
+.coming-soon{
+  display:flex; align-items:center; gap:8px; margin:0 0 14px; padding:10px 16px; width:fit-content; max-width:100%;
+  border:1.5px dashed var(--brand); border-radius:14px; background:rgba(255,247,241,.85);
+  font:600 14px/1.4 var(--font-body); color:var(--brand-700);
+}
+.coming-soon[hidden]{ display:none; }

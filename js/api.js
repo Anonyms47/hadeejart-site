@@ -4,7 +4,7 @@
    "stale-while-revalidate" pour ne pas ralentir l'affichage.
    ====================================================================== */
 
-const CATALOG_CACHE_KEY = 'ha_catalog_cache_v2';
+const CATALOG_CACHE_KEY = 'ha_catalog_cache_v3';
 const CATALOG_CACHE_TTL_MS = 10 * 60 * 1000; /* 10 min */
 
 function supabaseHeaders() {

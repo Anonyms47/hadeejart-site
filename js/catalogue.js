@@ -40,6 +40,21 @@ function renderCategoryFilters() {
     <button type="button" class="chip${c.id === CURRENT_CATEGORY ? ' active' : ''}"
             data-cat="${escapeHtml(c.id)}" onclick="selectCategory('${escapeHtml(c.id)}')">${escapeHtml(c.label)}</button>
   `).join('');
+  renderComingSoon();
+}
+
+/* « Sacs et chaussures : produits bientôt disponibles. » — pour toute catégorie
+   désactivée ; masqué s'il n'y en a aucune. */
+function renderComingSoon() {
+  const box = document.getElementById('comingSoon');
+  if (!box) return;
+  const names = COMING_SOON_CATEGORIES;
+  if (!names.length) { box.hidden = true; box.textContent = ''; return; }
+  const sep = ' ' + t('and_word') + ' ';
+  const list = names.length > 1 ? names.slice(0, -1).join(', ') + sep + names[names.length - 1] : names[0];
+  const fn = t('coming_soon_notice');
+  box.textContent = typeof fn === 'function' ? fn(list) : String(fn);
+  box.hidden = false;
 }
 
 function selectCategory(catId) {
