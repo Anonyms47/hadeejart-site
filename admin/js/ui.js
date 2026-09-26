@@ -163,4 +163,26 @@
 
   document.addEventListener('DOMContentLoaded', () => scan(document.body));
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && activeClose) activeClose(); });
+
+  /* Barre latérale rétractable (ordinateur) : l'état est mémorisé */
+  function initSidebarToggle() {
+    const shell = document.querySelector('.app-shell');
+    const btn = document.getElementById('sidebarToggle');
+    if (!shell || !btn) return;
+    function apply(collapsed) {
+      shell.classList.toggle('sidebar-collapsed', collapsed);
+      btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      const label = collapsed ? 'Déployer le menu' : 'Réduire le menu';
+      btn.setAttribute('aria-label', label); btn.title = label;
+    }
+    let saved = false;
+    try { saved = localStorage.getItem('ha_admin_sidebar') === '1'; } catch (e) {}
+    apply(saved);
+    btn.addEventListener('click', () => {
+      const next = !shell.classList.contains('sidebar-collapsed');
+      apply(next);
+      try { localStorage.setItem('ha_admin_sidebar', next ? '1' : '0'); } catch (e) {}
+    });
+  }
+  document.addEventListener('DOMContentLoaded', initSidebarToggle);
 })();

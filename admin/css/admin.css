@@ -273,3 +273,36 @@ details.translations > summary::after{content:"";margin-left:auto;width:9px;heig
 details.translations[open] > summary::after{transform:rotate(-135deg)}
 details.translations > summary small{font-weight:500;opacity:.7}
 details.translations .grid-2{margin-top:6px}
+
+/* ====== Barre latérale rétractable (ordinateur) ====== */
+.sidebar{transition:width .25s cubic-bezier(.22,.9,.32,1),flex-basis .25s cubic-bezier(.22,.9,.32,1)}
+.sidebar-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px 14px 0;border-bottom:1px solid rgba(255,255,255,.18);margin-bottom:10px}
+.sidebar-top .brand{border:0;margin:0;padding:0 0 0 20px;flex:1;min-width:0}
+.brand-mini{display:none}
+.sidebar-toggle{flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;display:grid;place-items:center;transition:background-color .15s ease}
+.sidebar-toggle:hover{background:rgba(255,255,255,.18)}
+.sidebar-toggle:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.sidebar-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s ease}
+.nav-ico{flex:0 0 26px;text-align:center;font-size:18px;line-height:1}
+.nav-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#logoutBtn{gap:10px}
+@media (min-width:821px){
+  .app-shell.sidebar-collapsed .sidebar{width:78px;flex-basis:78px}
+  .app-shell.sidebar-collapsed .sidebar-top{flex-direction:column;padding:0 0 14px;gap:12px}
+  .app-shell.sidebar-collapsed .sidebar-top .brand{padding:0;text-align:center}
+  .app-shell.sidebar-collapsed .brand-full{display:none}
+  .app-shell.sidebar-collapsed .brand-mini{display:block;font:700 20px var(--font-serif)}
+  .app-shell.sidebar-collapsed .sidebar-toggle svg{transform:rotate(180deg)}
+  .app-shell.sidebar-collapsed .nav-label,.app-shell.sidebar-collapsed #whoami{display:none}
+  .app-shell.sidebar-collapsed .nav-item{justify-content:center;padding:10px 0;border-left-width:0;border-radius:0}
+  .app-shell.sidebar-collapsed .nav-item.active{box-shadow:inset 4px 0 0 #fff}
+  .app-shell.sidebar-collapsed .nav-ico{flex-basis:auto;font-size:21px}
+  .app-shell.sidebar-collapsed .sidebar-footer{padding:14px 10px}
+  .app-shell.sidebar-collapsed #logoutBtn{padding:0;min-width:0}
+}
+@media (max-width:820px){
+  .sidebar-top{display:none}
+  .nav-ico{flex-basis:auto}
+  #logoutBtn .nav-ico{display:none}
+}
+@media (prefers-reduced-motion:reduce){.sidebar{transition:none}}

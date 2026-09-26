@@ -40,9 +40,10 @@ async function loadOrdersList() {
         <td>${escapeHtml(o.payment_method)}</td>
         <td><span class="badge ${escapeHtml(o.status)}">${ORDER_STATUS_LABELS[o.status] || o.status}</span></td>
         <td>${fmtDate(o.created_at)}</td>
-        <td><button class="btn ghost sm" data-view="${o.id}">Détail</button></td>
+        <td><button class="btn ghost sm" data-view="${o.id}">Détail</button> <button class="btn danger sm" data-del="${o.id}" data-ref="${escapeHtml(o.order_ref)}">Supprimer</button></td>
       </tr>`).join('') || '<tr><td colspan="8">Aucune commande.</td></tr>'}</tbody></table>`;
 
+  host.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => deleteOrder(btn.dataset.del, btn.dataset.ref)));
   host.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => openOrderDetail(btn.dataset.view)));
 }
 
@@ -78,6 +79,7 @@ async function openOrderDetail(id) {
       </div>
     </div>
     <div class="foot">
+      <button class="btn danger" id="deleteOrderBtn">Supprimer</button>
       <button class="btn ghost" id="closeOrderBtn">Fermer</button>
       <button class="btn" id="saveOrderStatusBtn">Mettre à jour le statut</button>
     </div>
@@ -85,10 +87,22 @@ async function openOrderDetail(id) {
 
   overlay.querySelector('#closeOrderModal').addEventListener('click', () => closeModal(overlay));
   overlay.querySelector('#closeOrderBtn').addEventListener('click', () => closeModal(overlay));
+  overlay.querySelector('#deleteOrderBtn').addEventListener('click', async () => { if (await deleteOrder(id, order.order_ref)) closeModal(overlay); });
   overlay.querySelector('#saveOrderStatusBtn').addEventListener('click', async () => {
     const newStatus = overlay.querySelector('#orderStatusSelect').value;
     const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', id);
     if (error) toast('Erreur: ' + error.message, true);
     else { toast('Statut mis à jour.'); closeModal(overlay); loadOrdersList(); }
   });
+}
+
+async function deleteOrder(id, ref) {
+  if (!confirm(`Supprimer définitivement la commande ${ref} et ses articles ?
+
+Cette action est irréversible.`)) return false;
+  const { error } = await sb.from('orders').delete().eq('id', id);
+  if (error) { toast('Erreur: ' + error.message, true); return false; }
+  toast('Commande supprimée.');
+  loadOrdersList();
+  return true;
 }

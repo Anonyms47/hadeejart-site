@@ -34,18 +34,23 @@
 
 <!-- APPLICATION ADMIN -->
 <div id="adminApp" class="app-shell" hidden>
-  <aside class="sidebar">
-    <div class="brand">Hadeej’Art Admin</div>
-    <button class="nav-item active" data-section="dashboard">📊 Dashboard</button>
-    <button class="nav-item" data-section="products">🧺 Produits</button>
-    <button class="nav-item" data-section="categories">🏷️ Catégories</button>
-    <button class="nav-item" data-section="collections">📁 Collections</button>
-    <button class="nav-item" data-section="orders">🧾 Commandes</button>
-    <button class="nav-item" data-section="customers">👥 Clients</button>
-    <button class="nav-item" data-section="settings">⚙️ Paramètres</button>
+  <aside class="sidebar" id="adminSidebar">
+    <div class="sidebar-top">
+      <div class="brand"><span class="brand-full">Hadeej’Art Admin</span><span class="brand-mini" aria-hidden="true">H’A</span></div>
+      <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-expanded="true" aria-controls="adminSidebar" aria-label="Réduire le menu" title="Réduire le menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+    </div>
+    <button class="nav-item active" data-section="dashboard" title="Dashboard"><span class="nav-ico" aria-hidden="true">📊</span><span class="nav-label">Dashboard</span></button>
+    <button class="nav-item" data-section="products" title="Produits"><span class="nav-ico" aria-hidden="true">🧺</span><span class="nav-label">Produits</span></button>
+    <button class="nav-item" data-section="categories" title="Catégories"><span class="nav-ico" aria-hidden="true">🏷️</span><span class="nav-label">Catégories</span></button>
+    <button class="nav-item" data-section="collections" title="Collections"><span class="nav-ico" aria-hidden="true">📁</span><span class="nav-label">Collections</span></button>
+    <button class="nav-item" data-section="orders" title="Commandes"><span class="nav-ico" aria-hidden="true">🧾</span><span class="nav-label">Commandes</span></button>
+    <button class="nav-item" data-section="customers" title="Clients"><span class="nav-ico" aria-hidden="true">👥</span><span class="nav-label">Clients</span></button>
+    <button class="nav-item" data-section="settings" title="Paramètres"><span class="nav-ico" aria-hidden="true">⚙️</span><span class="nav-label">Paramètres</span></button>
     <div class="sidebar-footer">
       <span id="whoami"></span>
-      <button id="logoutBtn" class="btn ghost sm block">Déconnexion</button>
+      <button id="logoutBtn" class="btn ghost sm block" title="Déconnexion"><span class="nav-ico" aria-hidden="true">⎋</span><span class="nav-label">Déconnexion</span></button>
     </div>
   </aside>
 
