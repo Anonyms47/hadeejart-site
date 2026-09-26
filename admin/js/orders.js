@@ -15,10 +15,19 @@ async function renderOrders() {
           <option value="">Tous statuts</option>
           ${ORDER_STATUSES.map(s => `<option value="${s}">${ORDER_STATUS_LABELS[s]}</option>`).join('')}
         </select>
+        <select id="filterOrderYear"><option value="">Toutes années</option></select>
+        <select id="filterOrderMonth">
+          <option value="">Tous les mois</option>
+          ${['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'].map((m, i) => `<option value="${i + 1}">${m}</option>`).join('')}
+        </select>
       </div>
       <div id="ordersList">Chargement…</div>
     </div>`;
-  document.getElementById('filterOrderStatus').addEventListener('change', loadOrdersList);
+  const { data: first } = await sb.from('orders').select('created_at').order('created_at').limit(1);
+  const y0 = first && first[0] ? new Date(first[0].created_at).getFullYear() : new Date().getFullYear();
+  const ySel = document.getElementById('filterOrderYear');
+  for (let y = new Date().getFullYear(); y >= y0; y--) ySel.insertAdjacentHTML('beforeend', `<option value="${y}">${y}</option>`);
+  ['filterOrderStatus', 'filterOrderYear', 'filterOrderMonth'].forEach(id => document.getElementById(id).addEventListener('change', loadOrdersList));
   await loadOrdersList();
 }
 
@@ -26,22 +35,27 @@ async function loadOrdersList() {
   const status = document.getElementById('filterOrderStatus').value;
   let q = sb.from('orders').select('*').order('created_at', { ascending: false });
   if (status) q = q.eq('status', status);
-  const { data, error } = await q;
+  const year = +document.getElementById('filterOrderYear').value;
+  const month = +document.getElementById('filterOrderMonth').value;
+  if (year && month) q = q.gte('created_at', new Date(year, month - 1, 1).toISOString()).lt('created_at', new Date(year, month, 1).toISOString());
+  else if (year) q = q.gte('created_at', new Date(year, 0, 1).toISOString()).lt('created_at', new Date(year + 1, 0, 1).toISOString());
+  else if (month) q = q.order('created_at', { ascending: false }); /* mois seul : filtré ci-dessous */
+  let { data, error } = await q;
   const host = document.getElementById('ordersList');
   if (error) { host.innerHTML = 'Erreur: ' + escapeHtml(error.message); return; }
+  if (month && !year) data = data.filter(o => new Date(o.created_at).getMonth() + 1 === month);
 
-  host.innerHTML = `<table><thead><tr><th>Réf</th><th>Client</th><th>Lieu</th><th>Total</th><th>Paiement</th><th>Statut</th><th>Date</th><th></th></tr></thead>
+  host.innerHTML = `<table><thead><tr><th>Réf</th><th>Client</th><th>Total</th><th>Paiement</th><th>Statut</th><th>Date</th><th></th></tr></thead>
     <tbody>${data.map(o => `
       <tr>
         <td>${escapeHtml(o.order_ref)}</td>
         <td>${escapeHtml(o.customer_name)}<br><span class="badge" style="background:#f3f3f3">${escapeHtml(o.customer_phone)}</span></td>
-        <td>${escapeHtml([o.district, o.city, o.country].filter(Boolean).join(', ') || '—')}</td>
         <td>${formatMoney(o.total_amount, o.currency)}</td>
         <td>${escapeHtml(o.payment_method)}</td>
         <td><span class="badge ${escapeHtml(o.status)}">${ORDER_STATUS_LABELS[o.status] || o.status}</span></td>
         <td>${fmtDate(o.created_at)}</td>
         <td><button class="btn ghost sm" data-view="${o.id}">Détail</button> <button class="btn danger sm" data-del="${o.id}" data-ref="${escapeHtml(o.order_ref)}">Supprimer</button></td>
-      </tr>`).join('') || '<tr><td colspan="8">Aucune commande.</td></tr>'}</tbody></table>`;
+      </tr>`).join('') || '<tr><td colspan="7">Aucune commande.</td></tr>'}</tbody></table>`;
 
   host.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => deleteOrder(btn.dataset.del, btn.dataset.ref)));
   host.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => openOrderDetail(btn.dataset.view)));
