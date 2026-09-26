@@ -289,7 +289,6 @@ const UI_STRINGS = {
     invoice_wa_note: 'Envoyez cette facture sur WhatsApp à Hadeej’Art : livraison et paiement sont confirmés avec vous.',
     invoice_thanks_title: 'Merci pour votre confiance',
     invoice_number_label: 'N° de commande',
-    invoice_status_pending: 'En attente de confirmation',
     invoice_how_to_pay: 'Comment payer',
     invoice_returns_note: 'Retours et échanges : voir nos conditions générales de vente sur hadeejart.store',
 
@@ -559,7 +558,6 @@ const UI_STRINGS = {
     invoice_wa_note: 'Send this invoice to Hadeej’Art on WhatsApp: delivery and payment are confirmed with you.',
     invoice_thanks_title: 'Thank you for your trust',
     invoice_number_label: 'Order no.',
-    invoice_status_pending: 'Awaiting confirmation',
     invoice_how_to_pay: 'How to pay',
     invoice_returns_note: 'Returns and exchanges: see our terms of sale on hadeejart.store',
 
@@ -833,7 +831,6 @@ const UI_STRINGS = {
     invoice_wa_note: 'Yónnee facture bii Hadeej’Art ci WhatsApp: livraison ak fay dinañu leen wóoral ak yaw.',
     invoice_thanks_title: 'Jërëjëf ci sa wóolu',
     invoice_number_label: 'Limu commande',
-    invoice_status_pending: 'Di xaar wóoral',
     invoice_how_to_pay: 'Naka ngay fay',
     invoice_returns_note: 'Delloosi ak soppi: xool sunu balluwaay yi ci hadeejart.store',
 

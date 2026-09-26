@@ -229,15 +229,6 @@ async function buildInvoiceImage() {
   invText(orderId, W - M, 218, { weight: 800, size: 48, color: '#fff', align: 'right', spacing: '1px' });
   invText(`${dateStr} · ${timeStr}`, W - M, 262, { weight: 500, size: 26, color: 'rgba(245,232,216,.8)', align: 'right' });
 
-  /* Pastille de statut */
-  INV.font = `800 22px ${F.sans}`;
-  const stLabel = t('invoice_status_pending').toUpperCase();
-  try { INV.letterSpacing = '2px'; } catch (e) {}
-  const stW = INV.measureText(stLabel).width + 44;
-  try { INV.letterSpacing = '0px'; } catch (e) {}
-  INV.fillStyle = INV_COLORS.safran; invRR(W - M - stW, 276, stW, 30, 15); INV.fill();
-  invText(stLabel, W - M - stW / 2, 298, { weight: 800, size: 20, color: INV_COLORS.ink, align: 'center', spacing: '2px' });
-
   /* --- Cartes client / livraison --- */
   const drawCard = (x, title) => {
     INV.save(); invShadow(28); INV.fillStyle = '#fff'; invRR(x, infoY, cardW, cardH, 26); INV.fill(); INV.restore();
