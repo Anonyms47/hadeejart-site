@@ -89,7 +89,7 @@ async function openCollectionForm(id) {
         </div>
         <div class="field"><label>Image de couverture</label>
           <input type="file" id="colCoverFile" accept="image/*">
-          ${row.cover_image_url ? `<img src="${escapeHtml(row.cover_image_url)}" class="thumb" style="margin-top:6px">` : ''}
+          ${row.cover_image_url ? `<img src="${escapeHtml(assetUrl(row.cover_image_url))}" class="thumb" style="margin-top:6px">` : ''}
         </div>
       </div>
       <div class="field"><label>Produits associés</label>

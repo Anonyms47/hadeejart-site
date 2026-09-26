@@ -112,3 +112,6 @@ tr:hover td{background:#fef8f3}
   .nav-item.active{border-left:0;border-bottom-color:#fff}
   .main{padding:16px}
 }
+
+/* mobile-inputs : 16 px minimum, sinon Safari iOS zoome à la sélection d'un champ */
+@media (max-width:900px){ input, select, textarea{ font-size:16px; } }

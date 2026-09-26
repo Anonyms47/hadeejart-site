@@ -8,6 +8,14 @@ function escapeHtml(s) {
   }[c]));
 }
 
+/* Les images du site public sont enregistrées avec un chemin relatif à la racine
+   (ex. « images/pantalon.jpg ») : depuis /admin/, il faut remonter d'un niveau.
+   Les URL absolues (Supabase Storage, https://…) restent inchangées. */
+function assetUrl(u) {
+  const s = String(u || '');
+  return /^(https?:|data:|blob:|\/)/i.test(s) ? s : '../' + s;
+}
+
 function slugify(s) {
   return String(s || '')
     .toLowerCase()

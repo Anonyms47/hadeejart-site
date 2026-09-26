@@ -53,7 +53,7 @@ async function loadProductsList() {
       const primary = imgs.find(i => i.is_primary) || imgs[0];
       return `
       <tr>
-        <td>${primary ? `<img class="thumb" src="${escapeHtml(primary.image_url)}">` : ''}</td>
+        <td>${primary ? `<img class="thumb" src="${escapeHtml(assetUrl(primary.image_url))}">` : ''}</td>
         <td>${escapeHtml(p.name_fr)}</td>
         <td>${p.categories ? escapeHtml(p.categories.name_fr) : '<em>—</em>'}</td>
         <td>${formatMoney(p.price_fcfa, 'FCFA')}</td>
@@ -77,17 +77,46 @@ async function archiveProduct(id) {
   else { toast('Produit archivé (masqué du site, historique conservé).'); loadProductsList(); }
 }
 
-async function deleteProduct(id) {
-  const { count, error: countErr } = await sb.from('order_items').select('id', { count: 'exact', head: true }).eq('product_id', id);
-  if (countErr) { toast('Erreur: ' + countErr.message, true); return; }
+/* Règle de suppression d'un produit :
+   - présent dans une commande EN COURS (en attente, confirmée, expédiée) : impossible
+     (on propose l'archivage) — la base de données l'interdit aussi ;
+   - présent seulement dans des commandes TERMINÉES (livrées, annulées) : possible ;
+     ces commandes restent enregistrées telles quelles (nom, taille, couleur, quantité,
+     prix sont conservés dans chaque ligne de commande). */
+const ACTIVE_ORDER_STATUSES = ['pending', 'confirmed', 'shipped'];
+const FINISHED_ORDER_STATUSES = ['delivered', 'cancelled'];
 
-  if (count > 0) {
-    if (!confirm(`Ce produit apparaît dans ${count} commande(s) : il ne peut pas être supprimé définitivement (l’historique serait faussé).\n\nL’archiver à la place (masqué du site, conservé pour l’historique) ?`)) return;
+async function countProductOrders(productId, statuses) {
+  return sb.from('order_items')
+    .select('id, orders!inner(status)', { count: 'exact', head: true })
+    .eq('product_id', productId)
+    .in('orders.status', statuses);
+}
+
+async function deleteProduct(id) {
+  const active = await countProductOrders(id, ACTIVE_ORDER_STATUSES);
+  if (active.error) { toast('Erreur: ' + active.error.message, true); return; }
+
+  if (active.count > 0) {
+    if (!confirm(`Ce produit figure dans ${active.count} commande(s) en cours (en attente, confirmée ou expédiée) : il ne peut pas être supprimé pour l’instant.
+
+Vous pourrez le supprimer quand ces commandes seront livrées ou annulées.
+
+L’archiver en attendant (masqué du site, conservé) ?`)) return;
     await archiveProduct(id);
     return;
   }
 
-  if (!confirm('Supprimer définitivement ce produit ? (aucune commande ne le référence, action irréversible)')) return;
+  const finished = await countProductOrders(id, FINISHED_ORDER_STATUSES);
+  const done = finished.error ? 0 : (finished.count || 0);
+  const msg = done > 0
+    ? `Supprimer définitivement ce produit ?
+
+Il figure dans ${done} commande(s) terminée(s) : elles restent enregistrées telles quelles (nom, taille, couleur, quantité et prix conservés).
+
+Action irréversible.`
+    : 'Supprimer définitivement ce produit ? (aucune commande ne le référence, action irréversible)';
+  if (!confirm(msg)) return;
   const { error } = await sb.from('products').delete().eq('id', id);
   if (error) toast('Erreur: ' + error.message, true);
   else { toast('Produit supprimé.'); loadProductsList(); }
@@ -169,7 +198,7 @@ async function openProductForm(id) {
       <div class="field"><label>Images</label>
         <input type="file" id="pImageFiles" accept="image/*" multiple>
         <div class="image-grid" id="pImageGrid">
-          ${images.map(img => `<div class="img-item" data-id="${img.id}"><img src="${escapeHtml(img.image_url)}"><button type="button" class="rm-img" data-id="${img.id}">✕</button></div>`).join('')}
+          ${images.map(img => `<div class="img-item" data-id="${img.id}"><img src="${escapeHtml(assetUrl(img.image_url))}"><button type="button" class="rm-img" data-id="${img.id}">✕</button></div>`).join('')}
         </div>
       </div>
     </div>
