@@ -28,6 +28,11 @@ function setMapStatus(key) {
 function refreshMapStatusLabel() {
   const el = document.getElementById('mapStatus');
   if (el) el.textContent = t(lastMapStatusKey);
+  /* Contrôles de la carte : re-libellés dans la langue courante. */
+  const setLabel = (sel, key) => document.querySelectorAll(sel).forEach(n => { n.title = t(key); n.setAttribute('aria-label', t(key)); });
+  setLabel('.leaflet-control-zoom-in', 'map_zoom_in');
+  setLabel('.leaflet-control-zoom-out', 'map_zoom_out');
+  document.querySelectorAll('.leaflet-marker-icon').forEach(n => { n.title = t('map_marker'); n.alt = t('map_marker'); });
 }
 
 async function reverseGeocode(lat, lng) {
@@ -64,15 +69,19 @@ function initDeliveryMap() {
   const container = document.getElementById('deliveryMap');
   if (!container || typeof L === 'undefined' || deliveryMap) return;
 
-  deliveryMap = L.map(container, { attributionControl: true }).setView(
+  /* Contrôles créés à la main : leurs libellés par défaut sont en anglais
+     (« Zoom in », « Marker », préfixe Leaflet...) quelle que soit la langue. */
+  deliveryMap = L.map(container, { attributionControl: false, zoomControl: false }).setView(
     [DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], 12
   );
+  L.control.zoom({ zoomInTitle: t('map_zoom_in'), zoomOutTitle: t('map_zoom_out') }).addTo(deliveryMap);
+  L.control.attribution({ prefix: false }).addTo(deliveryMap);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap'
   }).addTo(deliveryMap);
 
-  deliveryMarker = L.marker([DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], { draggable: true }).addTo(deliveryMap);
+  deliveryMarker = L.marker([DEFAULT_MAP_CENTER.lat, DEFAULT_MAP_CENTER.lng], { draggable: true, alt: t('map_marker'), title: t('map_marker') }).addTo(deliveryMap);
   deliveryMarker.on('dragend', () => {
     const pos = deliveryMarker.getLatLng();
     moveMarker(pos.lat, pos.lng);

@@ -34,6 +34,8 @@ const UI_STRINGS = {
   fr: {
     badge: 'Pièces stylées & authentiquement africaines',
     home_aria: 'Retour à l’accueil',
+    map_zoom_in: 'Zoom avant', map_zoom_out: 'Zoom arrière', map_marker: 'Repère de livraison',
+    hero_aria: 'Mise en avant',
     header_aria: 'Barre supérieure',
     nav_main_aria: 'Navigation principale',
     lang_label: 'Langue', currency_label: 'Devise',
@@ -278,6 +280,8 @@ const UI_STRINGS = {
   en: {
     badge: 'Stylish, authentically African pieces',
     home_aria: 'Back to home',
+    map_zoom_in: 'Zoom in', map_zoom_out: 'Zoom out', map_marker: 'Delivery marker',
+    hero_aria: 'Featured',
     header_aria: 'Top bar',
     nav_main_aria: 'Main navigation',
     lang_label: 'Language', currency_label: 'Currency',
@@ -522,6 +526,8 @@ const UI_STRINGS = {
   wo: {
     badge: 'Yëf yu rafet, wone askan wi Afrig',
     home_aria: 'Dellu ci kër gi',
+    map_zoom_in: 'Yokk gis', map_zoom_out: 'Wàññi gis', map_marker: 'Màndarga bi',
+    hero_aria: 'Li gën a fés',
     header_aria: 'Bar bi ci kaw',
     nav_main_aria: 'Navigasiyoŋ bu mag bi',
     lang_label: 'Làkk', currency_label: 'Xaalis',

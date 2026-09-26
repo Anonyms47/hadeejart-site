@@ -12,6 +12,9 @@
    légère : ré-affiche les menus (leurs libellés viennent de t()) et
    prévient la page (grille collections, date localisée...). */
 function onLangChange() {
+  /* Recalcule d'abord les libellés catégories/collections dans la nouvelle
+     langue (sinon menus, pied de page et grille gardaient l'ancienne). */
+  if (typeof refreshCatalogLabels === 'function') refreshCatalogLabels();
   if (typeof renderNavMenus === 'function') renderNavMenus();
   if (typeof syncLangCurrencyControls === 'function') syncLangCurrencyControls();
   if (typeof onNavDataLoaded === 'function') onNavDataLoaded();
