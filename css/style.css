@@ -113,7 +113,7 @@ img{max-width:100%;height:auto;display:block}
 .brand-name{margin:0;font:800 30px var(--font-body);transition:font-size .3s cubic-bezier(.22,.9,.32,1);}
 .header.scrolled .brand-name{ font-size:20px; }
 .brand-name,
-.hero h2{
+.hero h1{
   font-family: var(--font-display);
   font-weight: 800;
   letter-spacing: .5px;
@@ -171,9 +171,9 @@ img{max-width:100%;height:auto;display:block}
 .hero-inline{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .logo-inline{width:66px;height:52px;border-radius:12px;border:2px solid var(--brand-700);background:#fff;overflow:hidden}
 .logo-inline img{width:100%;height:100%;object-fit:cover}
-.hero h2{margin:0;font:800 42px/1.08 var(--font-display);color:var(--brand-700);letter-spacing:.5px}
-@media(max-width:520px){.hero h2{font-size:34px}}
-@media(max-width:380px){.hero h2{font-size:28px}}
+.hero h1{margin:0;font:800 42px/1.08 var(--font-display);color:var(--brand-700);letter-spacing:.5px}
+@media(max-width:520px){.hero h1{font-size:34px}}
+@media(max-width:380px){.hero h1{font-size:28px}}
 .hero-sub{margin:.6rem 0 .2rem;color:#3a2a1c}
 .note{font-size:13px;opacity:.7;margin-top:.4rem}
 .ribbon{height:10px;border-radius:8px;margin-bottom:12px;background:repeating-linear-gradient(90deg,var(--brand-700) 0 14px,var(--brand) 14px 28px,#f1b37f 28px 42px);opacity:.9}
@@ -1370,7 +1370,7 @@ h1, h2, h3, h4, .lead, summary{ text-wrap:balance; }
 .footer-sublabel, .footer-payments-title, .footer-legal > span:first-child{ font-size:10.5px; }
 
 /* Voix 1 — affichage : seulement où la taille le permet */
-.brand-name, .hero h2, .page-hero h1, .footer-tagline, .cart-head h4{
+.brand-name, .hero h1, .page-hero h1, .footer-tagline, .cart-head h4{
   font-family:var(--font-display);
   /* Kenia n'existe qu'en une graisse : on interdit le faux gras du navigateur
      (contours baveux), le tracé d'origine est déjà volontairement épais. */

@@ -173,7 +173,7 @@ const UI_STRINGS = {
     nav_collections_page: 'Toutes les collections',
     nav_contact: 'Contact', nav_faq: 'FAQ',
 
-    page_title_home: 'Hadeej’Art — Boutique',
+    page_title_home: 'Hadeej’Art — Boutique wax à Dakar',
     page_title_collections: 'Collections — Hadeej’Art',
     page_title_contact: 'Contact — Hadeej’Art',
     page_title_faq: 'Questions fréquentes — Hadeej’Art',
@@ -444,7 +444,7 @@ const UI_STRINGS = {
     nav_collections_page: 'All collections',
     nav_contact: 'Contact', nav_faq: 'FAQ',
 
-    page_title_home: 'Hadeej’Art — Shop',
+    page_title_home: 'Hadeej’Art — Wax fashion shop, Dakar',
     page_title_collections: 'Collections — Hadeej’Art',
     page_title_contact: 'Contact — Hadeej’Art',
     page_title_faq: 'Frequently asked questions — Hadeej’Art',
@@ -715,7 +715,7 @@ const UI_STRINGS = {
     nav_collections_page: 'Koleksiyoŋ yépp',
     nav_contact: 'Jokkoo', nav_faq: 'FAQ',
 
-    page_title_home: 'Hadeej’Art — Bitik',
+    page_title_home: 'Hadeej’Art — Bitik wax bu Ndakaaru',
     page_title_collections: 'Koleksiyoŋ yi — Hadeej’Art',
     page_title_contact: 'Jokkoo — Hadeej’Art',
     page_title_faq: 'Laaj yu ñuy laaj lu bari — Hadeej’Art',
