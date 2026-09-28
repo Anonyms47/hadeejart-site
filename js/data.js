@@ -89,6 +89,37 @@ function applyCatalogData(categoryRows, productRows, collectionRows) {
   });
 
   CATALOG_LOADED = true;
+  renderProductsJsonLd();
+}
+
+/* Balisage Produit (schema.org) pour le référencement : un extrait par
+   produit publié (nom, image, prix en FCFA, disponibilité), inséré dans
+   le <script id="ldProducts"> de la page d'accueil. N'existe que là — le
+   site n'a pas de page dédiée par produit. Sans effet si l'élément est
+   absent (autres pages). */
+function renderProductsJsonLd() {
+  const el = document.getElementById('ldProducts');
+  if (!el) return;
+  const abs = src => src ? new URL(src, 'https://hadeejart.store/').href : src;
+  const items = PRODUCTS.filter(p => p.prices && p.prices.FCFA).map(p => ({
+    '@type': 'Product',
+    name: p.name,
+    image: (p.images && p.images.length ? p.images : (p.img ? [p.img] : [])).map(abs),
+    description: p.fabric ? `${p.name} — ${p.fabric}` : p.name,
+    brand: { '@type': 'Brand', name: 'Hadeej’Art' },
+    offers: {
+      '@type': 'Offer',
+      url: 'https://hadeejart.store/#catalogue',
+      priceCurrency: 'XOF',
+      price: p.prices.FCFA,
+      availability: 'https://schema.org/InStock'
+    }
+  }));
+  el.textContent = items.length ? JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: items.map((item, i) => ({ '@type': 'ListItem', position: i + 1, item }))
+  }) : '';
 }
 
 /* Ré-applique les libellés dans la langue courante sans re-télécharger le
