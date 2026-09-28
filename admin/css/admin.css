@@ -138,7 +138,14 @@ tr:hover td{background:#fef8f3}
 .badge.delivered{background:#e3f5ec;color:#146356}
 .badge.cancelled{background:#fdeceb;color:#8a2c1e}
 
-.row-actions{display:flex;gap:8px;flex-wrap:nowrap}
+/* Bouton "Modifier/Archiver/Supprimer" : volontairement PAS display:flex ici
+   (ça transformait la cellule en conteneur flexbox, qui perd le
+   vertical-align:middle du tableau et remonte le contenu en haut de la
+   ligne). Les boutons restent des éléments en ligne (inline-flex, voir
+   .btn), correctement centrés verticalement par la cellule ; l'espacement
+   entre eux vient d'une marge plutôt que d'un gap flex. */
+.row-actions{white-space:nowrap}
+@media (min-width:821px){ .row-actions .btn + .btn{margin-left:8px} }
 td{white-space:nowrap}
 td:nth-child(2){white-space:normal}
 td .btn.sm{min-height:38px;padding:6px 12px}
