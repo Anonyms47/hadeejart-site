@@ -5,7 +5,6 @@
    ====================================================================== */
 
 const CATALOG_CACHE_KEY = 'ha_catalog_cache_v3';
-const CATALOG_CACHE_TTL_MS = 10 * 60 * 1000; /* 10 min */
 
 function supabaseHeaders() {
   return {
@@ -66,17 +65,17 @@ function writeCatalogCache(categories, products, collections) {
 }
 
 /* Charge le catalogue : affiche immédiatement le cache local s'il existe
-   (même périmé) pour un rendu instantané, puis revalide en tâche de fond
-   et ré-affiche si les données ont changé. */
+   (même périmé) pour un rendu instantané, PUIS revalide toujours auprès de
+   Supabase en tâche de fond et ré-affiche si les données ont changé — sans
+   ça, une mise à jour faite dans l'admin (nouveau produit, prix, statut…)
+   n'apparaîtrait côté site public que plusieurs minutes plus tard, le
+   temps que le cache local de chaque visiteur soit jugé périmé. */
 async function loadCatalog(onUpdate) {
   const cached = readCatalogCache();
   if (cached) {
     applyCatalogData(cached.categories, cached.products, cached.collections);
     if (onUpdate) onUpdate();
   }
-
-  const isFresh = cached && (Date.now() - cached.savedAt) < CATALOG_CACHE_TTL_MS;
-  if (isFresh) return;
 
   try {
     const [categories, products, collections] = await Promise.all([fetchCategories(), fetchProducts(), fetchCollections()]);

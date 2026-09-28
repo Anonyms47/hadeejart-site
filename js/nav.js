@@ -21,15 +21,20 @@ function infoPageEntries() {
   ];
 }
 
-/* Sur index.html, un clic sur un lien catégorie filtre le catalogue en
-   place (pas de rechargement). Sur toute autre page, le lien navigue
-   normalement vers index.html?...#catalogue (fonctionne aussi sans
-   JavaScript). Une collection, elle, a toujours sa propre page
-   (collection.html) : son lien navigue normalement, jamais de filtre. */
+/* Sur index.html uniquement, un clic sur un lien catégorie filtre le
+   catalogue en place (pas de rechargement). Sur toute autre page — y
+   compris la page dédiée d'une collection (collection.html), qui a elle
+   aussi un #productGrid mais pas de filtres de catégories — le lien
+   navigue normalement vers index.html?...#catalogue (fonctionne aussi
+   sans JavaScript). Sans ça, cliquer une catégorie depuis la page d'une
+   collection filtrait ses produits sur place tout en gardant le bandeau
+   (nom, photo) de l'ancienne collection affiché : trompeur. Une
+   collection, elle, a toujours sa propre page : son lien navigue
+   normalement, jamais de filtre. */
 function handleNavLinkClick(e, kind, id) {
   if (kind === 'collection') return true;
-  const onCatalogPage = document.getElementById('productGrid');
-  if (!onCatalogPage) return true;
+  const onIndexCatalogue = document.getElementById('categoryFilters');
+  if (!onIndexCatalogue) return true;
   e.preventDefault();
   if (kind === 'category' && typeof selectCategory === 'function') selectCategory(id);
   return false;
