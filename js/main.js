@@ -78,7 +78,10 @@ function initCollectionHero() {
   document.title = col.label + ' — Hadeej’Art';
   if (coverEl) {
     coverEl.hidden = !col.cover;
-    coverEl.style.backgroundImage = col.cover ? `url('${col.cover}')` : '';
+    const bg = document.getElementById('collHeroCoverBg');
+    const img = document.getElementById('collHeroCoverImg');
+    if (bg) bg.style.backgroundImage = col.cover ? `url('${col.cover}')` : '';
+    if (img) { img.src = col.cover || ''; img.alt = col.label; }
   }
   if (descEl) { descEl.hidden = !col.description; descEl.textContent = col.description || ''; }
 }

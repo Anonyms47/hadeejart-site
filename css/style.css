@@ -1256,17 +1256,29 @@ body.scroll-locked{ overflow:hidden; }
 .back-link:hover{ text-decoration:underline; }
 
 
-/* --- Bannière de la page d'une collection (collection.html) --- */
+/* --- Bannière de la page d'une collection (collection.html) ---
+   La photo de couverture doit apparaître en entier, sans être recadrée,
+   tout en occupant un grand bandeau immersif : un fond flouté agrandi de
+   la même image comble les bords, une image nette et complète repose
+   par-dessus. */
 .collection-hero{ padding-top:0; overflow:visible; }
 .collection-hero .back-link{ margin:18px 0 0; }
 .collection-hero-cover{
-  height:220px; margin:14px 0 18px; border-radius:16px; background-size:cover; background-position:center;
-  background-color:#f4cdb7;
-  background-image:
-    radial-gradient(circle at 20px 20px, rgba(0,0,0,.1) 3px, transparent 4px),
-    repeating-linear-gradient(45deg, rgba(43,30,18,.1) 0 8px, transparent 8px 20px);
+  position:relative; height:clamp(240px,46vw,480px); margin:14px 0 20px; border-radius:20px;
+  overflow:hidden; background-color:#f4cdb7; box-shadow:0 24px 48px rgba(0,0,0,.25);
 }
-@media(max-width:520px){ .collection-hero-cover{ height:150px; } }
+.collection-hero-cover .chc-bg{
+  position:absolute; inset:-24px; background-size:cover; background-position:center;
+  filter:blur(32px) saturate(1.2) brightness(.85); transform:scale(1.18);
+}
+.collection-hero-cover img{
+  position:relative; z-index:1; width:100%; height:100%; object-fit:contain; display:block;
+  filter:drop-shadow(0 16px 32px rgba(0,0,0,.35));
+}
+@media(max-width:520px){ .collection-hero-cover{ height:min(60vw,320px); } }
+@media (prefers-reduced-motion:no-preference){
+  .collection-hero-cover{ animation: cardReveal .55s cubic-bezier(.22,.9,.32,1) both; }
+}
 
 /* --- État vide générique (Collections sans résultat...) --- */
 .empty-state{
@@ -1289,13 +1301,26 @@ body.scroll-locked{ overflow:hidden; }
   background:#fff; border:1px solid #0001; border-radius:18px; overflow:hidden; text-decoration:none; color:var(--ink);
   box-shadow:0 12px 26px rgba(0,0,0,.12); display:flex; flex-direction:column; transition:transform .18s ease, box-shadow .2s ease;
 }
-.collection-card:hover{ transform:translateY(-4px); box-shadow:0 18px 34px rgba(0,0,0,.18); }
+.collection-card:hover{ transform:translateY(-6px); box-shadow:0 22px 40px rgba(0,0,0,.2); }
+.collection-card:hover .cover img{ transform:scale(1.04); }
 .collection-card .cover{
-  height:180px; background-size:cover; background-position:center; background-color:#f4cdb7;
+  position:relative; height:220px; overflow:hidden; background-color:#f4cdb7;
   background-image:
     radial-gradient(circle at 20px 20px, rgba(0,0,0,.1) 3px, transparent 4px),
     repeating-linear-gradient(45deg, rgba(43,30,18,.1) 0 8px, transparent 8px 20px);
 }
+/* Photo entièrement visible (jamais recadrée) : un fond flouté agrandi de
+   la même image comble l'espace autour, pour ne jamais laisser de bandes
+   vides ni couper le sujet. */
+.collection-card .cover-bg{
+  position:absolute; inset:-16px; background-size:cover; background-position:center;
+  filter:blur(22px) saturate(1.15) brightness(.92); transform:scale(1.15);
+}
+.collection-card .cover img{
+  position:relative; z-index:1; width:100%; height:100%; object-fit:contain; display:block;
+  transition:transform .3s ease; filter:drop-shadow(0 8px 18px rgba(0,0,0,.25));
+}
+@media(max-width:560px){ .collection-card .cover{ height:52vw; } }
 .collection-card .body{ padding:16px; display:flex; flex-direction:column; gap:10px; flex:1; }
 .collection-card h3{ margin:0; font:800 19px var(--font-display); color:var(--brand-700); }
 .collection-card .btn{ align-self:flex-start; margin-top:auto; }

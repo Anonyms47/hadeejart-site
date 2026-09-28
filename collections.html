@@ -210,7 +210,9 @@
     host.className = 'collections-grid';
     host.innerHTML = COLLECTIONS.map((c, i) => `
       <a class="collection-card" style="--i:${i}" href="collection.html?slug=${encodeURIComponent(c.id)}">
-        <div class="cover"${c.cover ? ` style="background-image:url('${escapeHtml(c.cover)}')"` : ''}></div>
+        <div class="cover">
+          ${c.cover ? `<div class="cover-bg" style="background-image:url('${escapeHtml(c.cover)}')"></div><img src="${escapeHtml(c.cover)}" alt="">` : ''}
+        </div>
         <div class="body">
           <h3>${escapeHtml(c.label)}</h3>
           <span class="btn sm ghost">${escapeHtml(t('collectionspage_view_btn'))}</span>
