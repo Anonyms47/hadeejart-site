@@ -13,6 +13,21 @@ function escapeHtml(s) {
 }
 
 /* ======================================================================
+   Écran de chargement (#pageLoader, voir css/style.css) : affiché dès
+   l'ouverture de la page, masqué explicitement par main.js/page.js une
+   fois le contenu essentiel prêt (catalogue, menus…). Le filet de
+   sécurité ci-dessous le masque de toute façon après quelques secondes,
+   pour ne jamais bloquer la page si le réseau est en panne.
+   ====================================================================== */
+function hidePageLoader() {
+  const el = document.getElementById('pageLoader');
+  if (!el || el.classList.contains('hide')) return;
+  el.classList.add('hide');
+  setTimeout(() => el.remove(), 400);
+}
+setTimeout(hidePageLoader, 6000);
+
+/* ======================================================================
    Verrou de défilement partagé (compteur de références) : plusieurs
    panneaux (menu mobile, modale détail, modale client, visionneuse plein
    écran) peuvent être ouverts en cascade (ex: la visionneuse depuis la

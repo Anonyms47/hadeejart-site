@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCollectionHero();
     recomputeCartCurrency();
     if (typeof renderNavMenus === 'function') renderNavMenus();
+    hidePageLoader();
   });
 });
 

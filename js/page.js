@@ -38,7 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loadNavData(() => {
       if (typeof renderNavMenus === 'function') renderNavMenus();
       if (typeof onNavDataLoaded === 'function') onNavDataLoaded();
+      hidePageLoader();
     });
+  } else {
+    hidePageLoader();
   }
 
   /* Point d'extension optionnel pour une page spécifique (ex: la grille
