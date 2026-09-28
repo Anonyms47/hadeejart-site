@@ -21,16 +21,17 @@ function infoPageEntries() {
   ];
 }
 
-/* Sur index.html, un clic sur un lien catégorie/collection filtre le
-   catalogue en place (pas de rechargement). Sur toute autre page, le lien
-   navigue normalement vers index.html?...#catalogue (fonctionne aussi
-   sans JavaScript). */
+/* Sur index.html, un clic sur un lien catégorie filtre le catalogue en
+   place (pas de rechargement). Sur toute autre page, le lien navigue
+   normalement vers index.html?...#catalogue (fonctionne aussi sans
+   JavaScript). Une collection, elle, a toujours sa propre page
+   (collection.html) : son lien navigue normalement, jamais de filtre. */
 function handleNavLinkClick(e, kind, id) {
+  if (kind === 'collection') return true;
   const onCatalogPage = document.getElementById('productGrid');
   if (!onCatalogPage) return true;
   e.preventDefault();
   if (kind === 'category' && typeof selectCategory === 'function') selectCategory(id);
-  if (kind === 'collection' && typeof selectCollection === 'function') selectCollection(id);
   return false;
 }
 
@@ -72,8 +73,7 @@ function renderShopMenu() {
 function renderCollectionsMenu() {
   const dropHtml = COLLECTIONS.length
     ? COLLECTIONS.map((c, i) => `
-      <a href="index.html?collection=${encodeURIComponent(c.id)}#catalogue" class="nav-drop-item" style="--i:${i}"
-         onclick="return handleNavLinkClick(event,'collection','${escapeHtml(c.id)}')">
+      <a href="collection.html?slug=${encodeURIComponent(c.id)}" class="nav-drop-item" style="--i:${i}">
         <span class="swatch${c.cover ? '' : ' swatch-generic'}" aria-hidden="true"${c.cover ? ` style="background-image:url('${escapeHtml(c.cover)}')"` : ''}></span>
         <span>${escapeHtml(c.label)}</span>
       </a>`).join('')
@@ -86,7 +86,7 @@ function renderCollectionsMenu() {
   const footerHost = document.getElementById('footerCollectionsList');
   if (footerHost) {
     footerHost.innerHTML = COLLECTIONS.length
-      ? COLLECTIONS.map(c => `<li><a href="index.html?collection=${encodeURIComponent(c.id)}#catalogue" onclick="return handleNavLinkClick(event,'collection','${escapeHtml(c.id)}')">${escapeHtml(c.label)}</a></li>`).join('')
+      ? COLLECTIONS.map(c => `<li><a href="collection.html?slug=${encodeURIComponent(c.id)}">${escapeHtml(c.label)}</a></li>`).join('')
       : '';
     footerHost.setAttribute('data-empty', COLLECTIONS.length ? '' : t('nav_collections_empty'));
   }

@@ -314,6 +314,7 @@ function onLangChange() {
   refreshCatalogLabels();
   renderCategoryFilters();
   renderProducts();
+  if (typeof initCollectionHero === 'function') initCollectionHero();
   if (typeof refreshCartLanguage === 'function') refreshCartLanguage();
   if (typeof refreshMapStatusLabel === 'function') refreshMapStatusLabel();
   if (typeof renderNavMenus === 'function') renderNavMenus();

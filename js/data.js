@@ -55,7 +55,7 @@ function applyCatalogData(categoryRows, productRows, collectionRows) {
   );
 
   COLLECTIONS = (collectionRows || []).map(c => ({
-    id: c.slug, label: pickLang(c, 'name'), cover: c.cover_image_url || '', _row: c
+    id: c.slug, label: pickLang(c, 'name'), description: pickLang(c, 'description'), cover: c.cover_image_url || '', _row: c
   }));
 
   PRODUCTS = (productRows || []).map(p => {

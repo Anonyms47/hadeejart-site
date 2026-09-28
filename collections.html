@@ -209,7 +209,7 @@
     }
     host.className = 'collections-grid';
     host.innerHTML = COLLECTIONS.map((c, i) => `
-      <a class="collection-card" style="--i:${i}" href="index.html?collection=${encodeURIComponent(c.id)}#catalogue">
+      <a class="collection-card" style="--i:${i}" href="collection.html?slug=${encodeURIComponent(c.id)}">
         <div class="cover"${c.cover ? ` style="background-image:url('${escapeHtml(c.cover)}')"` : ''}></div>
         <div class="body">
           <h3>${escapeHtml(c.label)}</h3>

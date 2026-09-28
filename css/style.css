@@ -1256,6 +1256,18 @@ body.scroll-locked{ overflow:hidden; }
 .back-link:hover{ text-decoration:underline; }
 
 
+/* --- Bannière de la page d'une collection (collection.html) --- */
+.collection-hero{ padding-top:0; overflow:visible; }
+.collection-hero .back-link{ margin:18px 0 0; }
+.collection-hero-cover{
+  height:220px; margin:14px 0 18px; border-radius:16px; background-size:cover; background-position:center;
+  background-color:#f4cdb7;
+  background-image:
+    radial-gradient(circle at 20px 20px, rgba(0,0,0,.1) 3px, transparent 4px),
+    repeating-linear-gradient(45deg, rgba(43,30,18,.1) 0 8px, transparent 8px 20px);
+}
+@media(max-width:520px){ .collection-hero-cover{ height:150px; } }
+
 /* --- État vide générique (Collections sans résultat...) --- */
 .empty-state{
   text-align:center; padding:clamp(36px,8vw,64px) 20px; background:var(--paper); border-radius:20px;

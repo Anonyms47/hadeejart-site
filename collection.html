@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"/>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com https://nwujdxrelsjicvsnbgzc.supabase.co; connect-src 'self' https://nwujdxrelsjicvsnbgzc.supabase.co https://nominatim.openstreetmap.org; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<title id="pageTitle">Collection — Hadeej’Art</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400..800;1,9..40,400..600&family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..600&family=Kenia&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="css/style.css">
+<meta name="description" content="Hadeej’Art — Découvrez les pièces de cette collection wax.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Hadeej’Art">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Collection — Hadeej’Art">
+<meta property="og:description" content="Hadeej’Art — Découvrez les pièces de cette collection wax.">
+<meta property="og:image" content="https://hadeejart.store/images/logo.png">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#111111">
+</head>
+<body>
+<canvas id="inv" width="1240" height="1754"></canvas>
+
+<div class="container" id="top">
+  <!-- HEADER -->
+  <div class="header" id="siteHeader" data-i18n-aria="header_aria" aria-label="Barre supérieure">
+    <a class="brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
+      <span class="mark"><img src="images/logo.png" alt=""></span>
+      <span class="brand-text">
+        <span class="brand-name">Hadeej’Art</span>
+        <span class="badge" data-i18n="badge">Pièces stylées & authentiquement africaines</span>
+      </span>
+    </a>
+
+    <nav class="main-nav" id="mainNav" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
+      <div class="nav-item" id="navShop">
+        <button type="button" class="nav-link" id="navShopBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_shop">Boutique</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navShopMenu" role="menu" data-i18n-aria="nav_shop" aria-label="Boutique"></div>
+      </div>
+      <div class="nav-item" id="navCollections">
+        <button type="button" class="nav-link" id="navCollectionsBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_collections">Collections</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown" id="navCollectionsMenu" role="menu" data-i18n-aria="nav_collections" aria-label="Collections"></div>
+      </div>
+      <a class="nav-link nav-plain" id="navContact" href="contact.html" data-i18n="nav_contact">Contact</a>
+      <a class="nav-link nav-plain" id="navFaq" href="faq.html" data-i18n="nav_faq">FAQ</a>
+    </nav>
+
+    <div class="action">
+      <select id="langSelect" class="select-pill lang-select" data-i18n-aria="lang_label" data-i18n-title="lang_label" title="Langue">
+        <option value="fr">🇫🇷 FR</option>
+        <option value="en">🇬🇧 EN</option>
+        <option value="wo">🇸🇳 WO</option>
+      </select>
+      <select id="currencySelect" class="select-pill currency-select" data-i18n-aria="currency_label" data-i18n-title="currency_label" title="Devise">
+        <option value="FCFA">FCFA</option>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+      </select>
+      <div class="cart">
+        <a id="cartBtn" class="btn" href="index.html" data-i18n-aria="cart" aria-label="Panier"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></a>
+      </div>
+      <button type="button" class="hamburger" id="hamburgerBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="menu_open">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MENU MOBILE PLEIN ÉCRAN -->
+  <div class="mobile-menu" id="mobileMenu">
+    <div class="mobile-menu-head">
+      <a class="brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
+        <span class="mark"><img src="images/logo.png" alt=""></span>
+        <span class="brand-name">Hadeej’Art</span>
+      </a>
+      <button type="button" class="mobile-menu-close" id="mobileMenuClose" data-i18n-aria="menu_close" aria-label="Fermer le menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <nav class="mobile-menu-body mobile-links" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
+      <a class="mobile-link" href="index.html#catalogue"><span class="mobile-link-num" aria-hidden="true">01</span><span class="mobile-link-label" data-i18n="nav_shop">Boutique</span></a>
+      <a class="mobile-link" href="collections.html"><span class="mobile-link-num" aria-hidden="true">02</span><span class="mobile-link-label" data-i18n="nav_collections">Collections</span></a>
+      <a class="mobile-link" href="contact.html"><span class="mobile-link-num" aria-hidden="true">03</span><span class="mobile-link-label" data-i18n="nav_contact">Contact</span></a>
+      <a class="mobile-link" href="faq.html"><span class="mobile-link-num" aria-hidden="true">04</span><span class="mobile-link-label" data-i18n="nav_faq">FAQ</span></a>
+    </nav>
+  </div>
+
+  <div class="motif-bar motif-top" aria-hidden="true"></div>
+
+  <!-- BANNIÈRE DE LA COLLECTION -->
+  <a class="back-link" href="collections.html">← <span data-i18n="footer_collections_title">Collections</span></a>
+  <section class="page-hero collection-hero">
+    <div class="ribbon"></div>
+    <div class="collection-hero-cover" id="collHeroCover" hidden></div>
+    <h1 id="collHeroTitle" data-i18n="loading">Chargement…</h1>
+    <p class="lead" id="collHeroDesc" hidden></p>
+  </section>
+
+  <!-- CATALOGUE (produits de cette collection uniquement) -->
+  <div id="catalogue"></div>
+  <div id="productGrid" class="grid"></div>
+
+  <!-- BANDE MOTIF BAS -->
+  <div class="motif-bar motif-bottom" aria-hidden="true"></div>
+
+  <!-- PIED DE PAGE -->
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
+        <p class="footer-tagline" data-i18n="footer_tagline">Portez votre histoire</p>
+        <p class="footer-about" data-i18n="footer_about">Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.</p>
+      </div>
+
+      <details class="footer-col footer-accordion" open>
+        <summary data-i18n="footer_nav_title">Navigation</summary>
+        <ul class="footer-list">
+          <li><a href="index.html" data-i18n="footer_home_link">Accueil</a></li>
+          <li><a href="index.html#catalogue" data-i18n="nav_shop">Boutique</a></li>
+        </ul>
+        <ul class="footer-list" id="footerInfoList"></ul>
+      </details>
+
+      <details class="footer-col footer-accordion" open>
+        <summary data-i18n="footer_shop_universe_title">Univers boutique</summary>
+        <h5 class="footer-sublabel" data-i18n="footer_categories_title">Catégories</h5>
+        <ul class="footer-list" id="footerShopList"></ul>
+        <h5 class="footer-sublabel" data-i18n="footer_collections_title">Collections</h5>
+        <ul class="footer-list" id="footerCollectionsList"></ul>
+      </details>
+
+      <div class="footer-col footer-contact">
+        <h4 data-i18n="footer_contact_title">Contact</h4>
+        <a id="footerWaLink" class="footer-wa" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
+        <div class="footer-prefs">
+          <div>
+            <span class="footer-sublabel" data-i18n="footer_langs_title">Langue</span>
+            <div class="footer-pill-row" id="footerLangRow">
+              <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
+              <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
+              <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
+            </div>
+          </div>
+          <div>
+            <span class="footer-sublabel" data-i18n="footer_currencies_title">Devise</span>
+            <div class="footer-pill-row" id="footerCurrencyRow">
+              <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
+              <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
+              <button type="button" class="footer-pill" data-currency="USD">USD</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-payments">
+      <span class="footer-payments-title" data-i18n="footer_payments_title">Paiement accepté</span>
+      <div class="footer-payments-row">
+        <span class="footer-pay-badge"><img src="images/payments/wave-icon.png" alt="" width="16" height="16">Wave</span>
+        <span class="footer-pay-badge"><img src="images/payments/orange-money-icon.png" alt="" width="16" height="16">Orange Money</span>
+        <span class="footer-pay-badge">Sendwave</span>
+        <span class="footer-pay-badge">TapTap Send</span>
+      </div>
+    </div>
+
+    <div class="footer-legal">
+      <span data-i18n="footer_legal_title">Informations légales</span>
+      <a href="politique-confidentialite.html" data-i18n="privacy_link">Politique de confidentialité</a>
+      <a href="conditions-generales.html" data-i18n="terms_link">Conditions générales de vente</a>
+      <a href="mentions-legales.html" data-i18n="legal_link">Mentions légales</a>
+    </div>
+
+    <p class="footer-copyright">© <span id="footerYear"></span> Hadeej’Art</p>
+  </footer>
+</div>
+
+<!-- PANIER (tiroir) -->
+<div id="cartOverlay" class="cart-overlay" aria-hidden="true"></div>
+<aside id="cartPanel" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-hidden="true">
+  <div class="cart-grab" aria-hidden="true"></div>
+  <header class="cart-head">
+    <div class="cart-head-title">
+      <h4 id="cartTitle" data-i18n="cart_title">Votre panier</h4>
+      <span class="cart-count-chip" id="cartCountChip" aria-live="polite">0</span>
+    </div>
+    <button type="button" class="cart-close" id="cartClose" data-i18n-aria="cart_close" aria-label="Fermer le panier">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </header>
+  <div class="cart-stitch" aria-hidden="true"></div>
+  <div id="cartLines" class="cart-lines"></div>
+  <footer class="cart-foot" id="cartFoot">
+    <div class="cart-sum"><span data-i18n="subtotal">Sous-total</span><b id="cartSubtotal">0 FCFA</b></div>
+    <div class="cart-sum cart-sum-total"><span data-i18n="total">Total</span><b id="cartTotal">0 FCFA</b></div>
+    <p class="cart-note" data-i18n="cart_note">Livraison et paiement confirmés avec vous sur WhatsApp.</p>
+    <button class="btn cart-checkout" type="button" data-i18n="checkout" onclick="openClient()">Finaliser</button>
+    <button class="cart-continue" type="button" data-i18n="cart_continue" onclick="closeCart()">Continuer mes achats</button>
+  </footer>
+</aside>
+
+<!-- CONFIRMATION DE COMMANDE -->
+<div id="orderDone" class="modal" role="dialog" aria-modal="true" aria-labelledby="odTitle" onclick="if(event.target===this) closeOrderDone()">
+  <div class="sheet order-done">
+    <div class="od-badge" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+    </div>
+    <h3 id="odTitle" data-i18n="order_done_title">Commande enregistrée !</h3>
+    <p class="od-label" data-i18n="order_done_number_label">Votre numéro de commande</p>
+    <div class="od-ref-row">
+      <strong id="odRef" class="od-ref"></strong>
+      <button type="button" class="od-copy" id="odCopy" onclick="orderDoneCopyRef()" data-i18n="order_done_copy">Copier</button>
+    </div>
+    <p class="od-text" data-i18n="order_done_text">Votre facture a été téléchargée. Envoyez-la sur WhatsApp à Hadeej’Art pour confirmer votre commande.</p>
+    <img id="odPreview" class="od-preview" alt="" hidden>
+    <a id="odWhatsapp" class="btn od-wa" href="#" target="_blank" rel="noopener" data-i18n="order_done_wa">Confirmer sur WhatsApp</a>
+    <div class="od-actions">
+      <button type="button" class="btn ghost" onclick="downloadInvoice()" data-i18n="order_done_download">Télécharger la facture</button>
+      <button type="button" class="btn ghost" onclick="orderDoneBackToShop()" data-i18n="order_done_back">Retour à la boutique</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DÉTAIL -->
+<div id="detail" class="modal" onclick="if(event.target===this) closeDetail()">
+  <div class="sheet">
+    <header>
+      <b id="dName" data-i18n="detail_default_title">Détail</b>
+      <button class="btn ghost" type="button" data-i18n="close" onclick="closeDetail()">Fermer</button>
+    </header>
+    <div class="body">
+      <div class="media" id="dMedia">
+        <div class="media-frame">
+          <img id="dImg" alt="" onclick="openImageFullscreen(this.src)">
+          <button class="gallery-nav prev" type="button" onclick="galleryStep(-1)" data-i18n-aria="gallery_prev_aria" aria-label="Photo précédente" hidden>
+            <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <button class="gallery-nav next" type="button" onclick="galleryStep(1)" data-i18n-aria="gallery_next_aria" aria-label="Photo suivante" hidden>
+            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <span class="gallery-count" id="dGalleryCount" hidden></span>
+        </div>
+        <button class="img-expand" type="button" onclick="openImageFullscreen(document.getElementById('dImg').src)" data-i18n-title="fullscreen_title" title="Voir en plein écran">
+          <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M4 15v5h5"/></svg>
+        </button>
+        <div id="dThumbs" class="thumbs" hidden></div>
+      </div>
+      <div>
+        <div id="dMeta"></div>
+        <div class="price" id="dPrice"></div>
+        <div class="detail-availability">
+          <span class="avail-dot" aria-hidden="true"></span>
+          <span data-i18n="detail_available">Disponible</span>
+          <span class="sep-dot" aria-hidden="true">·</span>
+          <span data-i18n="detail_lead_time">Délai communiqué par WhatsApp après la commande</span>
+        </div>
+        <div class="field"><label for="dColor" data-i18n="color_label">Couleur</label><input id="dColor" class="input" data-i18n-placeholder="color_placeholder" placeholder="ex: Orange"/></div>
+        <div class="field">
+          <label for="dSize" data-i18n="size_label">Taille</label>
+          <select id="dSize"><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select>
+        </div>
+        <div class="field"><label for="dTissu" data-i18n="fabric_label">Tissu</label><input id="dTissu" class="input" data-i18n-placeholder="fabric_placeholder" placeholder="ex: Wax"/></div>
+        <div class="field"><label for="dNote" data-i18n="note_label">Note (facultatif)</label><input id="dNote" class="input" data-i18n-placeholder="note_placeholder" placeholder="ex: manches longues"/></div>
+        <div class="field sexe-field">
+          <label for="dSexe" data-i18n="sex_label">Sexe</label>
+          <select id="dSexe"><option data-i18n="sex_unisex">Unisexe</option><option data-i18n="sex_male">Homme</option><option data-i18n="sex_female">Femme</option></select>
+</div>
+        <div id="detailOptions" class="field" style="display:none;"></div>
+        <div class="field"><button class="btn" type="button" data-i18n="add_to_cart" onclick="addFromDetail()">Ajouter au panier</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLIENT -->
+<div id="client" class="modal" onclick="if(event.target===this) closeClient()">
+  <div class="sheet" style="max-width:960px">
+    <header><b data-i18n="client_title">Mes informations</b><button class="btn ghost" type="button" data-i18n="close" onclick="closeClient()">Fermer</button></header>
+    <div class="body" style="grid-template-columns:1fr 1fr">
+      <div>
+        <div class="field"><label for="cName" data-i18n="name_label">Nom complet</label><input id="cName" class="input" data-i18n-placeholder="name_placeholder" placeholder="ex: Aïcha Diop"></div>
+        <div class="field"><label for="cPhone" data-i18n="phone_label">Téléphone (WhatsApp)</label><input id="cPhone" class="input" data-i18n-placeholder="phone_placeholder" placeholder="77 123 45 67"></div>
+        <div class="field"><label for="cEmail" data-i18n="email_label">E-mail (facultatif)</label><input id="cEmail" type="email" class="input" data-i18n-placeholder="email_placeholder" placeholder="vous@exemple.com"></div>
+        <div class="row">
+          <div class="field" style="flex:1"><label for="cCountry" data-i18n="country_label">Pays</label><input id="cCountry" class="input" data-i18n-placeholder="country_placeholder" placeholder="Sénégal"></div>
+          <div class="field" style="flex:1"><label for="cCity" data-i18n="city_label">Ville</label><input id="cCity" class="input" data-i18n-placeholder="city_placeholder" placeholder="Dakar"></div>
+        </div>
+        <div class="field"><label for="cDistrict" data-i18n="district_label">Quartier</label><input id="cDistrict" class="input" data-i18n-placeholder="district_placeholder" placeholder="Sicap Mbao"></div>
+
+        <div class="field">
+          <label data-i18n="location_label">Localisation de livraison</label>
+          <div class="map-tools">
+            <input id="mapSearch" class="input" data-i18n-placeholder="map_search_placeholder" placeholder="Rechercher une adresse…">
+            <button type="button" class="btn ghost sm" id="btnMapSearch" data-i18n="map_search_btn">Chercher</button>
+            <button type="button" class="btn ghost sm" id="btnLocateMe" data-i18n="map_locate_btn">📍 Ma position</button>
+          </div>
+          <ul id="mapResults" class="map-results" role="listbox" hidden data-i18n-aria="map_results_label" aria-label="Résultats de la recherche"></ul>
+          <div id="deliveryMap"></div>
+          <p class="small" id="mapStatus" data-i18n="map_status_default">Déplacez le repère ou recherchez votre adresse.</p>
+          <input type="hidden" id="locLat"><input type="hidden" id="locLng">
+          <div class="field"><label for="locAddress" data-i18n="address_detected_label">Adresse détectée</label><input id="locAddress" class="input" readonly data-i18n-placeholder="address_detected_placeholder" placeholder="s'affiche après sélection sur la carte"></div>
+          <div class="field"><label for="locNote" data-i18n="location_note_label">Précision libre (repère, étage…)</label><input id="locNote" class="input" data-i18n-placeholder="location_note_placeholder" placeholder="ex: portail bleu, 2e étage"></div>
+        </div>
+
+        <div class="field">
+          <label class="checkbox"><input type="checkbox" id="cRemember"> <span data-i18n="remember_label">Se souvenir de mes informations</span></label>
+        </div>
+      </div>
+      <div>
+        <div class="field">
+          <label data-i18n="payment_label">Mode de paiement</label>
+          <div id="payGrid" class="pay-grid">
+            <button type="button" class="pay-card" data-method="wave" aria-pressed="true">
+              <img src="images/payments/wave-icon.png" alt="" width="18" height="18">
+              <span>Wave</span>
+            </button>
+            <button type="button" class="pay-card" data-method="orange_money">
+              <img src="images/payments/orange-money-icon.png" alt="" width="18" height="18">
+              <span>Orange Money</span>
+            </button>
+            <button type="button" class="pay-card" data-method="sendwave">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="#5B2A86"/>
+                <path d="M6 13l4 4 8-9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>Sendwave</span>
+            </button>
+            <button type="button" class="pay-card" data-method="taptap_send">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="#0B5FFF"/>
+                <path d="M7 12h10M13 8l4 4-4 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span>TapTap Send</span>
+            </button>
+          </div>
+          <input type="hidden" id="cPay" name="pay_method" value="wave">
+        </div>
+
+        <div class="cta-row">
+          <button type="button" class="btn" id="btnOrder" data-action="order" data-i18n="place_order_btn">Passer la commande</button>
+          <p class="cta-hint" data-i18n="invoice_hint">Une facture (image) sera générée et partagée sur WhatsApp.</p>
+        </div>
+
+        <noscript>
+          <a class="btn" href="https://wa.me/221781444340">Passer la commande</a>
+        </noscript>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLEIN ÉCRAN IMAGE -->
+<div id="imgViewer" class="lightbox" onclick="closeImageViewer()">
+  <button class="close" data-i18n-aria="close" aria-label="Fermer" type="button" data-i18n="close" onclick="closeImageViewer(); event.stopPropagation()">Fermer</button>
+  <img id="imgViewerImg" data-i18n-alt="lightbox_alt" alt="Aperçu produit"/>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/currency.js"></script>
+<script src="js/data.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/catalogue.js"></script>
+<script src="js/invoice.js"></script>
+<script src="js/map.js"></script>
+<script src="js/checkout.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
