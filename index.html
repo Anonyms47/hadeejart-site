@@ -274,8 +274,17 @@
       <button class="btn ghost" type="button" data-i18n="close" onclick="closeDetail()">Fermer</button>
     </header>
     <div class="body">
-      <div class="media">
-        <img id="dImg" alt="" onclick="openImageFullscreen(this.src)">
+      <div class="media" id="dMedia">
+        <div class="media-frame">
+          <img id="dImg" alt="" onclick="openImageFullscreen(this.src)">
+          <button class="gallery-nav prev" type="button" onclick="galleryStep(-1)" data-i18n-aria="gallery_prev_aria" aria-label="Photo précédente" hidden>
+            <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <button class="gallery-nav next" type="button" onclick="galleryStep(1)" data-i18n-aria="gallery_next_aria" aria-label="Photo suivante" hidden>
+            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+          <span class="gallery-count" id="dGalleryCount" hidden></span>
+        </div>
         <button class="img-expand" type="button" onclick="openImageFullscreen(document.getElementById('dImg').src)" data-i18n-title="fullscreen_title" title="Voir en plein écran">
           <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 15v5h-5M15 4h5v5M4 15v5h5"/></svg>
         </button>

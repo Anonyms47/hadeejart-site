@@ -77,6 +77,7 @@ const UI_STRINGS = {
     cart_unit: 'l’unité',
 
     detail_default_title: 'Détail', close: 'Fermer', fullscreen_title: 'Voir en plein écran',
+    gallery_prev_aria: 'Photo précédente', gallery_next_aria: 'Photo suivante',
     color_label: 'Couleur', color_placeholder: 'ex: Orange',
     size_label: 'Taille',
     fabric_label: 'Tissu', fabric_placeholder: 'ex: Wax',
@@ -348,6 +349,7 @@ const UI_STRINGS = {
     cart_unit: 'each',
 
     detail_default_title: 'Details', close: 'Close', fullscreen_title: 'View fullscreen',
+    gallery_prev_aria: 'Previous photo', gallery_next_aria: 'Next photo',
     color_label: 'Colour', color_placeholder: 'e.g. Orange',
     size_label: 'Size',
     fabric_label: 'Fabric', fabric_placeholder: 'e.g. Wax',
@@ -619,6 +621,7 @@ const UI_STRINGS = {
     cart_unit: 'bu nekk',
 
     detail_default_title: 'Detay', close: 'Tëj', fullscreen_title: 'Xool ko bu mag',
+    gallery_prev_aria: 'Nataal bi jiitu', gallery_next_aria: 'Nataal bi topp',
     color_label: 'Melo', color_placeholder: 'misaal: Orange',
     size_label: 'Tay',
     fabric_label: 'Tisu', fabric_placeholder: 'misaal: Wax',

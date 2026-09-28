@@ -124,9 +124,12 @@ function renderDetailGallery(p) {
   CURRENT_GALLERY_INDEX = 0;
   const mainImg = el('#dImg');
   if (mainImg) { mainImg.src = images[0]; mainImg.alt = p.name; }
+  const multi = images.length > 1;
+  document.querySelectorAll('#dMedia .gallery-nav').forEach(btn => btn.hidden = !multi);
+  updateGalleryCount(images.length);
   const thumbs = document.getElementById('dThumbs');
   if (!thumbs) return;
-  if (images.length <= 1) {
+  if (!multi) {
     thumbs.innerHTML = '';
     thumbs.hidden = true;
     return;
@@ -136,6 +139,13 @@ function renderDetailGallery(p) {
     <button type="button" class="thumb${i === 0 ? ' active' : ''}" onclick="selectGalleryImage(${i})">
       <img src="${escapeHtml(src)}" alt="" loading="lazy" decoding="async">
     </button>`).join('');
+}
+
+function updateGalleryCount(total) {
+  const el = document.getElementById('dGalleryCount');
+  if (!el) return;
+  if (total > 1) { el.hidden = false; el.textContent = `${CURRENT_GALLERY_INDEX + 1} / ${total}`; }
+  else { el.hidden = true; el.textContent = ''; }
 }
 
 function selectGalleryImage(i) {
@@ -151,6 +161,16 @@ function selectGalleryImage(i) {
     mainImg.classList.add('switching');
   }
   document.querySelectorAll('#dThumbs .thumb').forEach((btn, idx) => btn.classList.toggle('active', idx === i));
+  updateGalleryCount(images.length);
+}
+
+/* Flèches précédent/suivant (clic, clavier ← →, balayage tactile) : passe à
+   la photo voisine en bouclant d'un bout à l'autre de la galerie. */
+function galleryStep(dir) {
+  if (!CURRENT) return;
+  const images = (CURRENT.images && CURRENT.images.length) ? CURRENT.images : [CURRENT.img];
+  if (images.length <= 1) return;
+  selectGalleryImage((CURRENT_GALLERY_INDEX + dir + images.length) % images.length);
 }
 
 /* Catégorie + collection(s) du produit (données réelles déjà chargées,
@@ -325,6 +345,32 @@ function refreshOpenDetailLabels() {
   const sexeSel = document.getElementById('dSexe');
   if (sexeSel && typeof refreshEpicSelect === 'function') refreshEpicSelect(sexeSel);
 }
+/* Navigation de la galerie de la fiche détail : flèches ← → au clavier,
+   balayage tactile sur l'image. Liée une seule fois au chargement. */
+(function bindDetailGalleryNav() {
+  document.addEventListener('keydown', e => {
+    const modal = document.getElementById('detail');
+    if (!modal || !modal.classList.contains('show')) return;
+    if (e.key === 'ArrowLeft') galleryStep(-1);
+    else if (e.key === 'ArrowRight') galleryStep(1);
+  });
+  document.addEventListener('DOMContentLoaded', () => {
+    const media = document.getElementById('dMedia');
+    if (!media) return;
+    let startX = 0, startY = 0, tracking = false;
+    media.addEventListener('touchstart', e => {
+      if (e.touches.length !== 1) return;
+      tracking = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+    }, { passive: true });
+    media.addEventListener('touchend', e => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.changedTouches[0].clientX - startX, dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) galleryStep(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  });
+})();
+
 function onCurrencyChange() {
   renderProducts();
   recomputeCartCurrency();

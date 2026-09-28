@@ -234,10 +234,17 @@ async function openProductForm(id) {
       </div>
 
       <div class="field"><label>Images</label>
-        <input type="file" id="pImageFiles" accept="image/*" multiple>
+        <p class="hint">Plusieurs photos possibles. Glissez une vignette pour changer l’ordre · l’étoile ★ marque la photo principale (affichée en premier sur le site).</p>
         <div class="image-grid" id="pImageGrid">
-          ${images.map(img => `<div class="img-item" data-id="${img.id}"><img src="${escapeHtml(assetUrl(img.image_url))}"><button type="button" class="rm-img" data-id="${img.id}">✕</button></div>`).join('')}
+          ${images.map(img => `<div class="img-item" draggable="true" data-id="${img.id}">
+            <img src="${escapeHtml(assetUrl(img.image_url))}">
+            <button type="button" class="img-star${img.is_primary ? ' active' : ''}" data-id="${img.id}" title="Définir comme photo principale">★</button>
+            <button type="button" class="rm-img" data-id="${img.id}" title="Retirer">✕</button>
+          </div>`).join('')}
         </div>
+        <label class="btn ghost sm" for="pImageFiles" style="display:inline-block;margin-top:10px;cursor:pointer">+ Ajouter des photos</label>
+        <input type="file" id="pImageFiles" accept="image/*" multiple style="display:none">
+        <div class="image-grid" id="pImageGridNew"></div>
       </div>
     </div>
     <div class="foot">
@@ -262,6 +269,38 @@ async function openProductForm(id) {
     await sb.from('product_images').delete().eq('id', btn.dataset.id);
     btn.closest('.img-item').remove();
   }));
+
+  /* Étoile : marque une image existante comme principale (une seule à la fois). */
+  overlay.querySelectorAll('.img-star').forEach(btn => btn.addEventListener('click', async () => {
+    const grid = overlay.querySelector('#pImageGrid');
+    await sb.from('product_images').update({ is_primary: false }).eq('product_id', id);
+    await sb.from('product_images').update({ is_primary: true }).eq('id', btn.dataset.id);
+    grid.querySelectorAll('.img-star').forEach(b => b.classList.toggle('active', b === btn));
+    toast('Photo principale mise à jour.');
+  }));
+
+  /* Réordonner par glisser-déposer : l'ordre visuel devient sort_order au survol/dépôt. */
+  bindImageDragReorder(overlay.querySelector('#pImageGrid'));
+
+  /* Photos à ajouter : sélectionnées maintenant, envoyées à l'enregistrement.
+     On garde notre propre liste (plutôt que input.files) pour permettre de
+     retirer un fichier de la sélection avant l'envoi. */
+  let pendingFiles = [];
+  const newGrid = overlay.querySelector('#pImageGridNew');
+  function renderPendingPreviews() {
+    newGrid.innerHTML = pendingFiles.map((f, i) => `<div class="img-item pending" data-i="${i}">
+      <img src="${URL.createObjectURL(f)}"><button type="button" class="rm-img" data-i="${i}" title="Retirer">✕</button>
+    </div>`).join('');
+    newGrid.querySelectorAll('.rm-img').forEach(btn => btn.addEventListener('click', () => {
+      pendingFiles.splice(+btn.dataset.i, 1);
+      renderPendingPreviews();
+    }));
+  }
+  overlay.querySelector('#pImageFiles').addEventListener('change', e => {
+    pendingFiles = pendingFiles.concat([...e.target.files]);
+    renderPendingPreviews();
+    e.target.value = '';
+  });
 
   overlay.querySelector('#saveProdBtn').addEventListener('click', async () => {
     const saveBtn = overlay.querySelector('#saveProdBtn');
@@ -343,15 +382,15 @@ async function openProductForm(id) {
         productId = inserted.id;
       }
 
-      const files = overlay.querySelector('#pImageFiles').files;
-      if (files && files.length) {
+      if (pendingFiles.length) {
         const { data: existingImgs } = await sb.from('product_images').select('id').eq('product_id', productId);
         let sortBase = (existingImgs || []).length;
-        for (const file of files) {
+        for (const file of pendingFiles) {
           const url = await uploadProductImage(file, `products/${productId}`);
+          const isFirstEver = sortBase === 0;
           await sb.from('product_images').insert({
             product_id: productId, image_url: url, sort_order: sortBase++,
-            is_primary: sortBase === 1, alt_fr: nameFr
+            is_primary: isFirstEver, alt_fr: nameFr
           });
         }
       }
@@ -364,6 +403,31 @@ async function openProductForm(id) {
     } finally {
       saveBtn.disabled = false; saveBtn.textContent = 'Enregistrer';
     }
+  });
+}
+
+/* Glisser-déposer des vignettes d'images existantes pour changer leur ordre.
+   Support souris uniquement (glisser-déposer HTML5) ; l'ordre est enregistré
+   dès le dépôt, pas seulement à l'enregistrement du produit. */
+function bindImageDragReorder(grid) {
+  if (!grid) return;
+  let dragged = null;
+  grid.querySelectorAll('.img-item[draggable="true"]').forEach(item => {
+    item.addEventListener('dragstart', () => { dragged = item; item.classList.add('dragging'); });
+    item.addEventListener('dragend', () => { dragged = null; item.classList.remove('dragging'); });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!dragged || dragged === item) return;
+      const items = [...grid.querySelectorAll('.img-item[draggable="true"]')];
+      const from = items.indexOf(dragged), to = items.indexOf(item);
+      if (from < to) item.after(dragged); else item.before(dragged);
+    });
+    item.addEventListener('drop', async e => {
+      e.preventDefault();
+      const ids = [...grid.querySelectorAll('.img-item[draggable="true"]')].map(n => n.dataset.id);
+      await Promise.all(ids.map((imgId, i) => sb.from('product_images').update({ sort_order: i }).eq('id', imgId)));
+      toast('Ordre des photos mis à jour.');
+    });
   });
 }
 
