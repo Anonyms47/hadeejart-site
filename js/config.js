@@ -11,3 +11,12 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
    Sénégal 221 inclus : sans indicatif, wa.me ne trouve pas le numéro) — — utilisé par le panier, le footer et le menu
    mobile sur toutes les pages du site. */
 const SITE_WA_NUMBER = '221781444340';
+
+/* Liens réseaux sociaux du pied de page : laissez vide tant que le compte
+   n'existe pas ; une icône n'apparaît que si son lien est renseigné
+   (ex : instagram: 'https://www.instagram.com/votre_compte'). */
+const SITE_SOCIAL = {
+  instagram: 'https://www.instagram.com/hadeejart.sn',
+  snapchat: 'https://www.snapchat.com/add/Hadeejart.sn',
+  tiktok: 'https://www.tiktok.com/@hadeejart.sn'
+};

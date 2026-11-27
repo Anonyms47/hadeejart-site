@@ -133,3 +133,15 @@ async function placeOrderRemote(payload) {
   }
   return data;
 }
+
+/* Carnet de Tissus : inscription par e-mail ou numéro WhatsApp via la
+   fonction serveur subscribe_newsletter (validation côté base). */
+async function subscribeNewsletter(contact) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/subscribe_newsletter`, {
+    method: 'POST',
+    headers: Object.assign({ 'Content-Type': 'application/json' }, supabaseHeaders()),
+    body: JSON.stringify({ p_contact: contact, p_lang: CURRENT_LANG })
+  });
+  if (!res.ok) { const e = new Error('subscribe ' + res.status); e.status = res.status; throw e; }
+  return res.json();
+}

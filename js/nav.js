@@ -398,8 +398,49 @@ function bindFooterAccordions() {
   if (mq.addEventListener) mq.addEventListener('change', sync);
 }
 
+/* ====== Pied de page : réseaux sociaux (si configurés) et Carnet de Tissus ====== */
+const SOCIAL_ICONS = {
+  instagram: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg>',
+  tiktok: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v11.2a3.4 3.4 0 1 1-3.4-3.4M14 3c.3 2.4 1.9 4 4.5 4.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  snapchat: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2c2.6 0 4.2 1.9 4.2 4.4v2.2c.5.3 1.3.4 1.9.5-.1.5-.8.7-1.4.9.3.8 1 1.5 2 1.9-.3.5-1.3.6-2 .8-.2.5-.7.9-1.5.8-.6-.1-1.1-.1-1.5.2-.6.4-1.2.9-1.7.9s-1.1-.5-1.7-.9c-.4-.3-.9-.3-1.5-.2-.8.1-1.3-.3-1.5-.8-.7-.2-1.7-.3-2-.8 1-.4 1.7-1.1 2-1.9-.6-.2-1.3-.4-1.4-.9.6-.1 1.4-.2 1.9-.5V7.6c0-2.5 1.6-4.4 4.2-4.4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>'
+};
+const SOCIAL_LABELS = { instagram: 'Instagram', snapchat: 'Snapchat', tiktok: 'TikTok' };
+
+function renderFooterSocial() {
+  const host = document.getElementById('mfSocial');
+  if (!host || typeof SITE_SOCIAL === 'undefined') return;
+  const items = ['instagram', 'tiktok', 'snapchat'].filter(k => /^https:\/\//.test(SITE_SOCIAL[k] || ''));
+  host.hidden = !items.length;
+  host.innerHTML = items.map(k => `<li><a href="${escapeHtml(SITE_SOCIAL[k])}" target="_blank" rel="noopener" aria-label="${SOCIAL_LABELS[k]}">${SOCIAL_ICONS[k]}</a></li>`).join('');
+}
+
+function bindVipForm() {
+  const form = document.getElementById('mfVipForm');
+  if (!form || form._haBound) return;
+  form._haBound = true;
+  const input = document.getElementById('mfVipInput'), msg = document.getElementById('mfVipMsg'), btn = document.getElementById('mfVipBtn');
+  const say = (key, ok) => { msg.textContent = t(key); msg.classList.toggle('ok', !!ok); msg.classList.toggle('err', !ok); };
+  const valid = v => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) || (/^[0-9+ ().-]{6,30}$/.test(v) && v.replace(/\D/g, '').length >= 9 && v.replace(/\D/g, '').length <= 15);
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (form.website && form.website.value) return;        /* champ piège : robot */
+    const v = input.value.trim();
+    input.setAttribute('aria-invalid', 'false');
+    if (!valid(v)) { input.setAttribute('aria-invalid', 'true'); say('ft_vip_invalid', false); input.focus(); return; }
+    btn.disabled = true; msg.textContent = ''; msg.classList.remove('ok', 'err');
+    try {
+      await subscribeNewsletter(v);
+      say('ft_vip_ok', true); input.value = '';
+    } catch (err) { say('ft_vip_error', false); }
+    btn.disabled = false;
+  });
+  input.addEventListener('input', () => input.setAttribute('aria-invalid', 'false'));
+}
+
 /* ====== Câblage initial (appelé sur toutes les pages) ====== */
 function initNav() {
+  renderFooterSocial();
+  bindVipForm();
   markCurrentNav();
   bindBrandLink();
   bindFooterAccordions();

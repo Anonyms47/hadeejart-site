@@ -118,76 +118,86 @@
 
   <div class="motif-bar motif-bottom" aria-hidden="true"></div>
 
-  <!-- PIED DE PAGE -->
-  <footer class="site-footer">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <div class="footer-logo"><img src="images/logo.png" alt="Logo Hadeej’Art"></div>
-        <p class="footer-tagline" data-i18n="footer_tagline">Portez votre histoire</p>
-        <p class="footer-about" data-i18n="footer_about">Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.</p>
-      </div>
+</div>
 
-      <details class="footer-col footer-accordion" open>
-        <summary data-i18n="footer_nav_title">Navigation</summary>
-        <ul class="footer-list">
-          <li><a href="index.html" data-i18n="footer_home_link">Accueil</a></li>
+<!-- PIED DE PAGE -->
+<footer class="mf" id="siteFooter">
+  <div class="mf-stitch" aria-hidden="true">
+    <svg viewBox="0 0 120 24" width="120" height="24" focusable="false"><g fill="none" stroke="#D4A359" stroke-width="1.2"><path d="M8 12l8-8 8 8-8 8z"/><path d="M36 12l8-8 8 8-8 8z"/><path d="M64 12l8-8 8 8-8 8z"/><path d="M92 12l8-8 8 8-8 8z"/></g><g fill="#D4A359"><circle cx="30" cy="12" r="1.6"/><circle cx="58" cy="12" r="1.6"/><circle cx="86" cy="12" r="1.6"/></g></svg>
+  </div>
+  <div class="mf-inner">
+    <div class="mf-grid">
+      <section class="mf-label" aria-labelledby="mfBrand">
+        <img class="mf-logo" src="images/logo.png" alt="" width="64" height="64" loading="lazy">
+        <p class="mf-tagline" id="mfBrand" data-i18n="footer_tagline">Portez votre histoire</p>
+        <p class="mf-badge" data-i18n="ft_badge">Confectionné à Dakar · Tailles S–XXL</p>
+        <p class="mf-about" data-i18n="footer_about">Hadeej’Art conçoit des pièces wax authentiques, pensées et confectionnées avec soin, pour raconter une histoire à chaque tenue.</p>
+        <ul class="mf-social" id="mfSocial" hidden></ul>
+      </section>
+
+      <nav class="mf-col" aria-labelledby="mfMaison">
+        <h2 class="mf-h" id="mfMaison" data-i18n="ft_maison">La Maison</h2>
+        <ul class="mf-links">
           <li><a href="index.html#catalogue" data-i18n="nav_shop">Boutique</a></li>
+          <li><a href="collections.html" data-i18n="nav_collections">Collections</a></li>
+          <li><a href="faq.html" data-i18n="ft_faq">FAQ &amp; guide des tailles</a></li>
+          <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
         </ul>
-        <ul class="footer-list" id="footerInfoList"></ul>
-      </details>
+      </nav>
 
-      <details class="footer-col footer-accordion" open>
-        <summary data-i18n="footer_shop_universe_title">Univers boutique</summary>
-        <h5 class="footer-sublabel" data-i18n="footer_categories_title">Catégories</h5>
-        <ul class="footer-list" id="footerShopList"></ul>
-        <h5 class="footer-sublabel" data-i18n="footer_collections_title">Collections</h5>
-        <ul class="footer-list" id="footerCollectionsList"></ul>
-      </details>
+      <section class="mf-col" aria-labelledby="mfAtelier">
+        <h2 class="mf-h" id="mfAtelier" data-i18n="ft_atelier">Atelier &amp; contact</h2>
+        <a class="mf-wa" id="footerWaLink" target="_blank" rel="noopener" data-i18n="ft_wa">WhatsApp direct ↗</a>
+        <p class="mf-line" data-i18n="ft_place">Dakar, Sénégal</p>
+        <p class="mf-line" data-i18n="ft_delivery">Livraison et paiement confirmés avec vous sur WhatsApp</p>
+      </section>
 
-      <div class="footer-col footer-contact">
-        <h4 data-i18n="footer_contact_title">Contact</h4>
-        <a id="footerWaLink" class="footer-wa" target="_blank" rel="noopener" data-i18n="nav_whatsapp">Écrivez-nous sur WhatsApp</a>
-        <div class="footer-prefs">
-          <div>
-            <span class="footer-sublabel" data-i18n="footer_langs_title">Langue</span>
-            <div class="footer-pill-row" id="footerLangRow">
-              <button type="button" class="footer-pill" data-lang="fr">🇫🇷 FR</button>
-              <button type="button" class="footer-pill" data-lang="en">🇬🇧 EN</button>
-              <button type="button" class="footer-pill" data-lang="wo">🇸🇳 WO</button>
-            </div>
+      <section class="mf-col mf-vip" aria-labelledby="mfVip">
+        <h2 class="mf-h" id="mfVip" data-i18n="ft_vip_title">Le Carnet de Tissus</h2>
+        <p class="mf-line" data-i18n="ft_vip_text">Soyez prévenu(e) des nouveaux tissus wax et des éditions limitées.</p>
+        <form class="mf-form" id="mfVipForm" novalidate>
+          <label class="mf-sr" for="mfVipInput" data-i18n="ft_vip_label">E-mail ou numéro WhatsApp</label>
+          <div class="mf-field">
+            <input id="mfVipInput" name="contact" class="mf-input" type="text" inputmode="email" autocomplete="email" maxlength="200" data-i18n-placeholder="ft_vip_placeholder" placeholder="E-mail ou N° WhatsApp" aria-describedby="mfVipMsg">
+            <input type="text" name="website" tabindex="-1" autocomplete="off" class="mf-hp" aria-hidden="true">
+            <button class="mf-btn" type="submit" id="mfVipBtn" data-i18n="ft_vip_btn">Rejoindre →</button>
           </div>
-          <div>
-            <span class="footer-sublabel" data-i18n="footer_currencies_title">Devise</span>
-            <div class="footer-pill-row" id="footerCurrencyRow">
-              <button type="button" class="footer-pill" data-currency="FCFA">FCFA</button>
-              <button type="button" class="footer-pill" data-currency="EUR">EUR</button>
-              <button type="button" class="footer-pill" data-currency="USD">USD</button>
-            </div>
-          </div>
+          <p class="mf-msg" id="mfVipMsg" role="status" aria-live="polite"></p>
+          <p class="mf-fine"><span data-i18n="ft_vip_consent">Vos coordonnées servent uniquement à vous écrire à ce sujet.</span> <a href="politique-confidentialite.html" data-i18n="privacy_link">Politique de confidentialité</a></p>
+        </form>
+      </section>
+    </div>
+
+    <div class="mf-pay">
+      <span class="mf-pay-label" data-i18n="footer_payments_title">Paiement accepté</span>
+      <ul class="mf-pills" aria-label="Moyens de paiement">
+        <li>Wave</li><li>Orange Money</li><li>Sendwave</li><li>TapTap Send</li>
+      </ul>
+    </div>
+
+    <div class="mf-util">
+      <p class="mf-copy">© <span id="footerYear"></span> Hadeej’Art · Dakar <span class="mf-sep" aria-hidden="true">·</span> <em>Jërëjëf ci sa visite</em></p>
+      <ul class="mf-legal">
+        <li><a href="politique-confidentialite.html" data-i18n="ft_privacy_short">Confidentialité</a></li>
+        <li><a href="conditions-generales.html" data-i18n="ft_terms_short">CGV</a></li>
+        <li><a href="mentions-legales.html" data-i18n="ft_legal_short">Mentions</a></li>
+      </ul>
+      <div class="mf-prefs">
+        <div class="mf-pillrow" id="footerLangRow" role="group" aria-label="Langue">
+          <button type="button" class="mf-pill" data-lang="fr">🇫🇷 FR</button>
+          <button type="button" class="mf-pill" data-lang="en">🇬🇧 EN</button>
+          <button type="button" class="mf-pill" data-lang="wo">🇸🇳 WO</button>
+        </div>
+        <div class="mf-pillrow" id="footerCurrencyRow" role="group" aria-label="Devise">
+          <button type="button" class="mf-pill" data-currency="FCFA">FCFA</button>
+          <button type="button" class="mf-pill" data-currency="EUR">EUR</button>
+          <button type="button" class="mf-pill" data-currency="USD">USD</button>
         </div>
       </div>
     </div>
-
-    <div class="footer-payments">
-      <span class="footer-payments-title" data-i18n="footer_payments_title">Paiement accepté</span>
-      <div class="footer-payments-row">
-        <span class="footer-pay-badge"><img src="images/payments/wave-icon.png" alt="" width="16" height="16">Wave</span>
-        <span class="footer-pay-badge"><img src="images/payments/orange-money-icon.png" alt="" width="16" height="16">Orange Money</span>
-        <span class="footer-pay-badge">Sendwave</span>
-        <span class="footer-pay-badge">TapTap Send</span>
-      </div>
-    </div>
-
-    <div class="footer-legal">
-      <span data-i18n="footer_legal_title">Informations légales</span>
-      <a href="politique-confidentialite.html" data-i18n="privacy_link">Politique de confidentialité</a>
-      <a href="conditions-generales.html" data-i18n="terms_link">Conditions générales de vente</a>
-      <a href="mentions-legales.html" data-i18n="legal_link">Mentions légales</a>
-    </div>
-
-    <p class="footer-copyright">© <span id="footerYear"></span> Hadeej’Art</p>
-  </footer>
-</div>
+  </div>
+  <div class="mf-wordmark" aria-hidden="true">HADEEJ’ART</div>
+</footer>
 
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
