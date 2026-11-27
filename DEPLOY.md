@@ -18,10 +18,10 @@ Utile uniquement si un outillage de build/CI est ajouté plus tard :
 - `WHATSAPP_NUMBER` : numéro de réception des commandes (actuellement en dur dans `js/checkout.js`, `SITE_WA_NUMBER`).
 
 ## Accès admin
-URL : `/admin/index.html`. Un seul compte existe actuellement (`moctarbeye@gmail.com`, mot de passe temporaire communiqué séparément) — **à changer dès la première connexion**.
+URL : `/admin/index.html`. Un seul compte existe actuellement (`hadeejart@2026.store`, rôle `admin`). Le mot de passe ne figure pas dans le dépôt ; il se change dans l’admin : Paramètres → Mon compte.
 
 ## Actions manuelles restantes (non automatisables depuis cet environnement)
-1. Changer le mot de passe administrateur temporaire.
+1. Choisir un mot de passe administrateur long et unique (Paramètres → Mon compte).
 2. Activer *Leaked Password Protection* : Dashboard Supabase → Authentication → Policies.
 3. (Recommandé) Désactiver les inscriptions publiques si elles ne sont pas nécessaires : Dashboard Supabase → Authentication → Providers → Email.
 
