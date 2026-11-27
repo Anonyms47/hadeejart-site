@@ -408,6 +408,10 @@ const UI_STRINGS = {
     invoice_delivery_confirmed: 'Confirmés sur WhatsApp',
     invoice_free_note: 'Note libre',
     invoice_thanks_line: 'Jërëjëf — Merci pour votre confiance',
+    invoice_step1: 'Commande',
+    invoice_step2: 'Confirmation WhatsApp',
+    invoice_step3: 'Confection & livraison',
+    invoice_scan: 'Scannez pour écrire à l’atelier',
 
     wa_new_order: '*Nouvelle commande — Hadeej’Art*',
     wa_ref: 'Réf:', wa_name: 'Nom:', wa_phone: 'Téléphone:', wa_email: 'E-mail:',
@@ -794,6 +798,10 @@ const UI_STRINGS = {
     invoice_delivery_confirmed: 'Confirmed on WhatsApp',
     invoice_free_note: 'Free note',
     invoice_thanks_line: 'Jërëjëf — Thank you for your trust',
+    invoice_step1: 'Order',
+    invoice_step2: 'WhatsApp confirmation',
+    invoice_step3: 'Making & delivery',
+    invoice_scan: 'Scan to message the atelier',
 
     wa_new_order: '*New order — Hadeej’Art*',
     wa_ref: 'Ref:', wa_name: 'Name:', wa_phone: 'Phone:', wa_email: 'Email:',
@@ -1184,6 +1192,10 @@ const UI_STRINGS = {
     invoice_delivery_confirmed: 'Dinañu ko wóoral ci WhatsApp',
     invoice_free_note: 'Nott',
     invoice_thanks_line: 'Jërëjëf ci sa wóolu',
+    invoice_step1: 'Commande',
+    invoice_step2: 'Wóoral WhatsApp',
+    invoice_step3: 'Confection ak livraison',
+    invoice_scan: 'Scan ngir bind atelier bi',
 
     wa_new_order: '*Commande bu bees — Hadeej’Art*',
     wa_ref: 'Ref:', wa_name: 'Tur:', wa_phone: 'Telefon:', wa_email: 'Imeel:',

@@ -137,6 +137,27 @@ function invRibbon(y, h) {
   }
 }
 
+function invDiamond(cx, cy, r, color) {
+  INV.fillStyle = color; INV.beginPath();
+  INV.moveTo(cx, cy - r); INV.lineTo(cx + r, cy); INV.lineTo(cx, cy + r); INV.lineTo(cx - r, cy); INV.closePath(); INV.fill();
+}
+/* Texte courbé le long d'un cercle (tampon de l'atelier) */
+function invArcText(str, cx, cy, r, o = {}) {
+  const chars = [...str], step = (Math.PI * 2) / chars.length;
+  INV.font = invFont(o); INV.fillStyle = o.color || INV_COLORS.ink; INV.textAlign = 'center'; INV.textBaseline = 'alphabetic';
+  chars.forEach((ch, i) => { INV.save(); INV.translate(cx, cy); INV.rotate((o.start || 0) + i * step); INV.fillText(ch, 0, -r); INV.restore(); });
+}
+function invStamp(cx, cy, R) {
+  const C = INV_COLORS;
+  INV.save(); INV.globalAlpha = .13; INV.translate(cx, cy); INV.rotate(-0.17);
+  INV.strokeStyle = C.goldDeep; INV.lineWidth = 1.4; INV.beginPath(); INV.arc(0, 0, R, 0, Math.PI * 2); INV.stroke();
+  INV.lineWidth = .8; INV.beginPath(); INV.arc(0, 0, R - 5, 0, Math.PI * 2); INV.stroke();
+  INV.beginPath(); INV.arc(0, 0, R - 21, 0, Math.PI * 2); INV.stroke();
+  invArcText('HADEEJ’ART · ATELIER DAKAR · ', 0, 0, R - 12.5, { weight: 800, size: 8, color: C.goldDeep, start: -0.1 });
+  invText('H’A', 0, 8, { family: INV_FONT.display, size: 22, color: C.goldDeep, align: 'center' });
+  INV.restore();
+}
+
 function invLoadImage(src) {
   return new Promise(resolve => {
     if (!src) { resolve(null); return; }
@@ -270,6 +291,9 @@ function invRender(d, canvasH) {
   INV.restore();
 
   const lcx = P + 30, lcy = HT + 20 + 30;
+  const glow = INV.createRadialGradient(lcx, lcy, 6, lcx, lcy, 150);
+  glow.addColorStop(0, 'rgba(212,163,89,.30)'); glow.addColorStop(1, 'rgba(212,163,89,0)');
+  INV.fillStyle = glow; INV.fillRect(0, HT, W, HH);
   INV.strokeStyle = C.gold; INV.lineWidth = 2.5; INV.beginPath(); INV.arc(lcx, lcy, 30, 0, Math.PI * 2); INV.stroke();
   INV.fillStyle = '#FFF7F1'; INV.beginPath(); INV.arc(lcx, lcy, 27.5, 0, Math.PI * 2); INV.fill();
   if (d.logo) { INV.save(); INV.beginPath(); INV.arc(lcx, lcy, 27, 0, Math.PI * 2); INV.clip(); INV.drawImage(d.logo, lcx - 27, lcy - 27, 54, 54); INV.restore(); }
@@ -297,10 +321,34 @@ function invRender(d, canvasH) {
   const sy = HT + HH - 36;
   invPill(W - P - sw, sy, pillParts(ssz), { h: 22, padX: 11, fill: 'rgba(212,163,89,.08)', stroke: C.gold });
 
+  /* double filet d'or et losange, comme une étiquette de couture */
+  INV.fillStyle = C.gold; INV.fillRect(0, HT + HH - 4, W, 1.2); INV.fillRect(0, HT + HH - 7.5, W, .6);
+  invDiamond(W / 2, HT + HH - 3.4, 5.2, C.ebony); invDiamond(W / 2, HT + HH - 3.4, 3.4, C.gold);
   invRibbon(0, 8);
 
-  /* --- Cartes client / livraison --- */
+  /* --- Étapes de la commande --- */
   let y = HT + HH + 20;
+  {
+    const cx = [P + CW / 6, P + CW / 2, P + CW * 5 / 6], dy = y + 6;
+    INV.strokeStyle = 'rgba(139,106,43,.55)'; INV.lineWidth = 1.2; INV.setLineDash([3, 3]);
+    INV.beginPath(); INV.moveTo(cx[0], dy); INV.lineTo(cx[2], dy); INV.stroke(); INV.setLineDash([]);
+    INV.strokeStyle = C.gold; INV.lineWidth = 2; INV.beginPath(); INV.moveTo(cx[0], dy); INV.lineTo(cx[1], dy); INV.stroke();
+    INV.fillStyle = C.gold; INV.beginPath(); INV.arc(cx[0], dy, 6.5, 0, Math.PI * 2); INV.fill();
+    INV.strokeStyle = C.ebony; INV.lineWidth = 1.8; INV.lineCap = 'round'; INV.lineJoin = 'round';
+    INV.beginPath(); INV.moveTo(cx[0] - 3, dy + .2); INV.lineTo(cx[0] - .8, dy + 2.4); INV.lineTo(cx[0] + 3.2, dy - 2); INV.stroke(); INV.lineCap = 'butt';
+    INV.fillStyle = C.linen; INV.beginPath(); INV.arc(cx[1], dy, 6.5, 0, Math.PI * 2); INV.fill();
+    INV.strokeStyle = C.gold; INV.lineWidth = 2; INV.beginPath(); INV.arc(cx[1], dy, 6.5, 0, Math.PI * 2); INV.stroke();
+    INV.fillStyle = C.ebony; INV.beginPath(); INV.arc(cx[1], dy, 2.6, 0, Math.PI * 2); INV.fill();
+    INV.fillStyle = C.linen; INV.beginPath(); INV.arc(cx[2], dy, 6, 0, Math.PI * 2); INV.fill();
+    INV.strokeStyle = 'rgba(139,106,43,.55)'; INV.lineWidth = 1.5; INV.beginPath(); INV.arc(cx[2], dy, 6, 0, Math.PI * 2); INV.stroke();
+    const sl = { weight: 700, size: 9, align: 'center' };
+    invText(t('invoice_step1'), cx[0], dy + 22, { ...sl, color: C.ebony });
+    invText(t('invoice_step2'), cx[1], dy + 22, { ...sl, weight: 800, color: C.goldDeep });
+    invText(t('invoice_step3'), cx[2], dy + 22, { ...sl, color: C.dim });
+    y += 48;
+  }
+
+  /* --- Cartes client / livraison --- */
   const gap = 12, cardW = (CW - gap) / 2, padL = 17, padR = 12, tw = cardW - padL - padR;
   const lbl = { weight: 800, size: 8.5, color: C.goldDeep, spacing: '1.4px' };
   const sub = { weight: 700, size: 7.5, color: C.dim, spacing: '1.2px' };
@@ -395,6 +443,9 @@ function invRender(d, canvasH) {
     if (d.thumbs[r.i]) invCover(d.thumbs[r.i], P + 12, ty, TH, TH, 8);
     else { INV.fillStyle = '#F1E7D6'; invRR(P + 12, ty, TH, TH, 8); INV.fill(); invText('H', P + 12 + TH / 2, ty + TH / 2 + 9, { family: F.display, size: 24, color: C.goldDeep, align: 'center' }); }
     INV.strokeStyle = C.line; INV.lineWidth = 1; invRR(P + 12.5, ty + .5, TH - 1, TH - 1, 8); INV.stroke();
+    INV.fillStyle = C.ebony; INV.beginPath(); INV.arc(P + 14, ty + 2, 8.5, 0, Math.PI * 2); INV.fill();
+    INV.strokeStyle = C.gold; INV.lineWidth = 1; INV.beginPath(); INV.arc(P + 14, ty + 2, 8.5, 0, Math.PI * 2); INV.stroke();
+    invNum(String(r.i + 1), P + 14, ty + 5.2, { weight: 800, size: 9.5, color: C.gold, align: 'center' });
 
     let by = ry + ROWPAD + 12;
     r.nameL.forEach(s => { invText(s, textX, by, { weight: 700, size: 13.5 }); by += 17; });
@@ -426,7 +477,9 @@ function invRender(d, canvasH) {
   const noteTxtW = leftW - 24 - QR - 12;
   const qrNote = invWrap(t('invoice_qr_note'), Math.max(70, noteTxtW), { weight: 500, size: 10.5 });
   const insLines = d.instruction ? invWrap(d.instruction, leftW - 24, { weight: 500, size: 10 }) : [];
-  const leftBoxH = 28 + Math.max(QR, qrNote.length * 14.5) + (insLines.length ? 12 + insLines.length * 13.5 : 0) + 14;
+  const scanLines = invWrap(t('invoice_scan'), QR + 6, { weight: 600, size: 8.5, style: 'italic' });
+  const qrBlock = QR + 5 + scanLines.length * 10.5;
+  const leftBoxH = 28 + Math.max(qrBlock, qrNote.length * 14.5) + (insLines.length ? 12 + insLines.length * 13.5 : 0) + 14;
 
   /* totaux */
   const feeLines = invWrap(t('invoice_delivery_confirmed'), rightW - 4, { weight: 600, size: 10.5, style: 'italic' });
@@ -447,12 +500,19 @@ function invRender(d, canvasH) {
     INV.strokeStyle = C.line; INV.lineWidth = 1; invRR(P + 12.5, qy + .5, QR - 1, QR - 1, 6); INV.stroke();
     const n = d.qr.length, cell = (QR - 14) / n;
     const m0 = P + 12 + 7, my0 = qy + 7;
+    INV.strokeStyle = C.gold; INV.lineWidth = 2; INV.lineCap = 'round';
+    [[P + 12, qy], [P + 12 + QR, qy], [P + 12, qy + QR], [P + 12 + QR, qy + QR]].forEach(([bx2, by2], k) => {
+      const sx = k % 2 ? -1 : 1, sy3 = k > 1 ? -1 : 1;
+      INV.beginPath(); INV.moveTo(bx2 - sx * 3, by2 - sy3 * 3 + sy3 * 8); INV.lineTo(bx2 - sx * 3, by2 - sy3 * 3); INV.lineTo(bx2 - sx * 3 + sx * 8, by2 - sy3 * 3); INV.stroke();
+    });
+    INV.lineCap = 'butt';
+    scanLines.forEach((s, i) => invText(s, P + 12 + QR / 2, qy + QR + 14 + i * 10.5, { style: 'italic', weight: 600, size: 8.5, color: C.goldDeep, align: 'center' }));
     INV.fillStyle = C.ebony;
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (d.qr[r][c]) INV.fillRect(m0 + c * cell, my0 + r * cell, cell + .35, cell + .35);
   }
   qrNote.forEach((s, i) => invText(s, P + 12 + QR + 12, qy + 11 + i * 14.5, { weight: 500, size: 10.5, color: C.ink }));
   if (insLines.length) {
-    const iy = qy + Math.max(QR, qrNote.length * 14.5) + 14;
+    const iy = qy + Math.max(qrBlock, qrNote.length * 14.5) + 14;
     insLines.forEach((s, i) => invText(s, P + 12, iy + i * 13.5, { weight: 500, size: 10, color: C.dim }));
   }
 
@@ -468,8 +528,13 @@ function invRender(d, canvasH) {
 
   const totY = y + boxH - TOTAL_H;
   INV.save(); INV.shadowColor = 'rgba(17,15,13,.28)'; INV.shadowBlur = 14; INV.shadowOffsetY = 5;
-  INV.fillStyle = C.ebony; invRR(tx, totY, rightW, TOTAL_H, 14); INV.fill(); INV.restore();
-  INV.strokeStyle = C.gold; INV.lineWidth = 1.5; invRR(tx + .75, totY + .75, rightW - 1.5, TOTAL_H - 1.5, 13.5); INV.stroke();
+  const tbg = INV.createLinearGradient(tx, totY, tx + rightW, totY + TOTAL_H);
+  tbg.addColorStop(0, '#26201a'); tbg.addColorStop(.55, C.ebony); tbg.addColorStop(1, '#070605');
+  INV.fillStyle = tbg; invRR(tx, totY, rightW, TOTAL_H, 14); INV.fill(); INV.restore();
+  const tgold = INV.createLinearGradient(tx, totY, tx + rightW, totY + TOTAL_H);
+  tgold.addColorStop(0, '#f3dba5'); tgold.addColorStop(.35, C.gold); tgold.addColorStop(.7, '#9a7434'); tgold.addColorStop(1, '#e8c98a');
+  INV.strokeStyle = tgold; INV.lineWidth = 2; invRR(tx + 1, totY + 1, rightW - 2, TOTAL_H - 2, 13); INV.stroke();
+  INV.strokeStyle = 'rgba(246,241,231,.10)'; INV.lineWidth = 1; invRR(tx + 4.5, totY + 4.5, rightW - 9, TOTAL_H - 9, 10); INV.stroke();
   invText(t('invoice_total'), tx + 14, totY + 21, { weight: 800, size: 9.5, color: C.gold, spacing: '2px' });
   let tsz = 24;
   while (invNumWidth(d.totalsText, { weight: 800, size: tsz }) > rightW - 28 && tsz > 12) tsz -= 1;
@@ -480,6 +545,8 @@ function invRender(d, canvasH) {
   /* --- Pied de page --- */
   INV.strokeStyle = 'rgba(212,163,89,.7)'; INV.lineWidth = 1; INV.setLineDash([3, 4]);
   INV.beginPath(); INV.moveTo(P + 40, y + .5); INV.lineTo(W - P - 40, y + .5); INV.stroke(); INV.setLineDash([]);
+  const divY = y;
+  invStamp(W / 2, divY + 46, 46);
   y += 24;
   invText(t('invoice_thanks_line'), W / 2, y, { style: 'italic', weight: 600, size: 15, color: C.ebony, align: 'center' });
   y += 20;
@@ -488,7 +555,7 @@ function invRender(d, canvasH) {
   invNum(contact, W / 2, y, { weight: 800, size: 11.5, color: C.ebony, align: 'center' });
   y += 6;
   invWrap(t('invoice_returns_note'), CW - 30, { weight: 500, size: 9 }).forEach(s => { y += 12; invText(s, W / 2, y, { weight: 500, size: 9, color: C.dim, align: 'center' }); });
-  y += 20;
+  y = Math.max(y + 20, divY + 100);
   invRibbon(y, 8);
   return y + 8;
 }
