@@ -90,6 +90,13 @@ async function loadCatalog(onUpdate) {
 
   try {
     const [categories, products, collections, settings] = await Promise.all([fetchCategories(), fetchProducts(), fetchCollections(), fetchSettings()]);
+    /* Données identiques au cache déjà affiché : rien à refaire (évite un
+       second rendu complet, scintillement et travail inutile). */
+    const fresh = JSON.stringify([categories, products, collections, settings]);
+    if (cached && JSON.stringify([cached.categories, cached.products, cached.collections, cached.settings]) === fresh) {
+      writeCatalogCache(categories, products, collections, settings);
+      return;
+    }
     writeCatalogCache(categories, products, collections, settings);
     applyCatalogData(categories, products, collections, settings);
     if (onUpdate) onUpdate();
@@ -104,8 +111,15 @@ async function loadCatalog(onUpdate) {
    catégories et collections nécessaires aux menus Boutique/Collections du
    header, du menu mobile et du footer, sans télécharger tous les produits. */
 async function loadNavData(onUpdate) {
+  /* Menus instantanés depuis le cache du catalogue (s'il existe), puis revalidation. */
+  const cached = readCatalogCache();
+  if (cached && cached.categories && cached.collections) {
+    applyCatalogData(cached.categories, [], cached.collections);
+    if (onUpdate) onUpdate();
+  }
   try {
     const [categories, collections] = await Promise.all([fetchCategories(), fetchCollections()]);
+    if (cached && JSON.stringify([cached.categories, cached.collections]) === JSON.stringify([categories, collections])) return;
     applyCatalogData(categories, [], collections);
     if (onUpdate) onUpdate();
   } catch (err) {

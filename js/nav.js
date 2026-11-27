@@ -465,6 +465,11 @@ function enhanceFooter() {
     util.appendChild(top);
   }
 
+  /* Animations décoratives en pause tant que le pied de page est hors écran (économie GPU/batterie) */
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => es.forEach(e => mf.classList.toggle('mf-off', !e.isIntersecting)), { rootMargin: '120px' }).observe(mf);
+  }
+
   /* Apparition progressive des blocs quand le pied de page entre à l'écran */
   if ('IntersectionObserver' in window && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
     mf.classList.add('mf-js');

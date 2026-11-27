@@ -1205,7 +1205,7 @@ body.scroll-locked{ overflow:hidden; }
   @keyframes chipPop { 0%{ transform:scale(.92) } 60%{ transform:scale(1.05) } 100%{ transform:scale(1) } }
 
   /* --- Motif du hero : léger effet "tissu qui respire" --- */
-  .hero-frame{ animation: frameGlow 6s ease-in-out infinite; }
+  .hero-frame{ box-shadow:0 20px 48px rgba(0,0,0,.19), 0 0 0 7px rgba(212,122,44,.1) inset; }
   @keyframes frameGlow {
     0%,100%{ box-shadow:0 18px 46px rgba(0,0,0,.18), 0 0 0 6px rgba(212,122,44,.08) inset; }
     50%{ box-shadow:0 22px 52px rgba(0,0,0,.20), 0 0 0 9px rgba(212,122,44,.14) inset; }
@@ -2307,3 +2307,6 @@ fieldset.opt legend{ font:700 14px var(--font-body); padding:0; margin-bottom:8p
 .epic-select-list.hd-list .epic-select-option .chk{ flex:0 0 auto; }
 .epic-select-list.hd-list .epic-select-option.active{ background:rgba(212,163,89,.12); box-shadow:none; color:#D4A359; }
 .epic-select-list.hd-list .epic-select-option::before{ background:#D4A359; }
+
+/* Performance : animations du pied de page figées hors écran */
+.mf.mf-off::after, .mf.mf-off .mf-track, .mf.mf-off .mf-wa{ animation-play-state:paused; }
