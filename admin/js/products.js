@@ -3,6 +3,7 @@
    ====================================================================== */
 
 let PRODUCTS_CATEGORIES_CACHE = [];
+const PRODUCT_STATUS_LABELS = { published: 'Publié', draft: 'Brouillon', archived: 'Archivé' };
 
 /* Redimensionne et compresse une photo avant l'envoi : les photos de téléphone
    pèsent 3 à 10 Mo et 4000 px de large, ce qui ralentirait le site pour tous
@@ -56,7 +57,9 @@ async function renderProducts() {
     <div class="panel">
       <div class="panel-head">
         <h3>Tous les produits</h3>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="filterProductSearch" type="search" placeholder="Rechercher un produit" aria-label="Rechercher un produit">
+          <select id="filterProductStatus" aria-label="Filtrer par statut"><option value="">Tous statuts</option><option value="published">Publiés</option><option value="draft">Brouillons</option><option value="archived">Archivés</option></select>
           <select id="filterCategory"><option value="">Toutes catégories</option></select>
           <button class="btn sm" id="btnNewProduct">+ Nouveau produit</button>
         </div>
@@ -68,6 +71,8 @@ async function renderProducts() {
   PRODUCTS_CATEGORIES_CACHE = cats || [];
   document.getElementById('filterCategory').innerHTML += PRODUCTS_CATEGORIES_CACHE.map(c => `<option value="${c.id}">${escapeHtml(c.name_fr)}</option>`).join('');
   document.getElementById('filterCategory').addEventListener('change', loadProductsList);
+  document.getElementById('filterProductStatus').addEventListener('change', loadProductsList);
+  document.getElementById('filterProductSearch').addEventListener('input', debounce(loadProductsList, 200));
   document.getElementById('btnNewProduct').addEventListener('click', () => openProductForm(null));
 
   await loadProductsList();
@@ -77,9 +82,12 @@ async function loadProductsList() {
   const catFilter = document.getElementById('filterCategory').value;
   let q = sb.from('products').select('*, categories(name_fr), product_images(image_url, is_primary, sort_order)').order('sort_order');
   if (catFilter) q = q.eq('category_id', catFilter);
-  const { data, error } = await q;
+  let { data, error } = await q;
   const host = document.getElementById('productsList');
   if (error) { host.innerHTML = 'Erreur: ' + escapeHtml(error.message); return; }
+  const stFilter = document.getElementById('filterProductStatus').value;
+  const term = document.getElementById('filterProductSearch').value;
+  data = data.filter(p => (!stFilter || p.status === stFilter) && matchesTerm(term, [p.name_fr, p.name_en, p.slug]));
 
   host.innerHTML = `<table><thead><tr><th></th><th>Nom</th><th>Catégorie</th><th>Prix FCFA</th><th>Statut</th><th></th></tr></thead>
     <tbody>${data.map(p => {
@@ -91,8 +99,9 @@ async function loadProductsList() {
         <td>${escapeHtml(p.name_fr)}</td>
         <td>${p.categories ? escapeHtml(p.categories.name_fr) : '<em>—</em>'}</td>
         <td>${formatMoney(p.price_fcfa, 'FCFA')}</td>
-        <td><span class="badge ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
+        <td><span class="badge ${escapeHtml(p.status)}">${escapeHtml(PRODUCT_STATUS_LABELS[p.status] || p.status)}</span></td>
         <td class="row-actions">
+          ${p.status === 'draft' ? `<button class="btn sm" data-publish="${p.id}">Publier</button>` : (p.status === 'published' ? `<button class="btn ghost sm" data-unpublish="${p.id}">Dépublier</button>` : '')}
           <button class="btn ghost sm" data-edit="${p.id}">Modifier</button>
           <button class="btn ghost sm" data-preview="${p.id}">Aperçu</button>
           <button class="btn ghost sm" data-dup="${p.id}">Dupliquer</button>
@@ -102,6 +111,14 @@ async function loadProductsList() {
       </tr>`;
     }).join('') || '<tr><td colspan="6">Aucun produit.</td></tr>'}</tbody></table>`;
 
+  const setStatus = (attr, status, msg) => host.querySelectorAll('[' + attr + ']').forEach(btn => btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    const { error: e } = await sb.from('products').update({ status }).eq('id', btn.getAttribute(attr));
+    if (e) { toast('Erreur: ' + e.message, true); btn.disabled = false; return; }
+    toast(msg); loadProductsList();
+  }));
+  setStatus('data-publish', 'published', 'Produit publié : visible sur le site.');
+  setStatus('data-unpublish', 'draft', 'Produit repassé en brouillon.');
   host.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openProductForm(btn.dataset.edit)));
   host.querySelectorAll('[data-preview]').forEach(btn => btn.addEventListener('click', () => previewProduct(btn.dataset.preview)));
   host.querySelectorAll('[data-dup]').forEach(btn => btn.addEventListener('click', () => duplicateProduct(btn.dataset.dup)));
