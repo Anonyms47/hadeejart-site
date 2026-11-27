@@ -19,29 +19,34 @@ async function renderOrders() {
     <div class="panel">
       <div class="panel-head">
         <h3 id="ordersTitle">Toutes les commandes</h3>
+        <div class="toolbar">
         <button class="btn ghost sm" id="ordersExport">⬇ Exporter (CSV)</button>
         <input id="filterOrderSearch" type="search" placeholder="Rechercher (réf, nom, téléphone)" aria-label="Rechercher une commande" style="min-width:200px">
         <select id="filterOrderPay" aria-label="Filtrer par paiement">
           <option value="">Tous paiements</option>
           ${PAYMENT_STATUSES.map(s => `<option value="${s}">Paiement : ${PAYMENT_STATUS_LABELS[s]}</option>`).join('')}
         </select>
-        <select id="filterOrderStatus">
-          <option value="">Tous statuts</option>
-          ${ORDER_STATUSES.map(s => `<option value="${s}">${ORDER_STATUS_LABELS[s]}</option>`).join('')}
-        </select>
+        <input type="hidden" id="filterOrderStatus" value="">
         <select id="filterOrderYear"><option value="">Toutes années</option></select>
         <select id="filterOrderMonth">
           <option value="">Tous les mois</option>
           ${['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'].map((m, i) => `<option value="${i + 1}">${m}</option>`).join('')}
         </select>
+        </div>
       </div>
+      <div class="tabs" id="orderTabs" role="tablist" aria-label="Filtrer par statut"></div>
       <div id="ordersChip"></div>
-      <div id="ordersList">Chargement…</div>
+      <div id="ordersList"><span class="skel-lines"><i></i><i></i><i></i></span></div>
     </div>`;
   ORDERS_UNPAID_MODE = false;
   if (SECTION_PRESET === 'pending' || SECTION_PRESET === 'confirmed') document.getElementById('filterOrderStatus').value = SECTION_PRESET;
   if (SECTION_PRESET === 'unpaid') ORDERS_UNPAID_MODE = true;
   document.getElementById('ordersExport').addEventListener('click', exportOrdersCsv);
+  document.getElementById('orderTabs').addEventListener('click', e => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    ORDERS_UNPAID_MODE = false;
+    const f = document.getElementById('filterOrderStatus'); f.value = t.dataset.st; f.dispatchEvent(new Event('change'));
+  });
   const { data: first } = await sb.from('orders').select('created_at').order('created_at').limit(1);
   const y0 = first && first[0] ? new Date(first[0].created_at).getFullYear() : new Date().getFullYear();
   const ySel = document.getElementById('filterOrderYear');
@@ -52,7 +57,17 @@ async function renderOrders() {
   await loadOrdersList();
 }
 
+async function refreshOrderTabs() {
+  const host = document.getElementById('orderTabs'); if (!host) return;
+  const { data } = await sb.from('orders').select('status');
+  const counts = {}; (data || []).forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
+  const cur = document.getElementById('filterOrderStatus').value;
+  host.innerHTML = [['', 'Toutes', (data || []).length]].concat(ORDER_STATUSES.map(st => [st, ORDER_STATUS_LABELS[st], counts[st] || 0]))
+    .map(([st, label, n]) => `<button type="button" class="tab ${st === cur && !ORDERS_UNPAID_MODE ? 'on' : ''}" data-st="${st}" role="tab" aria-selected="${st === cur}">${label}<span class="c">${n}</span></button>`).join('');
+}
+
 async function loadOrdersList() {
+  refreshOrderTabs();
   const status = document.getElementById('filterOrderStatus').value;
   let q = sb.from('orders').select('*').order('created_at', { ascending: false });
   if (status) q = q.eq('status', status);
@@ -94,7 +109,7 @@ async function loadOrdersList() {
           ${wa ? `<a class="btn ghost sm" href="${escapeHtml(wa)}" target="_blank" rel="noopener" title="Écrire au client sur WhatsApp">WhatsApp</a>` : ''}
           <button class="btn ghost sm" data-view="${o.id}">Détail</button>
         </td>
-      </tr>`; }).join('') || '<tr><td colspan="8">Aucune commande.</td></tr>'}</tbody></table>`;
+      </tr>`; }).join('') || `<tr><td colspan="8"><div class="empty"><span class="big">🧾</span><b>Aucune commande ici</b><p>Les commandes passées sur le site apparaîtront dans cette liste.</p></div></td></tr>`}</tbody></table>`;
 
   host.querySelectorAll('[data-next]').forEach(btn => btn.addEventListener('click', async () => {
     btn.disabled = true;

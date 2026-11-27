@@ -33,6 +33,13 @@ async function initAuth() {
   }
   showLogin();
 
+  const eye = document.getElementById('pwEye'), pw = document.getElementById('loginPassword');
+  eye.addEventListener('click', () => {
+    const show = pw.type === 'password';
+    pw.type = show ? 'text' : 'password';
+    eye.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+  });
+
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();

@@ -3,6 +3,7 @@
    ====================================================================== */
 
 let PRODUCTS_CATEGORIES_CACHE = [];
+let PRODUCTS_VIEW = (() => { try { return localStorage.getItem('ha_admin_pview') || 'cards'; } catch (e) { return 'cards'; } })();
 const PRODUCT_STATUS_LABELS = { published: 'Publié', draft: 'Brouillon', archived: 'Archivé' };
 
 /* Redimensionne et compresse une photo avant l'envoi : les photos de téléphone
@@ -57,14 +58,15 @@ async function renderProducts() {
     <div class="panel">
       <div class="panel-head">
         <h3>Tous les produits</h3>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="toolbar">
+          <div class="view-toggle" role="group" aria-label="Affichage"><button type="button" id="viewCards" aria-label="Cartes" title="Cartes">▦</button><button type="button" id="viewList" aria-label="Liste" title="Liste">☰</button></div>
           <input id="filterProductSearch" type="search" placeholder="Rechercher un produit" aria-label="Rechercher un produit">
           <select id="filterProductStatus" aria-label="Filtrer par statut"><option value="">Tous statuts</option><option value="published">Publiés</option><option value="draft">Brouillons</option><option value="archived">Archivés</option></select>
           <select id="filterCategory"><option value="">Toutes catégories</option></select>
           <button class="btn sm" id="btnNewProduct">+ Nouveau produit</button>
         </div>
       </div>
-      <div id="productsList">Chargement…</div>
+      <div id="productsList"><span class="skel-lines"><i></i><i></i><i></i></span></div>
     </div>`;
 
   const { data: cats } = await sb.from('categories').select('id, slug, name_fr').order('sort_order');
@@ -72,6 +74,9 @@ async function renderProducts() {
   document.getElementById('filterCategory').innerHTML += PRODUCTS_CATEGORIES_CACHE.map(c => `<option value="${c.id}">${escapeHtml(c.name_fr)}</option>`).join('');
   document.getElementById('filterCategory').addEventListener('change', loadProductsList);
   document.getElementById('filterProductStatus').addEventListener('change', loadProductsList);
+  const setView = v => { PRODUCTS_VIEW = v; try { localStorage.setItem('ha_admin_pview', v); } catch (e) {} loadProductsList(); };
+  document.getElementById('viewCards').addEventListener('click', () => setView('cards'));
+  document.getElementById('viewList').addEventListener('click', () => setView('list'));
   document.getElementById('filterProductSearch').addEventListener('input', debounce(loadProductsList, 200));
   document.getElementById('btnNewProduct').addEventListener('click', () => openProductForm(null));
 
@@ -89,6 +94,28 @@ async function loadProductsList() {
   const term = document.getElementById('filterProductSearch').value;
   data = data.filter(p => (!stFilter || p.status === stFilter) && matchesTerm(term, [p.name_fr, p.name_en, p.slug]));
 
+  document.getElementById('viewCards').classList.toggle('on', PRODUCTS_VIEW === 'cards');
+  document.getElementById('viewList').classList.toggle('on', PRODUCTS_VIEW !== 'cards');
+  if (!data.length) {
+    host.innerHTML = '<div class="empty"><span class="big">🧺</span><b>Aucun produit</b><p>Aucun résultat pour ces filtres.</p></div>';
+  } else if (PRODUCTS_VIEW === 'cards') {
+    host.innerHTML = `<div class="prod-grid">${data.map((p, i) => {
+      const imgs = (p.product_images || []).slice().sort((a, b) => a.sort_order - b.sort_order);
+      const primary = imgs.find(x => x.is_primary) || imgs[0];
+      return `<article class="prod-card" style="animation-delay:${Math.min(i, 14) * 35}ms">
+        <div class="prod-img">${primary ? `<img loading="lazy" alt="" src="${escapeHtml(assetUrl(primary.image_url))}">` : '🧵'}<span class="badge ${escapeHtml(p.status)}">${escapeHtml(PRODUCT_STATUS_LABELS[p.status] || p.status)}</span></div>
+        <div class="prod-body"><b>${escapeHtml(p.name_fr)}</b><small>${p.categories ? escapeHtml(p.categories.name_fr) : '—'}</small><span class="prod-price">${formatMoney(p.price_fcfa, 'FCFA')}</span>
+          <div class="prod-actions">
+            ${p.status === 'draft' ? `<button class="btn" data-publish="${p.id}">Publier</button>` : (p.status === 'published' ? `<button class="btn ghost" data-unpublish="${p.id}">Dépublier</button>` : '')}
+            <button class="btn ghost" data-edit="${p.id}">Modifier</button>
+          </div>
+          <div class="prod-more">
+            <button type="button" data-preview="${p.id}">Aperçu</button>
+            <button type="button" data-dup="${p.id}">Dupliquer</button>
+            ${p.status !== 'archived' ? `<button type="button" data-archive="${p.id}">Archiver</button>` : ''}
+            <button type="button" class="del" data-delete="${p.id}">Supprimer</button>
+          </div></div></article>`; }).join('')}</div>`;
+  } else
   host.innerHTML = `<table><thead><tr><th></th><th>Nom</th><th>Catégorie</th><th>Prix FCFA</th><th>Statut</th><th></th></tr></thead>
     <tbody>${data.map(p => {
       const imgs = (p.product_images || []).slice().sort((a, b) => a.sort_order - b.sort_order);
