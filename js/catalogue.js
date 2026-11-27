@@ -231,12 +231,77 @@ let _detailUrlHandled = false;
 
 function detailTextHtml(txt) { return escapeHtml(txt).replace(/\n/g, '<br>'); }
 
-function chipGroupHtml(group, items) {
-  return `<div class="opt-chips" role="radiogroup" aria-labelledby="dLegend-${group}">` + items.map(it => {
+/* Nuancier d'atelier : nom de couleur -> teinte. Deux couleurs reconnues
+   dans un même nom ("Noir et blanc") donnent une pastille bicolore ; un nom
+   inconnu (motif wax) reçoit un motif tissé neutre, jamais une couleur inventée. */
+const WAX_SWATCHES = {
+  orange: '#e8792c', bleu: '#2f6fb0', blue: '#2f6fb0', ble: '#2f6fb0',
+  rouge: '#c1352a', red: '#c1352a', xonq: '#c1352a',
+  vert: '#3f7a45', green: '#3f7a45', wert: '#3f7a45',
+  jaune: '#e8c02c', yellow: '#e8c02c', jonn: '#e8c02c',
+  noir: '#1d1a17', black: '#1d1a17', 'ñuul': '#1d1a17',
+  blanc: '#fdfbf6', white: '#fdfbf6', weex: '#fdfbf6',
+  rose: '#e78ea9', pink: '#e78ea9', roos: '#e78ea9',
+  violet: '#7a4fa0', purple: '#7a4fa0', vale: '#7a4fa0',
+  marron: '#6b4226', brown: '#6b4226', maron: '#6b4226',
+  'doré': '#c9a227', gold: '#c9a227', wurus: '#c9a227',
+  beige: '#d8c3a0'
+};
+function swatchBackground(name) {
+  const n = String(name || '').toLowerCase();
+  const hits = Object.keys(WAX_SWATCHES).map(k => ({ k, i: n.indexOf(k) })).filter(h => h.i >= 0).sort((a, b) => a.i - b.i);
+  const cols = []; hits.forEach(h => { const c = WAX_SWATCHES[h.k]; if (!cols.includes(c)) cols.push(c); });
+  if (cols.length === 1) return cols[0];
+  if (cols.length >= 2) return `linear-gradient(135deg, ${cols[0]} 50%, ${cols[1]} 50%)`;
+  return 'repeating-conic-gradient(#D4A359 0 25%, #2a2118 0 50%) 0 0/12px 12px';
+}
+
+/* Un seul parcours clavier par groupe (tabindex itinérant) : la flèche choisit, Tab sort du groupe. */
+function rovingIndex(items, group) {
+  const sel = items.findIndex(it => DETAIL_SEL[group] === it.value && !it.disabled);
+  return sel >= 0 ? sel : items.findIndex(it => !it.disabled);
+}
+
+function chipGroupHtml(group, items, kind) {
+  const rov = rovingIndex(items, group);
+  const body = items.map((it, i) => {
     const on = DETAIL_SEL[group] === it.value;
-    return `<button type="button" class="opt-chip${on ? ' on' : ''}" role="radio" aria-checked="${on}" data-group="${group}" data-value="${escapeHtml(it.value)}"${it.disabled ? ' disabled' : ''}>
+    const common = `type="button" role="radio" aria-checked="${on}" tabindex="${i === rov ? 0 : -1}" data-group="${group}" data-value="${escapeHtml(it.value)}"${it.disabled ? ' disabled' : ''}`;
+    if (kind === 'swatch') {
+      return `<button ${common} class="opt-chip swatch${on ? ' on' : ''}" aria-label="${escapeHtml(it.label)}" title="${escapeHtml(it.label)}" data-label="${escapeHtml(it.label)}"><span class="swatch-fill" style="background:${swatchBackground(it.label)}"></span></button>`;
+    }
+    if (kind === 'seg') {
+      return `<button ${common} class="opt-chip seg-opt${on ? ' on' : ''}"><span>${escapeHtml(it.label)}</span>${it.sub ? `<small>${escapeHtml(it.sub)}</small>` : ''}</button>`;
+    }
+    return `<button ${common} class="opt-chip${kind === 'size' ? ' size-tag' : ''}${on ? ' on' : ''}">
       <span>${escapeHtml(it.label)}</span>${it.sub ? `<small>${escapeHtml(it.sub)}</small>` : ''}</button>`;
-  }).join('') + '</div>';
+  }).join('');
+  if (kind === 'seg') return `<div class="seg" role="radiogroup" aria-labelledby="dLegend-${group}"><span class="seg-ind" aria-hidden="true"></span>${body}</div>`;
+  return `<div class="opt-chips${kind ? ' opt-' + kind : ''}" role="radiogroup" aria-labelledby="dLegend-${group}">${body}</div>`;
+}
+
+/* Position de la pastille dorée du contrôle segmenté (glisse de l'un à l'autre). */
+function positionSegments(root) {
+  (root || document).querySelectorAll('.seg').forEach(seg => {
+    const on = seg.querySelector('.seg-opt.on');
+    if (!on || !on.offsetWidth) { seg.classList.remove('has-sel'); return; }
+    seg.style.setProperty('--x', on.offsetLeft + 'px');
+    seg.style.setProperty('--w', on.offsetWidth + 'px');
+    seg.classList.add('has-sel');
+  });
+}
+
+function detailAddLabel(p) {
+  if (p.soldOut) return t('sold_out');
+  const info = priceForProduct(p, DETAIL_SEL.option || undefined);
+  return t('add_to_cart') + ' • ' + formatMoney(info.amount, info.currency);
+}
+
+function setDetailSwatchName() {
+  const out = document.getElementById('dSwatchName');
+  if (!out) return;
+  const on = document.querySelector('#dForm .swatch.on');
+  out.textContent = on ? on.dataset.label : '';
 }
 
 function updateDetailPrice(p) {
@@ -245,6 +310,8 @@ function updateDetailPrice(p) {
   const info = priceForProduct(p, DETAIL_SEL.option || undefined);
   priceEl.innerHTML = escapeHtml(formatMoney(info.amount, info.currency))
     + (info.isFallback ? ` <span class="small">${escapeHtml(t('price_unavailable_in')(CURRENT_CURRENCY))}</span>` : '');
+  const lbl = document.querySelector('#dForm .detail-add .lbl');
+  if (lbl && !lbl.closest('.detail-add').classList.contains('done')) lbl.textContent = detailAddLabel(p);
 }
 
 function detailAvailabilityHtml(p) {
@@ -284,13 +351,14 @@ function renderDetailBody(p) {
   const parts = [];
   if (sizes.length) {
     parts.push(`<fieldset class="opt" data-field="size"><legend id="dLegend-size">${escapeHtml(t('size_label'))} <span class="req" aria-hidden="true">*</span></legend>
-      ${chipGroupHtml('size', sizes.map(sz => ({ value: sz, label: sz, disabled: unavail.includes(sz), sub: unavail.includes(sz) ? t('detail_unavailable_short') : '' })))}
-      ${hasGuide ? `<button type="button" class="link-btn" data-guide>${escapeHtml(t('size_guide'))}</button>` : ''}
+      ${chipGroupHtml('size', sizes.map(sz => ({ value: sz, label: sz, disabled: unavail.includes(sz), sub: unavail.includes(sz) ? t('detail_unavailable_short') : '' })), 'size')}
+      <div class="size-foot">${hasGuide ? `<button type="button" class="link-btn" data-guide>${escapeHtml(t('size_guide'))}</button>` : ''}
+      <p class="size-note">${escapeHtml(t('size_note'))}</p></div>
       <p class="field-error" id="dErr-size" role="alert" hidden></p></fieldset>`);
   }
   if (colors.length > 1) {
     parts.push(`<fieldset class="opt" data-field="color"><legend id="dLegend-color">${escapeHtml(t('color_label'))} <span class="req" aria-hidden="true">*</span></legend>
-      ${chipGroupHtml('color', colors.map(c => ({ value: c, label: c })))}<p class="field-error" id="dErr-color" role="alert" hidden></p></fieldset>`);
+      ${chipGroupHtml('color', colors.map(c => ({ value: c, label: c })), 'swatch')}<p class="swatch-name" id="dSwatchName" aria-live="polite"></p><p class="field-error" id="dErr-color" role="alert" hidden></p></fieldset>`);
   } else if (colors.length === 1) {
     parts.push(`<p class="detail-fact"><b>${escapeHtml(t('color_label'))}</b> ${escapeHtml(colors[0])}</p>`);
   }
@@ -299,13 +367,16 @@ function renderDetailBody(p) {
       ${chipGroupHtml('option', vo.choices.map(c => {
         const info = priceForProduct(p, c.value);
         return { value: c.value, label: c.label, sub: formatMoney(info.amount, info.currency) };
-      }))}<p class="field-error" id="dErr-option" role="alert" hidden></p></fieldset>`);
+      }), (vo.choices.length >= 2 && vo.choices.length <= 4 && vo.choices.every(c => String(c.label).length <= 16)) ? 'seg' : '')}<p class="field-error" id="dErr-option" role="alert" hidden></p></fieldset>`);
   }
   if (p.fabric) parts.push(`<p class="detail-fact"><b>${escapeHtml(t('fabric_label'))}</b> ${escapeHtml(p.fabric)}</p>`);
   parts.push(`<div class="field"><label for="dNote">${escapeHtml(t('note_label'))}</label><input id="dNote" class="input" maxlength="500" autocomplete="off" placeholder="${escapeHtml(t('note_placeholder'))}" value="${escapeHtml(keepNote)}"></div>`);
-  parts.push(`<button class="btn detail-add" type="submit"${p.soldOut ? ' disabled' : ''}>${escapeHtml(p.soldOut ? t('sold_out') : t('add_to_cart'))}</button>`);
+  parts.push(`<button class="btn detail-add" type="submit"${p.soldOut ? ' disabled' : ''}><span class="lbl">${escapeHtml(detailAddLabel(p))}</span></button>`);
 
   document.getElementById('dForm').innerHTML = `<form id="dFormEl" novalidate>${parts.join('')}</form>`;
+  setDetailSwatchName();
+  positionSegments(document.getElementById('dForm'));
+  setTimeout(() => positionSegments(document.getElementById('dForm')), 80);
   document.getElementById('dAvail').innerHTML = detailAvailabilityHtml(p);
   const desc = document.getElementById('dDescription');
   desc.hidden = !p.description;
@@ -321,22 +392,42 @@ function bindDetailForm() {
   form._haBound = true;
   form.addEventListener('click', e => {
     const chip = e.target.closest('.opt-chip');
-    if (chip && CURRENT) {
-      DETAIL_SEL[chip.dataset.group] = chip.dataset.value;
-      form.querySelectorAll('.opt-chip[data-group="' + chip.dataset.group + '"]').forEach(b => {
-        const on = b === chip; b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
-      });
-      const err = document.getElementById('dErr-' + chip.dataset.group);
-      if (err) { err.hidden = true; err.textContent = ''; }
-      if (chip.dataset.group === 'option') updateDetailPrice(CURRENT);
-      return;
-    }
+    if (chip && CURRENT) { selectDetailChip(chip); return; }
     if (e.target.closest('[data-guide]')) {
       const g = document.getElementById('dGuide');
       if (g) { g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
     }
   });
+  /* Clavier des groupes radio : flèches = choisir, Début/Fin = extrémités (Tab sort du groupe). */
+  form.addEventListener('keydown', e => {
+    const chip = e.target.closest('.opt-chip');
+    if (!chip || !CURRENT) return;
+    const keys = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1, Home: 'first', End: 'last' };
+    if (!(e.key in keys)) return;
+    const all = [...form.querySelectorAll('.opt-chip[data-group="' + chip.dataset.group + '"]:not([disabled])')];
+    if (!all.length) return;
+    e.preventDefault();
+    let i = all.indexOf(chip);
+    if (keys[e.key] === 'first') i = 0; else if (keys[e.key] === 'last') i = all.length - 1;
+    else i = (i + keys[e.key] + all.length) % all.length;
+    all[i].focus(); selectDetailChip(all[i]);
+  });
+  window.addEventListener('resize', () => positionSegments(document.getElementById('dForm')));
   form.addEventListener('submit', e => { e.preventDefault(); addFromDetail(); });
+}
+
+function selectDetailChip(chip) {
+  const form = document.getElementById('dForm');
+  const group = chip.dataset.group;
+  DETAIL_SEL[group] = chip.dataset.value;
+  form.querySelectorAll('.opt-chip[data-group="' + group + '"]').forEach(b => {
+    const on = b === chip; b.classList.toggle('on', on); b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1;
+  });
+  const err = document.getElementById('dErr-' + group);
+  if (err) { err.hidden = true; err.textContent = ''; }
+  if (group === 'option') updateDetailPrice(CURRENT);
+  if (group === 'color') setDetailSwatchName();
+  positionSegments(form);
 }
 
 function openDetail(id) {
@@ -369,7 +460,7 @@ function openDetail(id) {
     history.replaceState(history.state, '', u.pathname + u.search + u.hash);
   } catch (e) { /* ignoré */ }
   _detailPrevTitle = document.title; document.title = p.name + ' — Hadeej’Art';
-  setTimeout(() => { const c = modal.querySelector('header .btn'); if (c) c.focus({ preventScroll: true }); }, 40);
+  setTimeout(() => { const c = modal.querySelector('header .close-medal, header .btn'); if (c) c.focus({ preventScroll: true }); }, 40);
 }
 
 /* Arrivée directe sur « …?produit=slug » : ouvre la fiche (une seule fois,
@@ -435,11 +526,18 @@ function addFromDetail() {
     color: DETAIL_SEL.color, size: DETAIL_SEL.size, tissu: p.fabric || '',
     note: note.trim(), optionKimono: DETAIL_SEL.option
   });
-  closeDetail();
-  /* Différé : sinon le même clic, en continuant sa bulle jusqu'à document,
-     déclenche aussitôt la fermeture "clic en dehors" du panier (voir
-     bindCartOutsideClose dans ui.js). */
-  setTimeout(openCart, 0);
+  /* Retour immédiat sur le bouton (✓ Ajouté), puis le panier s'ouvre. */
+  const btn = document.querySelector('#dForm .detail-add');
+  const lbl = btn && btn.querySelector('.lbl');
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (btn && lbl) { btn.classList.add('done'); btn.disabled = true; lbl.textContent = t('added_ok'); }
+  setTimeout(() => {
+    closeDetail();
+    /* Différé : sinon le même clic, en continuant sa bulle jusqu'à document,
+       déclenche aussitôt la fermeture "clic en dehors" du panier (voir
+       bindCartOutsideClose dans ui.js). */
+    setTimeout(openCart, 0);
+  }, (btn && lbl) ? (reduce ? 250 : 600) : 0);
 }
 
 function scrollToCatalogue() {
@@ -475,6 +573,7 @@ function onLangChange() {
   if (typeof renderNavMenus === 'function') renderNavMenus();
   if (typeof syncLangCurrencyControls === 'function') syncLangCurrencyControls();
   refreshOpenDetailLabels();
+  if (typeof refreshPayTrust === 'function') refreshPayTrust();
 }
 
 /* Si la fiche produit est ouverte, ré-affiche textes, prix et options dans

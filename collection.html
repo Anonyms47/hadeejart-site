@@ -271,7 +271,7 @@
   <div class="sheet">
     <header>
       <b id="dName" data-i18n="detail_default_title">Détail</b>
-      <button class="btn ghost" type="button" data-i18n="close" onclick="closeDetail()">Fermer</button>
+      <button class="close-medal" type="button" data-i18n-aria="close" aria-label="Fermer" data-i18n-title="close" title="Fermer" onclick="closeDetail()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </header>
     <div class="body">
       <div class="media" id="dMedia">
@@ -306,7 +306,7 @@
 <!-- COMMANDE EN 3 ÉTAPES -->
 <div id="client" class="modal" role="dialog" aria-modal="true" aria-labelledby="clientTitle" onclick="if(event.target===this) closeClient()">
   <div class="sheet checkout-sheet">
-    <header><b id="clientTitle" data-i18n="checkout_title">Ma commande</b><button class="btn ghost" type="button" data-i18n="close" onclick="closeClient()">Fermer</button></header>
+    <header><b id="clientTitle" data-i18n="checkout_title">Ma commande</b><button class="close-medal" type="button" data-i18n-aria="close" aria-label="Fermer" data-i18n-title="close" title="Fermer" onclick="closeClient()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
     <ol class="co-steps" id="coSteps">
       <li data-step="1"><span class="co-step-n">1</span><span data-i18n="step_contact">Coordonnées</span></li>
       <li data-step="2"><span class="co-step-n">2</span><span data-i18n="step_delivery">Livraison</span></li>
@@ -359,20 +359,21 @@
         <p class="co-address" id="coAddress"></p>
         <div class="field">
           <label data-i18n="payment_label" id="payLabel">Moyen de paiement prévu</label>
-          <div id="payGrid" class="pay-grid" role="group" aria-labelledby="payLabel">
-            <button type="button" class="pay-card" data-method="wave" aria-pressed="true">
+          <div id="payGrid" class="pay-grid" role="radiogroup" aria-labelledby="payLabel">
+            <button type="button" class="pay-card" data-method="wave" role="radio" aria-checked="true" tabindex="0"><i class="pay-dot" aria-hidden="true"></i>
               <img src="images/payments/wave-icon.png" alt="" width="18" height="18"><span>Wave</span>
             </button>
-            <button type="button" class="pay-card" data-method="orange_money" aria-pressed="false">
+            <button type="button" class="pay-card" data-method="orange_money" role="radio" aria-checked="false" tabindex="-1"><i class="pay-dot" aria-hidden="true"></i>
               <img src="images/payments/orange-money-icon.png" alt="" width="18" height="18"><span>Orange Money</span>
             </button>
-            <button type="button" class="pay-card" data-method="sendwave" aria-pressed="false">
+            <button type="button" class="pay-card" data-method="sendwave" role="radio" aria-checked="false" tabindex="-1"><i class="pay-dot" aria-hidden="true"></i>
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#5B2A86"/><path d="M6 13l4 4 8-9" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sendwave</span>
             </button>
-            <button type="button" class="pay-card" data-method="taptap_send" aria-pressed="false">
+            <button type="button" class="pay-card" data-method="taptap_send" role="radio" aria-checked="false" tabindex="-1"><i class="pay-dot" aria-hidden="true"></i>
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#0B5FFF"/><path d="M7 12h10M13 8l4 4-4 4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg><span>TapTap Send</span>
             </button>
           </div>
+          <p class="pay-trust" id="payTrust" aria-live="polite"></p>
           <input type="hidden" id="cPay" name="pay_method" value="wave">
         </div>
         <div id="coError" class="co-error" role="alert" hidden></div>
@@ -392,7 +393,7 @@
 
 <!-- PLEIN ÉCRAN IMAGE -->
 <div id="imgViewer" class="lightbox" onclick="closeImageViewer()">
-  <button class="close" data-i18n-aria="close" aria-label="Fermer" type="button" data-i18n="close" onclick="closeImageViewer(); event.stopPropagation()">Fermer</button>
+  <button class="close close-medal" data-i18n-aria="close" aria-label="Fermer" type="button" onclick="closeImageViewer(); event.stopPropagation()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <img id="imgViewerImg" data-i18n-alt="lightbox_alt" alt="Aperçu produit"/>
 </div>
 

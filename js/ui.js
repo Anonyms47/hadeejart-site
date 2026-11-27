@@ -254,8 +254,15 @@ function enhanceAutocomplete(input, suggestKey) {
   input.parentNode.insertBefore(wrap, input);
   wrap.appendChild(input);
 
+  /* Chevron doré qui pivote à l'ouverture (décoratif : le champ reste l'élément accessible). */
+  const chev = document.createElement('span');
+  chev.className = 'epic-chev'; chev.setAttribute('aria-hidden', 'true');
+  chev.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+  wrap.appendChild(chev);
+  chev.addEventListener('mousedown', e => { e.preventDefault(); if (document.activeElement === input) { isOpen() ? close() : open(); } else input.focus(); });
+
   const listbox = document.createElement('div');
-  listbox.className = 'epic-select-list';
+  listbox.className = 'epic-select-list hd-list atelier-list';
   listbox.setAttribute('role', 'listbox');
   document.body.appendChild(listbox);
   const listId = 'epicauto-' + Math.random().toString(36).slice(2, 9);
@@ -284,11 +291,18 @@ function enhanceAutocomplete(input, suggestKey) {
   const swatchFor = label => (suggestKey === 'suggest_colors' ? COLOR_SWATCHES[label.trim().toLowerCase()] : null);
 
   const allSuggestions = () => (typeof t === 'function' ? (t(suggestKey) || []) : []);
+  /* Destinations prioritaires épinglées en tête quand le champ est vide
+     (positions fixes dans les listes traduites : Sénégal, France, États-Unis, Canada / Dakar). */
+  const PINNED_IDX = { suggest_countries: [0, 6, 7, 8], suggest_cities: [0] }[suggestKey] || [];
   const filtered = () => {
     const q = input.value.trim().toLowerCase();
     const all = allSuggestions();
-    return q ? all.filter(s => s.toLowerCase().includes(q)) : all;
+    if (q) return all.filter(s => s.toLowerCase().includes(q));
+    if (!PINNED_IDX.length) return all;
+    const pinned = PINNED_IDX.map(i => all[i]).filter(Boolean);
+    return pinned.concat(all.filter(x => !pinned.includes(x)));
   };
+  const pinnedCount = () => (input.value.trim() ? 0 : PINNED_IDX.filter(i => allSuggestions()[i]).length);
 
   function setFocusIdx(i) {
     focusIdx = i;
@@ -319,6 +333,9 @@ function enhanceAutocomplete(input, suggestKey) {
       opt.className = 'epic-select-option';
       opt.style.setProperty('--i', i);
       opt.setAttribute('role', 'option');
+      const pc = pinnedCount();
+      if (i < pc) opt.classList.add('pinned');
+      if (pc && i === pc) opt.classList.add('after-pinned');
       const dot = swatchFor(label);
       opt.innerHTML = `<span>${dot ? `<span class="swatch-dot" style="background:${dot}"></span>` : ''}${escapeHtml(label)}</span>`;
       /* mousedown + preventDefault (pas click) : sinon le blur du champ,

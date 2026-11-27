@@ -2183,3 +2183,127 @@ fieldset.opt legend{ font:700 14px var(--font-body); padding:0; margin-bottom:8p
 .hd .hd-bar{ transition:height .3s cubic-bezier(.22,.9,.32,1), box-shadow .3s ease, transform .35s cubic-bezier(.22,.9,.32,1); }
 .hd.hd-away .hd-bar{ transform:translateY(-100%); pointer-events:none; box-shadow:none; }
 @media (prefers-reduced-motion:reduce){ .hd .hd-bar{ transition:none; } }
+
+
+/* ======================================================================
+   ATELIER : boutons & sélecteurs (ébène #110F0D · surface #161310 · ivoire #F6F1E7 · or #D4A359)
+   ====================================================================== */
+:root{ --at-ease:cubic-bezier(.22,1,.36,1); --at-t:220ms; --at-gold:#D4A359; --at-ebony:#110F0D; --at-card:#161310; --at-ivory:#F6F1E7; --at-muted:#A89F91; }
+
+/* 1. Primaire : pilule dorée (conversion uniquement) */
+.btn{ position:relative; overflow:hidden; isolation:isolate; background:var(--at-gold); background-image:none; color:var(--at-ebony); font-weight:800; letter-spacing:.01em;
+  border:1px solid rgba(17,15,13,.08); border-radius:9999px; min-height:44px; justify-content:center; box-shadow:0 8px 20px rgba(17,15,13,.22);
+  transition:transform var(--at-t) var(--at-ease), box-shadow var(--at-t) var(--at-ease), background-color var(--at-t) var(--at-ease), color var(--at-t) var(--at-ease), border-color var(--at-t) var(--at-ease); }
+.btn::after{ content:""; position:absolute; inset:0; z-index:-1; pointer-events:none; transform:translateX(-120%);
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.45) 50%,transparent 70%); transition:transform 650ms var(--at-ease); }
+.btn:hover{ transform:translateY(-1px); filter:none; box-shadow:0 14px 28px rgba(17,15,13,.28); background-color:#dcae68; }
+.btn:hover::after{ transform:translateX(120%); }
+.btn:active{ transform:translateY(0) scale(.98); }
+.btn:focus-visible{ outline:2px solid var(--at-ebony); outline-offset:3px; box-shadow:0 0 0 5px rgba(212,163,89,.55); }
+.btn[disabled]{ opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn span.bubble{ background:var(--at-ebony); color:var(--at-gold); }
+.btn.done{ background:#E8C98A; }
+.btn.done .lbl{ animation:atPop 360ms var(--at-ease); }
+@keyframes atPop{ 0%{ transform:scale(.85); opacity:.4; } 100%{ transform:none; opacity:1; } }
+
+/* 2. Atelier : contour surpiqué */
+.btn.ghost{ background:var(--at-card); color:var(--at-ivory); border:1px solid rgba(212,163,89,.45); box-shadow:0 1px 0 rgba(255,255,255,.04) inset, 0 6px 16px rgba(17,15,13,.18); }
+.btn.ghost::after{ display:none; }
+.btn.ghost:hover{ background:#1d1914; color:var(--at-ivory); border:1px dashed var(--at-gold); box-shadow:0 10px 22px rgba(17,15,13,.28); }
+.btn.ghost:focus-visible{ outline:2px solid var(--at-gold); box-shadow:none; }
+.btn.ghost.arrow::before{ content:"→"; order:2; display:inline-block; color:var(--at-gold); transition:transform var(--at-t) var(--at-ease); }
+.btn.ghost.arrow:hover::before{ transform:translateX(4px); }
+.btn.ghost.sm{ border-radius:9999px; }
+
+/* Médaillon de fermeture */
+.close-medal, .cart-close{ width:36px; height:36px; min-width:36px; padding:0; flex:0 0 auto; display:inline-grid; place-items:center; border-radius:50%;
+  background:var(--at-card); border:1px solid rgba(212,163,89,.5); color:var(--at-gold); cursor:pointer; box-shadow:0 4px 12px rgba(17,15,13,.25);
+  transition:transform var(--at-t) var(--at-ease), background-color var(--at-t) var(--at-ease), border-color var(--at-t) var(--at-ease); }
+.close-medal svg, .cart-close svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; transition:transform var(--at-t) var(--at-ease); }
+.close-medal:hover, .cart-close:hover{ background:#1d1914; border-color:var(--at-gold); }
+.close-medal:hover svg, .cart-close:hover svg{ transform:rotate(90deg); }
+.close-medal:active, .cart-close:active{ transform:scale(.92); }
+.close-medal:focus-visible, .cart-close:focus-visible{ outline:2px solid var(--at-gold); outline-offset:3px; }
+.lightbox .close.close-medal{ width:44px; height:44px; padding:0; min-height:44px; border-radius:50%; background:var(--at-card); box-shadow:0 6px 18px rgba(0,0,0,.4); }
+.lightbox .close.close-medal:hover{ background:#1d1914; }
+
+/* 3. Puces tactiles */
+.opt-chip{ min-height:48px; background:var(--at-card); color:var(--at-ivory); border:1px solid rgba(255,255,255,.1); border-radius:12px;
+  transition:border-color var(--at-t) var(--at-ease), background-color var(--at-t) var(--at-ease), transform var(--at-t) var(--at-ease), box-shadow var(--at-t) var(--at-ease); }
+.opt-chip small{ color:var(--at-muted); }
+.opt-chip:hover:not([disabled]){ border-color:rgba(212,163,89,.6); transform:translateY(-1px); }
+.opt-chip.on{ border-color:var(--at-gold); background:linear-gradient(rgba(212,163,89,.15),rgba(212,163,89,.15)), var(--at-card); box-shadow:0 0 0 1px var(--at-gold) inset; color:#fff; }
+.opt-chip.on small{ color:#E8C98A; }
+.opt-chip:focus-visible{ outline:2px solid var(--at-gold); outline-offset:3px; }
+.opt-chip[disabled]{ opacity:.4; }
+
+/* Étiquettes de taille tissées */
+.opt-chips.opt-size{ gap:10px; }
+.size-tag{ width:48px; min-width:48px; height:44px; min-height:44px; padding:0; border-radius:8px; border-style:solid; position:relative; font:800 15px var(--font-body); letter-spacing:.04em; }
+.size-tag::before{ content:""; position:absolute; top:5px; left:50%; width:10px; height:3px; margin-left:-5px; border-radius:3px; background:rgba(212,163,89,.45); }
+.size-tag.on::before{ background:var(--at-gold); }
+.size-tag small{ position:absolute; bottom:2px; font-size:9px; }
+.size-foot{ display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; margin-top:8px; }
+.size-note{ margin:0; font:500 13px/1.4 var(--font-body); color:#6b5440; }
+
+/* Nuancier d'atelier : pastilles rondes */
+.opt-chips.opt-swatch{ gap:14px; padding:4px 2px; }
+.opt-chip.swatch{ width:40px; min-width:40px; height:40px; min-height:40px; padding:0; border-radius:50%; background:transparent; border:0; box-shadow:none; position:relative; }
+.opt-chip.swatch .swatch-fill{ display:block; width:100%; height:100%; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(255,255,255,.25), 0 2px 6px rgba(17,15,13,.3); }
+.opt-chip.swatch::after{ content:""; position:absolute; inset:-5px; border-radius:50%; border:2px solid var(--at-gold); opacity:0; transform:scale(.85); transition:opacity var(--at-t) var(--at-ease), transform var(--at-t) var(--at-ease); pointer-events:none; }
+.opt-chip.swatch:hover:not([disabled]){ transform:scale(1.06); }
+.opt-chip.swatch.on{ background:transparent; box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--at-gold); }
+.opt-chip.swatch.on::after{ opacity:0; }
+.opt-chip.swatch:focus-visible{ outline:2px solid var(--at-ebony); outline-offset:7px; }
+.swatch-name{ margin:6px 0 0; min-height:1.4em; font:800 14px var(--font-body); letter-spacing:.04em; color:#8a5a16; }
+
+/* Coupe : contrôle segmenté à pastille coulissante */
+.seg{ position:relative; display:inline-flex; max-width:100%; padding:4px; gap:2px; border-radius:9999px; background:var(--at-card); border:1px solid rgba(212,163,89,.35); }
+.seg-ind{ position:absolute; top:4px; bottom:4px; left:0; width:0; border-radius:9999px; background:var(--at-gold); opacity:0; transform:translateX(var(--x,0)); width:var(--w,0);
+  transition:transform 240ms var(--at-ease), width 240ms var(--at-ease), opacity 120ms linear; }
+.seg.has-sel .seg-ind{ opacity:1; }
+.opt-chip.seg-opt{ position:relative; z-index:1; flex:1 1 auto; min-height:44px; padding:6px 18px; border:0; border-radius:9999px; background:transparent; box-shadow:none; color:var(--at-ivory); }
+.opt-chip.seg-opt:hover:not([disabled]){ transform:none; }
+.opt-chip.seg-opt.on{ background:transparent; box-shadow:none; color:var(--at-ebony); }
+.opt-chip.seg-opt.on small{ color:rgba(17,15,13,.75); }
+.seg:not(.has-sel) .opt-chip.seg-opt.on{ background:var(--at-gold); }
+
+/* Listes pays / ville / quartier : écrin sombre, destinations épinglées, chevron */
+.epic-autocomplete .epic-chev{ position:absolute; right:12px; top:50%; width:18px; height:18px; margin-top:-9px; color:#b57a1e; pointer-events:auto; cursor:pointer; transition:transform var(--at-t) var(--at-ease); }
+.epic-autocomplete .epic-chev svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+.epic-autocomplete input[aria-expanded="true"] ~ .epic-chev{ transform:rotate(180deg); }
+.epic-autocomplete input{ padding-right:40px; }
+.epic-select-list.atelier-list{ background:var(--at-card); border:1px solid rgba(212,163,89,.4); padding:8px; }
+.epic-select-list.atelier-list .nav-drop-empty{ color:var(--at-muted); padding:10px 12px; margin:0; }
+.epic-select-list.atelier-list .epic-select-option.pinned > span::before{ content:"◆"; color:var(--at-gold); font-size:9px; flex:0 0 auto; }
+.epic-select-list.atelier-list .epic-select-option.after-pinned{ margin-top:10px; }
+.epic-select-list.atelier-list .epic-select-option.after-pinned::after{ content:""; position:absolute; left:10px; right:10px; top:-6px; border-top:1px dashed rgba(212,163,89,.4); }
+
+/* Paiement : cartes 2×2, radio doré */
+.pay-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.pay-card{ position:relative; min-height:56px; padding:10px 14px 10px 40px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:var(--at-card); color:var(--at-ivory); font-weight:700; gap:10px; box-shadow:none;
+  transition:border-color var(--at-t) var(--at-ease), background-color var(--at-t) var(--at-ease), transform var(--at-t) var(--at-ease); }
+.pay-card:hover{ background:#1d1914; border-color:rgba(212,163,89,.55); transform:translateY(-1px); }
+.pay-card:focus-visible{ outline:2px solid var(--at-gold); outline-offset:3px; }
+.pay-card[aria-checked="true"]{ background:linear-gradient(rgba(212,163,89,.15),rgba(212,163,89,.15)), var(--at-card); color:#fff; border-color:var(--at-gold); box-shadow:0 0 0 1px var(--at-gold) inset; }
+.pay-dot{ position:absolute; left:13px; top:50%; width:16px; height:16px; margin-top:-8px; border-radius:50%; border:1.5px solid rgba(212,163,89,.6); transition:border-color var(--at-t) var(--at-ease); }
+.pay-dot::after{ content:""; position:absolute; inset:3px; border-radius:50%; background:var(--at-gold); transform:scale(0); transition:transform var(--at-t) var(--at-ease); }
+.pay-card[aria-checked="true"] .pay-dot{ border-color:var(--at-gold); }
+.pay-card[aria-checked="true"] .pay-dot::after{ transform:scale(1); }
+.pay-trust{ grid-column:1/-1; margin:10px 0 0; padding:10px 12px; border-left:3px solid var(--at-gold); border-radius:4px; background:rgba(212,163,89,.12); font:500 13px/1.45 var(--font-body); color:#4a3a28; min-height:2.9em; }
+@media (max-width:480px){ .pay-card{ padding:10px 10px 10px 36px; } .pay-dot{ left:11px; } .opt-chip{ min-height:48px; } }
+
+@media (prefers-reduced-motion:reduce){
+  .btn, .btn::after, .close-medal, .cart-close, .close-medal svg, .opt-chip, .opt-chip.swatch::after, .seg-ind, .pay-card, .pay-dot::after, .epic-chev{ transition:none !important; animation:none !important; }
+  .btn:hover::after{ transform:translateX(-120%); }
+}
+
+/* Langue / devise : noms complets lisibles (jamais tronqués) */
+.hd .epic-select.open .epic-select-trigger, .hd .epic-select-trigger:focus-visible{ background:transparent; color:#D4A359; }
+.hd .epic-select-trigger .epic-select-label{ white-space:nowrap; letter-spacing:.02em; }
+.epic-select-list.hd-list{ min-width:112px !important; width:auto !important; }
+.epic-select-list.hd-list .epic-select-option{ white-space:nowrap; gap:18px; padding-right:14px; }
+.epic-select-list.hd-list .epic-select-option > span{ overflow:visible; text-overflow:clip; }
+.epic-select-list.hd-list .epic-select-option .chk{ flex:0 0 auto; }
+.epic-select-list.hd-list .epic-select-option.active{ background:rgba(212,163,89,.12); box-shadow:none; color:#D4A359; }
+.epic-select-list.hd-list .epic-select-option::before{ background:#D4A359; }

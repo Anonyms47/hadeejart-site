@@ -87,14 +87,32 @@ function selectPaymentMethodByValue(value) {
 function setPaymentMethod(btn) {
   const grid = $co('payGrid'), out = $co('cPay');
   if (!grid || !btn) return;
-  grid.querySelectorAll('.pay-card').forEach(b => b.setAttribute('aria-pressed', 'false'));
-  btn.setAttribute('aria-pressed', 'true');
+  grid.querySelectorAll('.pay-card').forEach(b => { b.setAttribute('aria-checked', 'false'); b.tabIndex = -1; });
+  btn.setAttribute('aria-checked', 'true'); btn.tabIndex = 0;
   if (out) out.value = btn.dataset.method || 'wave';
+  refreshPayTrust();
+}
+/* Micro-texte de réassurance propre au moyen choisi (aucune promesse hors
+   de ce que fait réellement la boutique : détails donnés sur WhatsApp). */
+function refreshPayTrust() {
+  const el = $co('payTrust'), out = $co('cPay');
+  if (el && out) el.textContent = t('pay_trust_' + (out.value || 'wave'));
 }
 function bindPaymentGrid() {
   const grid = $co('payGrid');
   if (!grid) return;
   grid.addEventListener('click', e => { const btn = e.target.closest('.pay-card'); if (btn) setPaymentMethod(btn); });
+  grid.addEventListener('keydown', e => {
+    const move = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!move) return;
+    const cards = [...grid.querySelectorAll('.pay-card')];
+    const i = cards.indexOf(document.activeElement);
+    if (i < 0) return;
+    e.preventDefault();
+    const next = cards[(i + move + cards.length) % cards.length];
+    next.focus(); setPaymentMethod(next);
+  });
+  refreshPayTrust();
 }
 
 /* ====== Champs : erreurs en ligne, téléphone ====== */
