@@ -11,7 +11,27 @@ const PAYMENT_METHODS_ADMIN = [
 
 async function renderSettings() {
   const el = document.getElementById('section-settings');
-  el.innerHTML = `<h2>Paramètres</h2><p class="subtitle">Numéro WhatsApp et instructions affichées pour chaque moyen de paiement.</p><div class="panel" id="settingsPanel">Chargement…</div>`;
+  el.innerHTML = `<h2>Paramètres</h2><p class="subtitle">Numéro WhatsApp, instructions de paiement, textes commerciaux et sécurité du compte.</p><div class="panel" id="settingsPanel">Chargement…</div>
+    <div class="panel" id="accountPanel">
+      <div class="panel-head"><h3>Mon compte</h3></div>
+      <p class="hint" style="margin:0 0 14px">Connecté : <b>${escapeHtml(CURRENT_ADMIN ? CURRENT_ADMIN.email : '')}</b></p>
+      <div class="grid-2">
+        <div class="field"><label for="pwNew">Nouveau mot de passe <small>(10 caractères minimum)</small></label><input id="pwNew" type="password" autocomplete="new-password" minlength="10"></div>
+        <div class="field"><label for="pwConfirm">Confirmer</label><input id="pwConfirm" type="password" autocomplete="new-password"></div>
+      </div>
+      <button class="btn" id="pwSave">Changer le mot de passe</button>
+    </div>`;
+  document.getElementById('pwSave').addEventListener('click', async () => {
+    const a = document.getElementById('pwNew').value, b = document.getElementById('pwConfirm').value;
+    if (a.length < 10) { toast('Mot de passe trop court (10 caractères minimum).', true); return; }
+    if (a !== b) { toast('Les deux mots de passe ne correspondent pas.', true); return; }
+    const btn = document.getElementById('pwSave'); btn.disabled = true;
+    const { error: e } = await sb.auth.updateUser({ password: a });
+    btn.disabled = false;
+    if (e) { toast('Erreur : ' + e.message, true); return; }
+    document.getElementById('pwNew').value = ''; document.getElementById('pwConfirm').value = '';
+    toast('Mot de passe modifié.');
+  });
 
   const { data, error } = await sb.from('settings').select('*').eq('id', 1).single();
   const host = document.getElementById('settingsPanel');
