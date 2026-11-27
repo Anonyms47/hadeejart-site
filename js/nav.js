@@ -437,8 +437,50 @@ function bindVipForm() {
   input.addEventListener('input', () => input.setAttribute('aria-invalid', 'false'));
 }
 
+/* ====== Pied de page : ruban défilant, apparition progressive, retour en haut ====== */
+function enhanceFooter() {
+  const mf = document.querySelector('.mf');
+  if (!mf || mf._haEnhanced) return;
+  mf._haEnhanced = true;
+
+  /* Ruban de mots (décoratif, masqué aux lecteurs d'écran, figé si mouvement réduit) */
+  const words = [t('footer_tagline'), 'Wax', 'Dakar', 'Jërëjëf'];
+  const unit = words.map(w => `<span>${escapeHtml(w)}</span><i aria-hidden="true">◆</i>`).join('');
+  const band = document.createElement('div');
+  band.className = 'mf-marquee'; band.setAttribute('aria-hidden', 'true');
+  band.innerHTML = `<div class="mf-track">${unit.repeat(6)}</div>`;
+  mf.querySelector('.mf-stitch').after(band);
+
+  /* Retour en haut de page */
+  const util = mf.querySelector('.mf-util');
+  if (util && !mf.querySelector('.mf-top')) {
+    const top = document.createElement('button');
+    top.type = 'button'; top.className = 'mf-top'; top.setAttribute('aria-label', t('ft_top')); top.title = t('ft_top');
+    top.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V6M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    top.addEventListener('click', () => {
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+    util.appendChild(top);
+  }
+
+  /* Apparition progressive des blocs quand le pied de page entre à l'écran */
+  if ('IntersectionObserver' in window && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+    mf.classList.add('mf-js');
+    const items = mf.querySelectorAll('.mf-label, .mf-col, .mf-pay, .mf-util, .mf-wordmark');
+    items.forEach((el, i) => { el.classList.add('mf-rv'); el.style.setProperty('--mf-d', (i * 70) + 'ms'); });
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('mf-in'); io.unobserve(e.target); } }), { threshold: 0.12 });
+    items.forEach(el => io.observe(el));
+    /* Filet de sécurité : en bas de page, tout est révélé même si l'observateur tarde. */
+    window.addEventListener('scroll', () => {
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) items.forEach(el => el.classList.add('mf-in'));
+    }, { passive: true });
+  }
+}
+
 /* ====== Câblage initial (appelé sur toutes les pages) ====== */
 function initNav() {
+  enhanceFooter();
   renderFooterSocial();
   bindVipForm();
   markCurrentNav();

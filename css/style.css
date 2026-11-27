@@ -1980,3 +1980,79 @@ fieldset.opt legend{ font:700 14px var(--font-body); padding:0; margin-bottom:8p
   .mf-label{ grid-column:auto; }
 }
 @media (prefers-reduced-motion:reduce){ .mf *{ transition:none !important; } }
+
+
+/* ======================================================================
+   ÉPIQUE : pied de page — lumière, tissage, mouvement sobre
+   ====================================================================== */
+.mf::before{ content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(900px 380px at 12% -8%, rgba(212,163,89,.13), transparent 62%),
+    radial-gradient(700px 320px at 92% 8%, rgba(193,68,14,.10), transparent 60%),
+    radial-gradient(800px 300px at 50% 118%, rgba(212,163,89,.10), transparent 65%); }
+/* Fin tissage doré sous la couture, animé très lentement */
+.mf-stitch{ z-index:2; }
+.mf::after{ content:""; position:absolute; left:0; right:0; top:0; height:6px; z-index:1; opacity:.85;
+  background:repeating-linear-gradient(90deg,#9e5317 0 14px,#d47a2c 14px 28px,#f1b37f 28px 42px,#D4A359 42px 56px); background-size:56px 6px; animation:mfWeave 24s linear infinite; }
+@keyframes mfWeave{ to{ background-position:560px 0; } }
+.mf-inner{ padding-top:44px; }
+
+/* Ruban de mots */
+.mf-marquee{ position:relative; z-index:1; overflow:hidden; margin-top:30px; border-block:1px solid rgba(212,163,89,.22); padding:14px 0;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); }
+.mf-track{ display:flex; width:max-content; gap:28px; align-items:center; animation:mfMarquee 48s linear infinite; font:400 clamp(20px,3vw,30px)/1 var(--font-display); letter-spacing:.06em; text-transform:uppercase; color:rgba(246,241,231,.5); }
+.mf-track span{ white-space:nowrap; }
+.mf-track i{ font-style:normal; color:var(--mf-gold); font-size:.55em; opacity:.9; }
+@keyframes mfMarquee{ to{ transform:translateX(-50%); } }
+
+/* Étiquette tissée : coins dorés + relief */
+.mf-label{ position:relative; background:linear-gradient(160deg,rgba(246,241,231,.05),rgba(246,241,231,.015)); box-shadow:0 20px 50px rgba(0,0,0,.35), inset 0 0 0 1px rgba(212,163,89,.08); transition:transform .35s ease, box-shadow .35s ease; }
+.mf-label::before, .mf-label::after{ content:""; position:absolute; width:14px; height:14px; border:1.5px solid var(--mf-gold); opacity:.8; }
+.mf-label::before{ top:-1px; left:-1px; border-right:0; border-bottom:0; border-top-left-radius:6px; }
+.mf-label::after{ right:-1px; bottom:-1px; border-left:0; border-top:0; border-bottom-right-radius:6px; }
+.mf-label:hover{ transform:translateY(-3px); box-shadow:0 26px 60px rgba(0,0,0,.45), inset 0 0 0 1px rgba(212,163,89,.2); }
+.mf-logo{ filter:drop-shadow(0 6px 18px rgba(212,163,89,.25)); }
+.mf-tagline{ font-size:clamp(28px,3.2vw,36px); background:linear-gradient(90deg,#F6F1E7,#E8C98A 70%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+/* Liens : soulignement doré qui se dessine */
+.mf-links a{ position:relative; }
+.mf-links a::after{ content:""; position:absolute; left:0; bottom:6px; height:1px; width:100%; background:var(--mf-gold); transform:scaleX(0); transform-origin:left; transition:transform .3s ease; }
+.mf-links a:hover::after, .mf-links a:focus-visible::after{ transform:scaleX(1); }
+.mf-links a:hover{ transform:translateX(4px); }
+.mf-links a{ transition:color .2s ease, transform .25s ease; }
+.mf-wa{ box-shadow:0 0 0 0 rgba(212,163,89,.45); animation:mfPulse 3.2s ease-out infinite; }
+@keyframes mfPulse{ 0%{ box-shadow:0 0 0 0 rgba(212,163,89,.4); } 70%,100%{ box-shadow:0 0 0 12px rgba(212,163,89,0); } }
+.mf-wa:hover{ animation:none; }
+
+/* Carnet de Tissus : carte mise en lumière */
+.mf-vip{ position:relative; padding:22px 20px; border:1px solid rgba(212,163,89,.3); border-radius:12px; background:radial-gradient(120% 90% at 0% 0%, rgba(212,163,89,.12), rgba(246,241,231,.02) 60%); box-shadow:0 18px 44px rgba(0,0,0,.35); }
+.mf-vip .mf-h{ font-size:13px; }
+.mf-vip .mf-h::before{ content:"✦ "; }
+.mf-input:focus{ box-shadow:0 0 0 3px rgba(212,163,89,.22); }
+
+/* Réseaux : bascule dorée */
+.mf-social a{ transition:transform .25s ease, background .25s ease, color .25s ease, border-color .25s ease; }
+.mf-social a:hover{ transform:translateY(-3px) rotate(-6deg); background:var(--mf-gold); color:#1a1208; border-color:var(--mf-gold); }
+.mf-pills li{ transition:transform .25s ease, border-color .25s ease; }
+.mf-pills li:hover{ transform:translateY(-2px); border-color:rgba(212,163,89,.6); }
+
+/* Retour en haut */
+.mf-top{ width:46px; height:46px; display:inline-grid; place-items:center; border-radius:50%; border:1px solid var(--mf-gold); background:transparent; color:var(--mf-gold); cursor:pointer; transition:transform .25s ease, background .25s ease, color .25s ease; }
+.mf-top svg{ width:20px; height:20px; }
+.mf-top:hover{ background:var(--mf-gold); color:#1a1208; transform:translateY(-4px); }
+.mf-top:focus-visible{ outline:2px solid var(--mf-gold); outline-offset:3px; }
+
+/* Signature monumentale : dégradé doré, plus présente mais toujours discrète */
+.mf-wordmark{ opacity:1; color:transparent; background:linear-gradient(180deg,rgba(232,201,138,.20) 0%,rgba(212,163,89,.07) 55%,rgba(212,163,89,0) 100%); -webkit-background-clip:text; background-clip:text; -webkit-text-stroke:1px rgba(212,163,89,.14); transform:translateY(.16em); }
+
+/* Apparition progressive (activée seulement par le JS, jamais si mouvement réduit) */
+.mf-js .mf-rv{ opacity:0; transform:translateY(18px); transition:opacity .7s ease var(--mf-d,0ms), transform .7s cubic-bezier(.22,.9,.32,1) var(--mf-d,0ms); }
+.mf-js .mf-rv.mf-in{ opacity:1; transform:none; }
+.mf-js .mf-wordmark.mf-rv{ transform:translateY(.5em); }
+.mf-js .mf-wordmark.mf-rv.mf-in{ transform:translateY(.16em); transition-duration:1.2s; }
+
+@media (prefers-reduced-motion:reduce){
+  .mf::after, .mf-track, .mf-wa{ animation:none !important; }
+  .mf-rv{ opacity:1 !important; transform:none !important; }
+}
+@media (max-width:719px){ .mf-vip{ padding:20px 16px; } .mf-util{ position:relative; } .mf-top{ position:absolute; right:0; top:22px; } }

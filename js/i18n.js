@@ -78,6 +78,7 @@ const UI_STRINGS = {
 
     detail_default_title: 'Détail', close: 'Fermer', fullscreen_title: 'Voir en plein écran',
     gallery_prev_aria: 'Photo précédente', gallery_next_aria: 'Photo suivante',
+    ft_top: 'Haut de page',
     ft_badge: 'Confectionné à Dakar · Tailles S–XXL',
     ft_maison: 'La Maison',
     ft_faq: 'FAQ & guide des tailles',
@@ -441,6 +442,7 @@ const UI_STRINGS = {
 
     detail_default_title: 'Details', close: 'Close', fullscreen_title: 'View fullscreen',
     gallery_prev_aria: 'Previous photo', gallery_next_aria: 'Next photo',
+    ft_top: 'Back to top',
     ft_badge: 'Made in Dakar · Sizes S–XXL',
     ft_maison: 'The House',
     ft_faq: 'FAQ & size guide',
@@ -804,6 +806,7 @@ const UI_STRINGS = {
 
     detail_default_title: 'Detay', close: 'Tëj', fullscreen_title: 'Xool ko bu mag',
     gallery_prev_aria: 'Nataal bi jiitu', gallery_next_aria: 'Nataal bi topp',
+    ft_top: 'Yéeg ci kaw',
     ft_badge: 'Defar nañu ko Ndakaaru · Taille S–XXL',
     ft_maison: 'Kër gi',
     ft_faq: 'Laaj yi & taille yi',
