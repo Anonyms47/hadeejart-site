@@ -12,7 +12,7 @@ async function renderDashboard() {
       <div><h2>${hello ? 'Bonjour ' + escapeHtml(hello) : 'Dashboard'}</h2><p class="subtitle">Ce qui demande votre attention, puis les chiffres de la boutique.</p></div>
       <button class="btn ghost sm" id="dashRefresh">↻ Actualiser</button>
     </div>
-    <div class="todo-grid" id="todoGrid"><p>Chargement…</p></div>
+    <div class="todo-grid" id="todoGrid"><p><span class="skel-lines"><i></i><i></i><i></i></span></p></div>
     <div class="stat-grid" id="statGrid"></div>
     <div class="panel">
       <div class="panel-head"><h3>Activité</h3>
@@ -20,11 +20,11 @@ async function renderDashboard() {
           ${[7, 30, 90].map(d => `<button type="button" data-days="${d}" class="${d === DASH_DAYS ? 'on' : ''}">${d} jours</button>`).join('')}
         </div>
       </div>
-      <div id="dashChart">Chargement…</div>
+      <div id="dashChart"><span class="skel-lines"><i></i><i></i><i></i></span></div>
     </div>
     <div class="dash-cols">
-      <div class="panel"><div class="panel-head"><h3>Produits les plus commandés</h3></div><div id="topProducts">Chargement…</div></div>
-      <div class="panel"><div class="panel-head"><h3>Dernières commandes</h3><button class="btn ghost sm" id="dashAllOrders">Tout voir</button></div><div id="recentOrders">Chargement…</div></div>
+      <div class="panel"><div class="panel-head"><h3>Produits les plus commandés</h3></div><div id="topProducts"><span class="skel-lines"><i></i><i></i><i></i></span></div></div>
+      <div class="panel"><div class="panel-head"><h3>Dernières commandes</h3><button class="btn ghost sm" id="dashAllOrders">Tout voir</button></div><div id="recentOrders"><span class="skel-lines"><i></i><i></i><i></i></span></div></div>
     </div>`;
 
   document.getElementById('dashRefresh').addEventListener('click', renderDashboard);

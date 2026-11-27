@@ -19,7 +19,7 @@ async function renderNewsletter() {
           <button class="btn sm" id="nlExport">⬇ Exporter (CSV)</button>
         </div>
       </div>
-      <div id="nlList">Chargement…</div>
+      <div id="nlList"><span class="skel-lines"><i></i><i></i><i></i></span></div>
     </div>`;
 
   const { data, error } = await sb.from('newsletter_subscribers').select('*').order('created_at', { ascending: false });

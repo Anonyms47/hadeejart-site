@@ -7,7 +7,7 @@ async function renderCollections() {
   el.innerHTML = `<h2>Collections</h2><p class="subtitle">Créez autant de collections que nécessaire ; un produit peut appartenir à plusieurs collections.</p>
     <div class="panel">
       <div class="panel-head"><h3>Toutes les collections</h3><button class="btn sm" id="btnNewCollection">+ Nouvelle collection</button></div>
-      <div id="collectionsList">Chargement…</div>
+      <div id="collectionsList"><span class="skel-lines"><i></i><i></i><i></i></span></div>
     </div>`;
 
   document.getElementById('btnNewCollection').addEventListener('click', () => openCollectionForm(null));
@@ -25,14 +25,14 @@ async function loadCollectionsList() {
     <tbody>${data.map(c => `
       <tr>
         <td>${escapeHtml(c.name_fr)}</td>
-        <td><span class="badge ${escapeHtml(c.status)}">${escapeHtml(c.status)}</span></td>
+        <td><span class="badge ${escapeHtml(c.status)}">${escapeHtml({ published: 'Publiée', draft: 'Brouillon', archived: 'Archivée' }[c.status] || c.status)}</span></td>
         <td>${(c.product_collections || []).length}</td>
         <td class="row-actions">
           <button class="btn ghost sm" data-edit="${c.id}">Modifier</button>
           ${c.status !== 'archived' ? `<button class="btn ghost sm" data-archive="${c.id}">Archiver</button>` : ''}
           <button class="btn danger sm" data-delete="${c.id}">Supprimer</button>
         </td>
-      </tr>`).join('') || '<tr><td colspan="4">Aucune collection pour le moment.</td></tr>'}</tbody></table>`;
+      </tr>`).join('') || '<tr><td colspan="4"><div class="empty"><span class="big">📁</span><b>Aucune collection</b><p>Regroupez vos pièces par thème ou par saison, puis mettez-les en avant sur le site.</p></div></td></tr>'}</tbody></table>`;
 
   host.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openCollectionForm(btn.dataset.edit)));
   host.querySelectorAll('[data-archive]').forEach(btn => btn.addEventListener('click', () => archiveCollection(btn.dataset.archive)));

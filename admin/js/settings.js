@@ -11,9 +11,9 @@ const PAYMENT_METHODS_ADMIN = [
 
 async function renderSettings() {
   const el = document.getElementById('section-settings');
-  el.innerHTML = `<h2>Paramètres</h2><p class="subtitle">Numéro WhatsApp, instructions de paiement, textes commerciaux et sécurité du compte.</p><div class="panel" id="settingsPanel">Chargement…</div>
+  el.innerHTML = `<h2>Paramètres</h2><p class="subtitle">Numéro WhatsApp, instructions de paiement, textes commerciaux et sécurité du compte.</p><div class="panel" id="settingsPanel"><span class="skel-lines"><i></i><i></i><i></i></span></div>
     <div class="panel" id="accountPanel">
-      <div class="panel-head"><h3>Mon compte</h3></div>
+      <div class="panel-head"><h3>🔐 Mon compte</h3></div>
       <p class="hint" style="margin:0 0 14px">Connecté : <b>${escapeHtml(CURRENT_ADMIN ? CURRENT_ADMIN.email : '')}</b></p>
       <div class="grid-2">
         <div class="field"><label for="pwNew">Nouveau mot de passe <small>(10 caractères minimum)</small></label><input id="pwNew" type="password" autocomplete="new-password" minlength="10"></div>
@@ -39,13 +39,15 @@ async function renderSettings() {
 
   const instructions = data.payment_instructions || {};
   host.innerHTML = `
-    <div class="field"><label>Numéro WhatsApp (sans le +)</label><input id="setWhatsapp" value="${escapeHtml(data.whatsapp_number)}"></div>
-    <h3>Instructions de paiement</h3>
+    <div class="set-sec"><h3>💬 Contact</h3>
+    <div class="field"><label for="setWhatsapp">Numéro WhatsApp (sans le +)</label><input id="setWhatsapp" inputmode="numeric" value="${escapeHtml(data.whatsapp_number)}"></div></div>
+    <div class="set-sec"><h3>💳 Instructions de paiement</h3>
+    <p class="hint">Affichées au client pour chaque moyen de paiement.</p>
     ${PAYMENT_METHODS_ADMIN.map(m => `
       <div class="field"><label>${escapeHtml(m.label)}</label>
         <input class="pay-instruction" data-key="${m.key}" value="${escapeHtml(instructions[m.key] || '')}" placeholder="ex: Envoyer à 77 xxx xx xx puis indiquer la réf.">
-      </div>`).join('')}
-    <h3>Textes commerciaux (affichés sur les fiches produit)</h3>
+      </div>`).join('')}</div>
+    <div class="set-sec"><h3>📝 Textes commerciaux</h3><p class="hint">Affichés sur les fiches produit.</p>
     ${'delivery_info_fr' in data ? `
     <p class="hint">Rédigez en français : l’anglais et le wolof sont créés à l’enregistrement. Une zone vide n’est pas affichée sur le site — n’indiquez que des règles que vous appliquez réellement.</p>
     <div class="field"><label>Livraison (règles, zones, délais)</label><textarea id="setDelivery" rows="3">${escapeHtml(data.delivery_info_fr || '')}</textarea></div>
@@ -54,8 +56,8 @@ async function renderSettings() {
     <div class="field"><label>Zones et frais de livraison (une zone par ligne : Nom | frais FCFA | délai)</label>
       <textarea id="setZones" rows="3" placeholder="Dakar | 2000 | 24-48 h">${escapeHtml((data.delivery_zones || []).map(z => [z.name, z.fee_fcfa, z.delay].join(' | ')).join('\n'))}</textarea>
       <p class="hint">Affichés à titre d’information sur le site ; le total de la commande reste « hors livraison » tant que les frais ne sont pas confirmés avec le client.</p></div>
-    ` : '<p class="hint">Disponible après application de la migration SQL (supabase/migrations/20261127_commerce_upgrade.sql).</p>'}
-    <button class="btn" id="saveSettingsBtn">Enregistrer</button>
+    ` : '<p class="hint">Disponible après application de la migration SQL (supabase/migrations/20261127_commerce_upgrade.sql).</p>'}</div>
+    <div class="sticky-save"><button class="btn" id="saveSettingsBtn">Enregistrer les paramètres</button></div>
   `;
 
   document.getElementById('saveSettingsBtn').addEventListener('click', async () => {

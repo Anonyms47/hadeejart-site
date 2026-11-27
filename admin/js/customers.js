@@ -9,7 +9,7 @@ async function renderCustomers() {
       <div class="panel-head"><h3 id="custCount">Clients</h3>
         <div><input id="custSearch" type="search" placeholder="Rechercher (nom, téléphone, ville)" aria-label="Rechercher un client">
         <button class="btn sm" id="custExport">⬇ Exporter (CSV)</button></div></div>
-      <div id="customersPanel">Chargement…</div></div>`;
+      <div id="customersPanel"><span class="skel-lines"><i></i><i></i><i></i></span></div></div>`;
 
   const { data, error } = await sb.from('orders').select('customer_name, customer_phone, customer_email, city, country, total_amount, currency, created_at, status');
   const host = document.getElementById('customersPanel');

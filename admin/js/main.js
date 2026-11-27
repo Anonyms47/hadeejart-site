@@ -25,9 +25,20 @@ function goToSection(name, preset, fromHash) {
   document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
   document.getElementById('section-' + name).classList.remove('hidden');
   if (!fromHash && location.hash !== '#' + name) { try { history.pushState(null, '', '#' + name); } catch (e) { location.hash = name; } }
+  const inMore = !!document.querySelector(`#dockMore .nav-item[data-section="${name}"]`);
+  const mb = document.getElementById('dockMoreBtn'); if (mb) mb.classList.toggle('has-active', inMore);
+  setDockMore(false);
   document.title = 'Hadeej’Art — ' + (document.querySelector(`.nav-item[data-section="${name}"] .nav-label`) || { textContent: 'Administration' }).textContent;
   window.scrollTo(0, 0);
   SECTION_RENDERERS[name]();
+}
+
+/* Feuille « Plus » (téléphone) : ouvre/ferme la liste des écrans secondaires */
+function setDockMore(open) {
+  const dock = document.getElementById('dock'), btn = document.getElementById('dockMoreBtn');
+  if (!dock || !btn) return;
+  dock.classList.toggle('more-open', !!open);
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
 /* Pastille « n à traiter » sur Commandes */
@@ -38,7 +49,16 @@ async function updateNavBadges(orders) {
   if (b) { b.textContent = n > 99 ? '99+' : String(n); b.hidden = !n; }
 }
 
+function initDock() {
+  const btn = document.getElementById('dockMoreBtn'), scrim = document.getElementById('dockScrim');
+  btn.addEventListener('click', e => { e.stopPropagation(); setDockMore(!document.getElementById('dock').classList.contains('more-open')); });
+  scrim.addEventListener('click', () => setDockMore(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setDockMore(false); });
+  document.addEventListener('click', e => { if (!e.target.closest('#dockMore') && !e.target.closest('#dockMoreBtn')) setDockMore(false); });
+}
+
 function onAdminReady() {
+  initDock();
   document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
     btn.addEventListener('click', () => goToSection(btn.dataset.section));
   });
