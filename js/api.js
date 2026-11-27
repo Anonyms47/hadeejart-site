@@ -39,13 +39,24 @@ async function fetchProducts() {
 /* Uniquement les collections publiées par l'admin : aucune collection
    fictive ou précréée côté site public. */
 async function fetchCollections() {
-  const select = encodeURIComponent('id,slug,name_fr,name_en,name_wo,cover_image_url');
+  const select = encodeURIComponent('id,slug,name_fr,name_en,name_wo,description_fr,cover_image_url');
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/collections?select=${select}&status=eq.published&order=created_at.asc`,
     { headers: supabaseHeaders() }
   );
   if (!res.ok) throw new Error('Erreur chargement collections: ' + res.status);
   return res.json();
+}
+
+/* Réglages publics (textes livraison/échange, guide des tailles…). Échec
+   silencieux : les sections correspondantes restent simplement masquées. */
+async function fetchSettings() {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?select=*&id=eq.1`, { headers: supabaseHeaders() });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    return rows && rows[0] ? rows[0] : null;
+  } catch (e) { return null; }
 }
 
 function readCatalogCache() {
@@ -58,9 +69,9 @@ function readCatalogCache() {
   } catch (e) { return null; }
 }
 
-function writeCatalogCache(categories, products, collections) {
+function writeCatalogCache(categories, products, collections, settings) {
   try {
-    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ categories, products, collections, savedAt: Date.now() }));
+    localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ categories, products, collections, settings, savedAt: Date.now() }));
   } catch (e) { /* stockage indisponible : tant pis, pas bloquant */ }
 }
 
@@ -73,14 +84,14 @@ function writeCatalogCache(categories, products, collections) {
 async function loadCatalog(onUpdate) {
   const cached = readCatalogCache();
   if (cached) {
-    applyCatalogData(cached.categories, cached.products, cached.collections);
+    applyCatalogData(cached.categories, cached.products, cached.collections, cached.settings);
     if (onUpdate) onUpdate();
   }
 
   try {
-    const [categories, products, collections] = await Promise.all([fetchCategories(), fetchProducts(), fetchCollections()]);
-    writeCatalogCache(categories, products, collections);
-    applyCatalogData(categories, products, collections);
+    const [categories, products, collections, settings] = await Promise.all([fetchCategories(), fetchProducts(), fetchCollections(), fetchSettings()]);
+    writeCatalogCache(categories, products, collections, settings);
+    applyCatalogData(categories, products, collections, settings);
     if (onUpdate) onUpdate();
   } catch (err) {
     console.error('loadCatalog:', err);

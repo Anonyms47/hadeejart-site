@@ -8,6 +8,125 @@ let CART = [];
 let _cartLastAddedKey = null; /* ligne à mettre en avant au prochain rendu */
 let _cartLocked = false;      /* le tiroir tient-il actuellement le verrou de défilement ? */
 let _cartReturnFocus = null;  /* élément qui avait le focus avant l'ouverture */
+let _cartNotices = [];        /* messages à afficher dans le panier (prix changé, article retiré…) */
+
+/* ====== Persistance du panier (localStorage) ======
+   Le panier survit à la navigation entre pages et au rechargement. Les
+   données stockées ne sont JAMAIS dignes de confiance : elles sont
+   revalidées à la lecture (forme, bornes) puis rapprochées du catalogue
+   réel (reconcileCart), et le serveur recalcule de toute façon prix et
+   disponibilité à l'envoi (place_order). */
+const CART_STORAGE_KEY = 'ha_cart_v1';
+const CART_TEXT_FIELDS = ['color', 'size', 'sexe', 'optionKimono', 'tissu', 'note'];
+
+function saveCart() {
+  try {
+    if (!CART.length) localStorage.removeItem(CART_STORAGE_KEY);
+    else localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(CART.map(l => {
+      const o = { key: l.key, id: l.id, qty: l.qty, price: l.price, currency: l.currency, name: l.name, img: l.img };
+      CART_TEXT_FIELDS.forEach(f => { if (l[f]) o[f] = l[f]; });
+      return o;
+    })));
+  } catch (e) { /* stockage indisponible (navigation privée…) : le panier reste en mémoire */ }
+}
+
+function sanitizeCartLine(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const str = (v, max) => (typeof v === 'string' ? v.slice(0, max) : '');
+  const id = str(raw.id, 120);
+  const qty = Math.floor(Number(raw.qty));
+  const price = Number(raw.price);
+  if (!id || !(qty >= 1) || !Number.isFinite(price) || price < 0) return null;
+  const line = {
+    id, qty: Math.min(qty, 50), price,
+    currency: SUPPORTED_CURRENCIES.includes(raw.currency) ? raw.currency : 'FCFA',
+    name: str(raw.name, 200) || id,
+    img: /^(https:\/\/|images\/)/.test(raw.img || '') ? str(raw.img, 600) : ''
+  };
+  CART_TEXT_FIELDS.forEach(f => { line[f] = str(raw[f], f === 'note' ? 500 : 120); });
+  line.key = cartLineKey(id, line);
+  return line;
+}
+
+function loadCart() {
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) throw new Error('format');
+    const seen = new Set();
+    CART = arr.slice(0, 30).map(sanitizeCartLine).filter(l => l && !seen.has(l.key) && seen.add(l.key));
+  } catch (e) {
+    CART = [];
+    try { localStorage.removeItem(CART_STORAGE_KEY); } catch (e2) { /* ignoré */ }
+  }
+}
+
+/* Problème bloquant d'une ligne (taille/option manquante ou retirée du
+   catalogue, produit épuisé) ; chaîne vide si la ligne est commandable. */
+function cartLineIssue(l) {
+  const p = PRODUCTS.find(x => x.id === l.id);
+  if (!p) return PRODUCTS.length ? 'gone' : '';
+  if (p.soldOut) return 'soldout';
+  if (p.sizes && p.sizes.length) {
+    if (!l.size) return 'size';
+    if (!p.sizes.includes(l.size) || (p.unavailableSizes || []).includes(l.size)) return 'size_unavailable';
+  }
+  if (p.variantOptions) {
+    if (!l.optionKimono) return 'option';
+    if (!p.variantOptions.choices.some(c => c.value === l.optionKimono)) return 'option';
+  }
+  return '';
+}
+
+function cartHasIssues() { return CART.some(l => cartLineIssue(l)); }
+
+/* Rapproche le panier du catalogue frais : retire les produits supprimés,
+   met à jour nom/photo/prix et prévient le visiteur de tout changement. */
+function reconcileCart() {
+  if (!CART.length || !PRODUCTS.length) return;
+  const notices = [];
+  CART = CART.filter(l => {
+    if (PRODUCTS.some(x => x.id === l.id)) return true;
+    notices.push(t('cart_notice_removed')(l.name));
+    return false;
+  });
+  CART.forEach(l => {
+    const p = PRODUCTS.find(x => x.id === l.id);
+    l.name = p.name;
+    if (p.img) l.img = p.img;
+    const info = priceForProduct(p, l.optionKimono);
+    if (l.optionKimono && !(p.variantOptions && p.variantOptions.choices.some(c => c.value === l.optionKimono))) return;
+    if (info.amount !== l.price || info.currency !== l.currency) {
+      if (l.price && info.amount !== l.price && info.currency === l.currency) notices.push(t('cart_notice_price')(l.name));
+      l.price = info.amount; l.currency = info.currency;
+    }
+  });
+  if (notices.length) _cartNotices = _cartNotices.concat(notices);
+  updateCartUI();
+}
+
+/* Devise réelle de la commande : jamais deux devises mélangées et aucune
+   conversion inventée. Si un article n'a pas de prix dans la devise
+   choisie, toute la commande repasse en FCFA (le prix FCFA est toujours
+   renseigné) et le visiteur en est prévenu avant l'envoi. */
+function cartOrderCurrency() {
+  const cur = new Set(CART.map(l => l.currency || CURRENT_CURRENCY));
+  return cur.size === 1 ? [...cur][0] : 'FCFA';
+}
+/* Vue de la commande telle qu'elle sera réellement envoyée : lignes, devise
+   unique et total des ARTICLES (la livraison n'est jamais incluse ici). */
+function cartOrderView() {
+  const cur = cartOrderCurrency();
+  const lines = CART.map(l => {
+    if ((l.currency || CURRENT_CURRENCY) === cur) return l;
+    const p = PRODUCTS.find(x => x.id === l.id);
+    const info = p ? priceForProduct(p, l.optionKimono, cur) : { amount: l.price, currency: cur };
+    return Object.assign({}, l, { price: info.amount, currency: info.currency });
+  });
+  return { currency: cur, lines, total: lines.reduce((s, l) => s + l.price * l.qty, 0), mixed: cartMixedCurrencies() };
+}
+function cartMixedCurrencies() { return new Set(CART.map(l => l.currency || CURRENT_CURRENCY)).size > 1; }
 
 function cartLineKey(id, opts) {
   opts = opts || {};
@@ -134,6 +253,7 @@ const CART_EMPTY_SVG = `
 const CART_TRASH_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
 
 function cartLineHtml(l, i) {
+  const issue = cartLineIssue(l);
   const chips = [];
   if (l.size) chips.push(l.size);
   if (l.color) chips.push(l.color);
@@ -153,6 +273,7 @@ function cartLineHtml(l, i) {
       <div class="cart-info">
         <h5 class="cart-name">${name}</h5>
         ${chips.length ? `<ul class="cart-chips">${chips.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>` : ''}
+        ${issue ? `<p class="cart-issue" role="alert">${escapeHtml(t('cart_issue_' + issue))} <button type="button" class="cart-issue-fix" data-act="fix" data-key="${key}">${escapeHtml(t('cart_issue_fix'))}</button></p>` : ''}
         <div class="cart-line-foot">
           <div class="qty" role="group" aria-label="${escapeHtml(t('cart_qty_label'))}">
             <button type="button" class="qty-btn" data-act="dec" data-key="${key}" aria-label="${escapeHtml(t('cart_qty_dec'))}">&minus;</button>
@@ -178,6 +299,7 @@ function cartEmptyHtml() {
 }
 
 function updateCartUI() {
+  saveCart();
   const count = cartItemCount();
   const countEl = document.getElementById('cartCount');
   if (countEl) countEl.textContent = count;
@@ -209,11 +331,25 @@ function updateCartUI() {
     if (target) target.focus({ preventScroll: true });
   }
 
-  const totalsText = formatCartTotals();
-  const sub = document.getElementById('cartSubtotal');
+  /* Total des articles uniquement : la livraison n'est pas connue ici. */
+  const view = cartOrderView();
+  const totalsText = CART.length ? formatMoney(view.total, view.currency) : formatPrice(0);
   const tot = document.getElementById('cartTotal');
-  if (sub) sub.textContent = totalsText;
   if (tot) tot.textContent = totalsText;
+
+  const notices = document.getElementById('cartNotices');
+  if (notices) {
+    const msgs = _cartNotices.slice();
+    if (cartMixedCurrencies()) msgs.push(t('cart_notice_fcfa'));
+    notices.innerHTML = msgs.map(m => `<p class="cart-notice">${escapeHtml(m)}</p>`).join('');
+    notices.hidden = !msgs.length;
+  }
+  const checkout = document.querySelector('#cartFoot .cart-checkout');
+  if (checkout) {
+    const blocked = !CART.length || cartHasIssues();
+    checkout.disabled = blocked;
+    checkout.setAttribute('aria-disabled', blocked ? 'true' : 'false');
+  }
 }
 
 function bindCartLineActions() {
@@ -232,6 +368,12 @@ function bindCartLineActions() {
         const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (row && !reduce) { row.classList.add('is-leaving'); setTimeout(() => removeFromCart(key), 220); }
         else removeFromCart(key);
+        break;
+      }
+      case 'fix': {
+        const issue = line ? cartLineIssue(line) : '';
+        if (issue === 'gone' && line) removeFromCart(key);
+        else if (line && typeof openDetail === 'function') { closeCart(); removeFromCart(key); openDetail(line.id); }
         break;
       }
       case 'shop': cartGoShop(); break;
@@ -271,6 +413,7 @@ function closeCart() {
   const panel = document.getElementById('cartPanel');
   const overlay = document.getElementById('cartOverlay');
   if (!panel || !panel.classList.contains('show')) return;
+  if (_cartNotices.length) { _cartNotices = []; updateCartUI(); }
   panel.classList.remove('show');
   if (overlay) overlay.classList.remove('show');
   panel.setAttribute('aria-hidden', 'true');

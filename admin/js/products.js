@@ -94,6 +94,8 @@ async function loadProductsList() {
         <td><span class="badge ${escapeHtml(p.status)}">${escapeHtml(p.status)}</span></td>
         <td class="row-actions">
           <button class="btn ghost sm" data-edit="${p.id}">Modifier</button>
+          <button class="btn ghost sm" data-preview="${p.id}">Aperçu</button>
+          <button class="btn ghost sm" data-dup="${p.id}">Dupliquer</button>
           ${p.status !== 'archived' ? `<button class="btn ghost sm" data-archive="${p.id}">Archiver</button>` : ''}
           <button class="btn danger sm" data-delete="${p.id}">Supprimer</button>
         </td>
@@ -101,8 +103,51 @@ async function loadProductsList() {
     }).join('') || '<tr><td colspan="6">Aucun produit.</td></tr>'}</tbody></table>`;
 
   host.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openProductForm(btn.dataset.edit)));
+  host.querySelectorAll('[data-preview]').forEach(btn => btn.addEventListener('click', () => previewProduct(btn.dataset.preview)));
+  host.querySelectorAll('[data-dup]').forEach(btn => btn.addEventListener('click', () => duplicateProduct(btn.dataset.dup)));
   host.querySelectorAll('[data-archive]').forEach(btn => btn.addEventListener('click', () => archiveProduct(btn.dataset.archive)));
   host.querySelectorAll('[data-delete]').forEach(btn => btn.addEventListener('click', () => deleteProduct(btn.dataset.delete)));
+}
+
+/* Duplique un produit en BROUILLON (photos et collections reliées, aucun
+   fichier recopié : les photos pointent vers les mêmes originaux). */
+async function duplicateProduct(id) {
+  if (!confirm('Dupliquer ce produit ? La copie sera créée en brouillon.')) return;
+  const { data: src, error } = await sb.from('products').select('*, product_images(image_url, is_primary, sort_order, alt_fr), product_collections(collection_id)').eq('id', id).single();
+  if (error || !src) { toast('Erreur: ' + ((error && error.message) || 'produit introuvable'), true); return; }
+  const copy = Object.assign({}, src);
+  ['id', 'created_at', 'updated_at', 'product_images', 'product_collections'].forEach(k => delete copy[k]);
+  copy.name_fr = src.name_fr + ' (copie)'; copy.name_en = src.name_en ? src.name_en + ' (copy)' : null; copy.name_wo = src.name_wo ? src.name_wo + ' (copie)' : null;
+  copy.slug = slugify(src.name_fr) + '-' + Date.now().toString(36).slice(-5);
+  copy.status = 'draft';
+  const { data: ins, error: e2 } = await sb.from('products').insert(copy).select('id').single();
+  if (e2) { toast('Erreur: ' + e2.message, true); return; }
+  if ((src.product_images || []).length) await sb.from('product_images').insert(src.product_images.map(i => ({ product_id: ins.id, image_url: i.image_url, is_primary: i.is_primary, sort_order: i.sort_order, alt_fr: i.alt_fr })));
+  if ((src.product_collections || []).length) await sb.from('product_collections').insert(src.product_collections.map(c => ({ product_id: ins.id, collection_id: c.collection_id })));
+  toast('Copie créée en brouillon.'); loadProductsList();
+}
+
+/* Aperçu approximatif de la fiche publique, y compris pour un brouillon. */
+async function previewProduct(id) {
+  const { data: p } = await sb.from('products').select('*, product_images(image_url, is_primary, sort_order)').eq('id', id).single();
+  if (!p) return;
+  const imgs = (p.product_images || []).slice().sort((a, b) => a.sort_order - b.sort_order);
+  const sec = (label, v) => v ? `<details open><summary><b>${label}</b></summary><p style="white-space:pre-wrap;margin:6px 0 12px">${escapeHtml(v)}</p></details>` : '';
+  const overlay = openModal(`
+    <header><h3>Aperçu — ${escapeHtml(p.name_fr)}</h3><button class="icon-btn" id="closePrev">✕</button></header>
+    <div class="body">
+      <p class="hint">Aperçu simplifié de la fiche publique (statut : <b>${escapeHtml(p.status)}</b>${p.status !== 'published' ? ' — invisible sur le site tant qu’il n’est pas publié' : ''}).</p>
+      ${imgs.length ? `<div style="display:flex;gap:8px;overflow:auto;margin-bottom:12px">${imgs.map(i => `<img src="${escapeHtml(assetUrl(i.image_url))}" style="height:220px;border-radius:12px">`).join('')}</div>` : '<p><em>Aucune photo</em></p>'}
+      <p style="font-size:22px;font-weight:800;margin:0 0 8px">${formatMoney(p.price_fcfa, 'FCFA')}</p>
+      <p>${p.sold_out ? '<b style="color:#a3261a">Indisponible</b>' : (p.fulfillment === 'in_stock' ? 'En stock' : p.fulfillment === 'made_to_order' ? 'Confection sur commande' : 'Disponible')}</p>
+      <p><b>Tailles :</b> ${(p.sizes || []).map(sz => (p.unavailable_sizes || []).includes(sz) ? `<s>${sz}</s>` : sz).join(' · ') || '—'}</p>
+      ${p.colors && p.colors.length ? `<p><b>Couleurs :</b> ${p.colors.map(escapeHtml).join(', ')}</p>` : ''}
+      ${p.fabric_fr ? `<p><b>Tissu :</b> ${escapeHtml(p.fabric_fr)}</p>` : ''}
+      ${sec('Description', p.description_fr)}${sec('Contenu de l’ensemble', p.contents_fr)}${sec('Coupe', p.cut_fr)}${sec('Mesures', p.measures_text)}${sec('Entretien', p.care_fr)}${sec('Délai', p.lead_time_fr)}
+    </div>
+    <div class="foot"><button class="btn ghost" id="closePrev2">Fermer</button></div>`);
+  overlay.querySelector('#closePrev').addEventListener('click', () => closeModal(overlay));
+  overlay.querySelector('#closePrev2').addEventListener('click', () => closeModal(overlay));
 }
 
 async function archiveProduct(id) {
@@ -217,6 +262,33 @@ async function openProductForm(id) {
         </div>
       </div>
       <div class="field"><label style="font-weight:400"><input type="checkbox" id="pGendered" ${row.gendered ? 'checked' : ''}> Produit genré (Homme/Femme déjà dans le nom)</label></div>
+
+      <div class="field"><label>Tailles temporairement indisponibles</label>
+        <p class="hint">Cochées : la taille est affichée barrée et ne peut pas être commandée (le serveur la refuse aussi).</p>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          ${allSizes.map(sz => `<label style="font-weight:400"><input type="checkbox" class="p-unavail" value="${sz}" ${(row.unavailable_sizes || []).includes(sz) ? 'checked' : ''}> ${sz}</label>`).join('')}
+        </div>
+      </div>
+      <div class="field"><label style="font-weight:400"><input type="checkbox" id="pSoldOut" ${row.sold_out ? 'checked' : ''}> Produit indisponible (affiché « Indisponible », non commandable)</label></div>
+
+      <details class="translations" ${row.description_fr || row.contents_fr || row.care_fr || row.lead_time_fr || row.cut_fr || row.measures_text || row.fulfillment ? 'open' : ''}>
+        <summary>Fiche produit détaillée <small>(facultatif — les sections vides sont masquées sur le site)</small></summary>
+        <p class="hint">Ne renseignez que ce que vous savez : rien n’est inventé ni affiché par défaut. Le texte français est traduit automatiquement en anglais et wolof à l’enregistrement.</p>
+        <div class="field"><label>Disponibilité</label>
+          <select id="pFulfillment">
+            <option value="">— Non précisé —</option>
+            <option value="in_stock" ${row.fulfillment === 'in_stock' ? 'selected' : ''}>En stock</option>
+            <option value="made_to_order" ${row.fulfillment === 'made_to_order' ? 'selected' : ''}>Confection sur commande</option>
+          </select></div>
+        <div class="field"><label>Description</label><textarea id="pDescFr" rows="3">${escapeHtml(row.description_fr || '')}</textarea></div>
+        <div class="field"><label>Contenu de l’ensemble</label><textarea id="pContentsFr" rows="2" placeholder="ex : chemise + pantalon">${escapeHtml(row.contents_fr || '')}</textarea></div>
+        <div class="grid-2">
+          <div class="field"><label>Coupe</label><input id="pCutFr" value="${escapeHtml(row.cut_fr || '')}"></div>
+          <div class="field"><label>Délai (texte libre)</label><input id="pLeadFr" value="${escapeHtml(row.lead_time_fr || '')}" placeholder="ex : à confirmer sur WhatsApp"></div>
+        </div>
+        <div class="field"><label>Mesures</label><textarea id="pMeasures" rows="2">${escapeHtml(row.measures_text || '')}</textarea></div>
+        <div class="field"><label>Entretien</label><textarea id="pCareFr" rows="2">${escapeHtml(row.care_fr || '')}</textarea></div>
+      </details>
 
       <div class="grid-2">
         <div class="field"><label>Prix FCFA *</label><input id="pPriceFcfa" type="number" value="${row.price_fcfa}"></div>
@@ -371,16 +443,41 @@ async function openProductForm(id) {
         updated_at: new Date().toISOString()
       };
 
+      /* Champs étendus (migration 20261127) : traduits puis ajoutés. Si la base
+         n'a pas encore ces colonnes, on enregistre le reste et on le signale. */
+      const tx = async (frVal, key) => {
+        const [en, wo] = await Promise.all([
+          resolveTranslation(frVal, 'en', row[key + '_en'], row[key + '_fr'], row[key + '_en']),
+          resolveTranslation(frVal, 'wo', row[key + '_wo'], row[key + '_fr'], row[key + '_wo'])
+        ]);
+        return { [key + '_fr']: frVal || null, [key + '_en']: frVal ? en : null, [key + '_wo']: frVal ? wo : null };
+      };
+      const q = sel => overlay.querySelector(sel).value.trim();
+      const extra = Object.assign({},
+        await tx(q('#pDescFr'), 'description'), await tx(q('#pContentsFr'), 'contents'),
+        await tx(q('#pCareFr'), 'care'), await tx(q('#pLeadFr'), 'lead_time'),
+        {
+          cut_fr: q('#pCutFr') || null, measures_text: q('#pMeasures') || null,
+          fulfillment: overlay.querySelector('#pFulfillment').value || null,
+          sold_out: overlay.querySelector('#pSoldOut').checked,
+          unavailable_sizes: [...overlay.querySelectorAll('.p-unavail:checked')].map(c => c.value)
+        });
+      const isMissingColumn = e => e && /column|schema cache/i.test(e.message || '');
+      let extendedSaved = true;
+
       let productId = id;
       if (id) {
-        const { error } = await sb.from('products').update(payload).eq('id', id);
+        let { error } = await sb.from('products').update(Object.assign({}, payload, extra)).eq('id', id);
+        if (isMissingColumn(error)) { extendedSaved = false; ({ error } = await sb.from('products').update(payload).eq('id', id)); }
         if (error) throw error;
       } else {
         payload.slug = slugify(nameFr) + '-' + Date.now().toString(36).slice(-5);
-        const { data: inserted, error } = await sb.from('products').insert(payload).select('id').single();
+        let { data: inserted, error } = await sb.from('products').insert(Object.assign({}, payload, extra)).select('id').single();
+        if (isMissingColumn(error)) { extendedSaved = false; ({ data: inserted, error } = await sb.from('products').insert(payload).select('id').single()); }
         if (error) throw error;
         productId = inserted.id;
       }
+      if (!extendedSaved) toast('Enregistré, mais les champs étendus nécessitent la migration SQL (supabase/migrations).', true);
 
       if (pendingFiles.length) {
         const { data: existingImgs } = await sb.from('product_images').select('id').eq('product_id', productId);

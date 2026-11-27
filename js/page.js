@@ -31,6 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('footerYear');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
+  /* Pastille du panier : le panier est conservé entre les pages (localStorage). */
+  try {
+    const stored = JSON.parse(localStorage.getItem('ha_cart_v1') || '[]');
+    const n = Array.isArray(stored) ? stored.reduce((s, l) => s + (Math.floor(Number(l && l.qty)) || 0), 0) : 0;
+    const badge = document.getElementById('cartCount'); if (badge) badge.textContent = n;
+  } catch (e) { /* ignoré */ }
+
   if (typeof bindHeaderScrollShadow === 'function') bindHeaderScrollShadow();
   if (typeof initNav === 'function') initNav();
 

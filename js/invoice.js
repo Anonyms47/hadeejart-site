@@ -152,7 +152,9 @@ async function buildInvoiceImage() {
   const pay = (typeof PAYMENT_LABELS !== 'undefined' && PAYMENT_LABELS[payValue]) || payValue || '';
   const orderId = window.LAST_INVOICE_ID || ('HA-' + Math.random().toString(36).slice(2, 8).toUpperCase());
   window.LAST_INVOICE_ID = orderId;
-  const totalsText = formatCartTotals();
+  const view = window.INVOICE_VIEW || cartOrderView();
+  const LINES = view.lines;
+  const totalsText = formatMoney(view.total, view.currency);
   window.LAST_INVOICE_TOTAL = totalsText;
   const locale = CURRENT_LANG === 'en' ? 'en-GB' : 'fr-FR';
   const now = new Date();
@@ -160,7 +162,7 @@ async function buildInvoiceImage() {
   const timeStr = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 
   const [logo, instruction, ...thumbs] = await Promise.all([
-    invLoadImage('images/logo.png'), invPaymentInstruction(payValue), ...CART.map(l => invLoadImage(l.img))
+    invLoadImage('images/logo.png'), invPaymentInstruction(payValue), ...LINES.map(l => invLoadImage(l.img))
   ]);
 
   const W = INV_A4_W, M = 64, CW = W - M * 2;
@@ -190,8 +192,8 @@ async function buildInvoiceImage() {
   const footerTop0 = INV_A4_H - FOOT_H;
   /* Hauteur de ligne : tout tient sur l'A4 tant que possible (max 126 px). */
   const availRows = footerTop0 - 36 - TOTALS_H - 30 - (tableY + TABLE_HEAD);
-  const ROW_H = Math.max(96, Math.min(126, Math.floor(availRows / Math.max(CART.length, 1))));
-  const itemsH = CART.length * ROW_H;
+  const ROW_H = Math.max(96, Math.min(126, Math.floor(availRows / Math.max(LINES.length, 1))));
+  const itemsH = LINES.length * ROW_H;
   const totalsY = tableY + TABLE_HEAD + itemsH + 36;
   const H = Math.max(INV_A4_H, totalsY + TOTALS_H + 30 + FOOT_H);
 
@@ -275,7 +277,7 @@ async function buildInvoiceImage() {
   invText(t('invoice_col_qty').toUpperCase(), colQty, tableY + 52, { ...th, align: 'center' });
   invText(t('invoice_col_total').toUpperCase(), colTot, tableY + 52, { ...th, align: 'right' });
 
-  CART.forEach((it, i) => {
+  LINES.forEach((it, i) => {
     const ry = tableY + TABLE_HEAD + i * ROW_H;
     if (i % 2 === 1) { INV.fillStyle = INV_COLORS.rose; INV.fillRect(M, ry, CW, ROW_H); }
     if (i > 0) { INV.strokeStyle = INV_COLORS.line; INV.lineWidth = 1.5; INV.beginPath(); INV.moveTo(M + 24, ry); INV.lineTo(M + CW - 24, ry); INV.stroke(); }
@@ -304,7 +306,7 @@ async function buildInvoiceImage() {
 
   /* --- Totaux (à droite) et consignes de paiement (à gauche) --- */
   const tw2 = 600, tx2 = M + CW - tw2;
-  invText(t('subtotal'), tx2 + 30, totalsY + 38, { size: 28, weight: 600, color: INV_COLORS.dim });
+  invText(t('invoice_excl_delivery'), tx2 + 30, totalsY + 38, { size: 28, weight: 600, color: INV_COLORS.dim });
   invText(totalsText, tx2 + tw2 - 30, totalsY + 38, { size: 30, weight: 800, align: 'right' });
   INV.save(); invShadow(30, 'rgba(143,47,10,.35)', 10);
   const tg = INV.createLinearGradient(tx2, totalsY + 70, tx2 + tw2, totalsY + 70 + 140);

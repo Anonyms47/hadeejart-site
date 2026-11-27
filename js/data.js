@@ -19,6 +19,7 @@ let CATALOG_LOADED = false;
 let RAW_CATEGORIES = [];
 let RAW_PRODUCTS = [];
 let RAW_COLLECTIONS = [];
+let SITE_SETTINGS = {}; /* ligne publique de la table settings (textes commerciaux, WhatsApp) */
 
 /* Libellé traduit d'un choix de variante (ex: "Avec pantalon" / "With
    trousers" / "Ak tubéey") à partir du produit et de la valeur technique
@@ -41,7 +42,8 @@ function isGenderedProduct(p) {
    images/collections jointes) et les transforme dans la forme attendue
    par le reste du site. Appelé par api.js, et de nouveau à chaque
    changement de langue pour ré-appliquer les libellés traduits. */
-function applyCatalogData(categoryRows, productRows, collectionRows) {
+function applyCatalogData(categoryRows, productRows, collectionRows, settingsRow) {
+  if (settingsRow) SITE_SETTINGS = settingsRow;
   RAW_CATEGORIES = categoryRows || RAW_CATEGORIES;
   RAW_PRODUCTS = productRows || RAW_PRODUCTS;
   RAW_COLLECTIONS = collectionRows || RAW_COLLECTIONS;
@@ -84,9 +86,26 @@ function applyCatalogData(categoryRows, productRows, collectionRows) {
       gendered: !!p.gendered,
       variantOptions,
       prices: { FCFA: p.price_fcfa, EUR: p.price_eur, USD: p.price_usd },
+      /* Champs optionnels (voir supabase/migrations/20261127_*.sql) : absents
+         tant que la migration n'est pas appliquée -> sections masquées. */
+      description: pickLang(p, 'description'),
+      contents: pickLang(p, 'contents'),
+      care: pickLang(p, 'care'),
+      leadTime: pickLang(p, 'lead_time'),
+      cut: p.cut_fr || '',
+      measures: p.measures_text || '',
+      fulfillment: p.fulfillment || '',
+      soldOut: !!p.sold_out,
+      unavailableSizes: p.unavailable_sizes || [],
       collectionSlugs: (p.product_collections || []).map(pc => pc.collections && pc.collections.slug).filter(Boolean)
     };
   });
+
+  /* Pas de destination vide : une catégorie sans produit publié n'est pas proposée. */
+  if (PRODUCTS.length) {
+    const used = new Set(PRODUCTS.map(p => p.category));
+    CATEGORIES = CATEGORIES.filter(c => c.id === 'tous' || used.has(c.id));
+  }
 
   CATALOG_LOADED = true;
   renderProductsJsonLd();
@@ -105,14 +124,14 @@ function renderProductsJsonLd() {
     '@type': 'Product',
     name: p.name,
     image: (p.images && p.images.length ? p.images : (p.img ? [p.img] : [])).map(abs),
-    description: p.fabric ? `${p.name} — ${p.fabric}` : p.name,
+    description: p.description || (p.fabric ? `${p.name} — ${p.fabric}` : p.name),
     brand: { '@type': 'Brand', name: 'Hadeej’Art' },
     offers: {
       '@type': 'Offer',
-      url: 'https://hadeejart.store/#catalogue',
+      url: 'https://hadeejart.store/index.html?produit=' + encodeURIComponent(p.id),
       priceCurrency: 'XOF',
       price: p.prices.FCFA,
-      availability: 'https://schema.org/InStock'
+      availability: p.soldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
     }
   }));
   el.textContent = items.length ? JSON.stringify({

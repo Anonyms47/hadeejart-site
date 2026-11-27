@@ -1,5 +1,14 @@
 /* ======================================================================
-   Hadeej'Art — Client, moyen de paiement, commande WhatsApp
+   Hadeej'Art — Commande en 3 étapes (coordonnées -> livraison ->
+   récapitulatif), enregistrement Supabase puis confirmation WhatsApp.
+   Principes :
+   - rien n'est jamais « payé » sur le site : le paiement se règle avec la
+     boutique après confirmation sur WhatsApp ;
+   - le serveur (place_order) revérifie prix, disponibilité et options ;
+   - un double clic ou un renvoi n'enregistre qu'UNE commande (clé
+     d'idempotence conservée jusqu'au succès) ;
+   - les erreurs s'affichent à côté des champs, les saisies survivent au
+     retour en arrière.
    ====================================================================== */
 
 const PAYMENT_LABELS = {
@@ -9,267 +18,420 @@ const PAYMENT_LABELS = {
   taptap_send: 'TapTap Send'
 };
 
+let CO_STEP = 1;
+let _coReturnFocus = null;
+let _coSending = false;
+const CO_LAST_ORDER_KEY = 'ha_last_order';
+
+const $co = id => document.getElementById(id);
+const coVal = id => (($co(id) || {}).value || '').trim();
+
 function openClient() {
   if (!CART.length) { openCart(); return; }
-  const modal = document.getElementById('client');
+  if (typeof cartHasIssues === 'function' && cartHasIssues()) { openCart(); return; }
+  const modal = $co('client');
   if (modal.classList.contains('show')) return;
-  /* Le tiroir du panier laisse la place à la fiche client. */
+  /* Le tiroir du panier laisse la place à la fiche de commande. */
   if (typeof closeCart === 'function') closeCart();
+  _coReturnFocus = document.activeElement;
   modal.classList.add('show');
   if (typeof lockBodyScroll === 'function') lockBodyScroll();
   if (typeof pushOverlayHistory === 'function') pushOverlayHistory();
-  setTimeout(() => { if (typeof initDeliveryMap === 'function') initDeliveryMap(); }, 50);
+  coClearErrors();
+  goToStep(1);
 }
+
 function closeClient(viaPopstate) {
-  const modal = document.getElementById('client');
+  const modal = $co('client');
   if (!modal || !modal.classList.contains('show')) return;
   modal.classList.remove('show');
   if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
   if (!viaPopstate && typeof consumeOverlayHistory === 'function') consumeOverlayHistory();
+  const back = _coReturnFocus && document.contains(_coReturnFocus) ? _coReturnFocus : $co('cartBtn');
+  _coReturnFocus = null;
+  if (back && back.focus) back.focus({ preventScroll: true });
 }
 
 /* ====== Mémorisation des infos client (opt-in) ====== */
 function restoreClientInfo() {
-  const s = localStorage.getItem('ha_user');
-  if (!s) return;
-  try {
-    const u = JSON.parse(s);
-    const setVal = (id, val) => { const e = document.getElementById(id); if (e) e.value = val || ''; };
-    setVal('cName', u.name);
-    setVal('cPhone', u.phone);
-    setVal('cEmail', u.email);
-    setVal('cCountry', u.country);
-    setVal('cCity', u.city);
-    setVal('cDistrict', u.district);
-    const remember = document.getElementById('cRemember');
-    if (remember) remember.checked = true;
-    selectPaymentMethodByValue(u.pay || 'wave');
-  } catch (e) { /* ignore données corrompues */ }
+  let u = null;
+  try { u = JSON.parse(localStorage.getItem('ha_user') || 'null'); } catch (e) { u = null; }
+  if (!u || typeof u !== 'object') return;
+  const setVal = (id, val) => { const e = $co(id); if (e) e.value = typeof val === 'string' ? val.slice(0, 200) : ''; };
+  setVal('cName', u.name); setVal('cPhone', u.phone); setVal('cEmail', u.email);
+  setVal('cCountry', u.country); setVal('cCity', u.city); setVal('cDistrict', u.district);
+  const remember = $co('cRemember'); if (remember) remember.checked = true;
+  selectPaymentMethodByValue(u.pay || 'wave');
 }
 
 function saveClientInfoIfAsked() {
-  const remember = document.getElementById('cRemember');
-  const val = id => (document.getElementById(id) || {}).value || '';
-  if (remember && remember.checked) {
-    localStorage.setItem('ha_user', JSON.stringify({
-      name: val('cName'), phone: val('cPhone'), email: val('cEmail'),
-      country: val('cCountry'), city: val('cCity'), district: val('cDistrict'),
-      pay: (document.getElementById('cPay') || {}).value || 'wave'
-    }));
-  } else {
-    localStorage.removeItem('ha_user');
-  }
+  const remember = $co('cRemember');
+  try {
+    if (remember && remember.checked) {
+      localStorage.setItem('ha_user', JSON.stringify({
+        name: coVal('cName'), phone: coVal('cPhone'), email: coVal('cEmail'),
+        country: coVal('cCountry'), city: coVal('cCity'), district: coVal('cDistrict'),
+        pay: coVal('cPay') || 'wave'
+      }));
+    } else localStorage.removeItem('ha_user');
+  } catch (e) { /* stockage indisponible */ }
 }
 
 /* ====== Moyen de paiement (chips) ====== */
 function selectPaymentMethodByValue(value) {
-  const grid = document.getElementById('payGrid');
+  const grid = $co('payGrid');
   if (!grid) return;
   const btn = grid.querySelector(`.pay-card[data-method="${CSS.escape(value)}"]`) || grid.querySelector('.pay-card');
   if (btn) setPaymentMethod(btn);
 }
-
 function setPaymentMethod(btn) {
-  const grid = document.getElementById('payGrid');
-  const out = document.getElementById('cPay');
+  const grid = $co('payGrid'), out = $co('cPay');
   if (!grid || !btn) return;
   grid.querySelectorAll('.pay-card').forEach(b => b.setAttribute('aria-pressed', 'false'));
   btn.setAttribute('aria-pressed', 'true');
   if (out) out.value = btn.dataset.method || 'wave';
 }
-
 function bindPaymentGrid() {
-  const grid = document.getElementById('payGrid');
+  const grid = $co('payGrid');
   if (!grid) return;
-  grid.addEventListener('click', e => {
-    const btn = e.target.closest('.pay-card');
-    if (btn) setPaymentMethod(btn);
-  });
+  grid.addEventListener('click', e => { const btn = e.target.closest('.pay-card'); if (btn) setPaymentMethod(btn); });
 }
 
-/* ====== Commande -> Supabase + WhatsApp ====== */
-function buildOrderMessage(orderRef, location) {
-  const name  = (document.getElementById('cName')  || {}).value.trim() || 'Client';
-  const phone = (document.getElementById('cPhone') || {}).value.trim() || '';
-  const email = (document.getElementById('cEmail') || {}).value.trim() || '';
-  const country = (document.getElementById('cCountry') || {}).value.trim() || t('dash');
-  const city = (document.getElementById('cCity') || {}).value.trim() || t('dash');
-  const district = (document.getElementById('cDistrict') || {}).value.trim() || t('dash');
-  const pay = PAYMENT_LABELS[(document.getElementById('cPay') || {}).value] || 'Wave';
+/* ====== Champs : erreurs en ligne, téléphone ====== */
+function coSetError(id, msg) {
+  const input = $co(id), err = $co('err-' + id);
+  if (!input) return;
+  if (msg) { input.setAttribute('aria-invalid', 'true'); if (err) { err.textContent = msg; err.hidden = false; } }
+  else { input.removeAttribute('aria-invalid'); if (err) { err.textContent = ''; err.hidden = true; } }
+}
+function coClearErrors() {
+  ['cName', 'cPhone', 'cEmail', 'cCity', 'cDistrict'].forEach(id => coSetError(id, ''));
+  const e = $co('coError'); if (e) { e.hidden = true; e.textContent = ''; }
+  const f = $co('coWaFallback'); if (f) f.hidden = true;
+}
 
+/* Numéros acceptés : local sénégalais à 9 chiffres (77 123 45 67), ou
+   international (+221…, 00221…) de 9 à 15 chiffres. */
+function phoneDigits(raw) { return String(raw || '').replace(/\D/g, ''); }
+function phoneIsValid(raw) {
+  if (!/^[0-9+ ().-]{6,30}$/.test(raw)) return false;
+  let d = phoneDigits(raw);
+  if (/^\s*00/.test(raw)) d = d.slice(2);
+  return d.length >= 9 && d.length <= 15;
+}
+function formatPhoneForDisplay(raw) {
+  const d = phoneDigits(raw);
+  if (!/^\s*\+/.test(raw) && d.length === 9) return d.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+  return raw.trim();
+}
+
+function validateStep(n) {
+  let ok = true, first = null;
+  const fail = (id, key) => { coSetError(id, t(key)); ok = false; if (!first) first = id; };
+  if (n === 1) {
+    const name = coVal('cName'), phone = coVal('cPhone'), email = coVal('cEmail');
+    coSetError('cName', ''); coSetError('cPhone', ''); coSetError('cEmail', '');
+    if (!name) fail('cName', 'val_name_required'); else if (name.length > 120) fail('cName', 'val_name_too_long');
+    if (!phone) fail('cPhone', 'val_phone_required'); else if (!phoneIsValid(phone)) fail('cPhone', 'val_phone_invalid');
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail('cEmail', 'val_email_invalid');
+  }
+  if (n === 2) {
+    coSetError('cCity', ''); coSetError('cDistrict', '');
+    if (!coVal('cCity')) fail('cCity', 'val_city_required');
+    if (!coVal('cDistrict')) fail('cDistrict', 'val_district_required');
+  }
+  if (!ok && first) { const el = $co(first); if (el) el.focus(); }
+  return ok;
+}
+
+/* ====== Étapes ====== */
+function goToStep(n) {
+  CO_STEP = n;
+  document.querySelectorAll('#coForm .co-step').forEach(s => { s.hidden = Number(s.dataset.step) !== n; });
+  document.querySelectorAll('#coSteps li').forEach(li => {
+    const k = Number(li.dataset.step);
+    li.classList.toggle('current', k === n); li.classList.toggle('done', k < n);
+    if (k === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+  });
+  $co('coBack').hidden = n === 1;
+  $co('coNext').hidden = n === 3;
+  $co('btnOrder').hidden = n !== 3;
+  $co('coSendHint').hidden = n !== 3;
+  if (n === 2) {
+    let z = $co('coZones');
+    const txt = typeof deliveryZonesText === 'function' ? deliveryZonesText() : '';
+    if (!z && txt) { z = document.createElement('p'); z.id = 'coZones'; z.className = 'co-note'; document.querySelector('#coForm .co-step[data-step="2"] .co-map').before(z); }
+    if (z) { z.hidden = !txt; z.innerHTML = txt ? '<b>' + escapeHtml(t('detail_delivery')) + '</b><br>' + escapeHtml(txt).replace(/\n/g, '<br>') : ''; }
+  }
+  if (n === 3) renderCheckoutSummary();
+  const sheet = document.querySelector('#client .sheet'); if (sheet) sheet.scrollTop = 0;
+  const target = document.querySelector('#coForm .co-step[data-step="' + n + '"] input, #btnOrder');
+  const focus = n === 3 ? $co('btnOrder') : target;
+  if (focus && focus.focus) setTimeout(() => focus.focus({ preventScroll: true }), 30);
+}
+
+function renderCheckoutSummary() {
+  const view = cartOrderView();
+  $co('coRecap').innerHTML = view.lines.map(l => {
+    const bits = [];
+    if (l.size) bits.push(l.size);
+    if (l.color) bits.push(l.color);
+    if (l.optionKimono) bits.push(variantChoiceLabel(l.id, l.optionKimono));
+    if (l.tissu) bits.push(l.tissu);
+    if (l.note) bits.push(t('wa_note') + ' ' + l.note);
+    return `<li class="co-line">
+      <span class="co-thumb">${l.img ? `<img src="${escapeHtml(l.img)}" alt="" loading="lazy">` : ''}</span>
+      <span class="co-line-info"><b>${escapeHtml(l.name)}</b>${bits.length ? `<small>${escapeHtml(bits.join(' · '))}</small>` : ''}<small>× ${l.qty}</small></span>
+      <span class="co-line-price">${escapeHtml(formatMoney(l.price * l.qty, l.currency))}</span></li>`;
+  }).join('');
+  $co('coTotal').textContent = formatMoney(view.total, view.currency);
+  const note = $co('coCurrencyNote');
+  note.hidden = !view.mixed;
+  note.textContent = view.mixed ? t('cart_notice_fcfa') : '';
+  const place = [coVal('cDistrict'), coVal('cCity'), coVal('cCountry')].filter(Boolean).join(', ');
+  const hint = coVal('locNote');
+  $co('coAddress').innerHTML = `<b>${escapeHtml(coVal('cName'))}</b> · ${escapeHtml(coVal('cPhone'))}<br>${escapeHtml(place)}${hint ? '<br>' + escapeHtml(hint) : ''}`
+    + ` <button type="button" class="link-btn" id="coEdit">${escapeHtml(t('step_edit'))}</button>`;
+  const edit = $co('coEdit'); if (edit) edit.addEventListener('click', () => goToStep(1));
+}
+
+function bindCheckoutSteps() {
+  const next = $co('coNext'), back = $co('coBack'), mapBtn = $co('btnShowMap'), phone = $co('cPhone');
+  if (!next) return;
+  next.addEventListener('click', () => { if (validateStep(CO_STEP)) goToStep(CO_STEP + 1); });
+  back.addEventListener('click', () => goToStep(Math.max(1, CO_STEP - 1)));
+  $co('coForm').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') {
+      e.preventDefault();
+      if (CO_STEP < 3 && validateStep(CO_STEP)) goToStep(CO_STEP + 1);
+    }
+  });
+  if (phone) phone.addEventListener('blur', () => { if (phoneIsValid(phone.value)) phone.value = formatPhoneForDisplay(phone.value); });
+  ['cName', 'cPhone', 'cEmail', 'cCity', 'cDistrict'].forEach(id => { const el = $co(id); if (el) el.addEventListener('input', () => coSetError(id, '')); });
+  if (mapBtn) mapBtn.addEventListener('click', toggleDeliveryMap);
+  const fb = $co('coWaFallback'); if (fb) fb.addEventListener('click', () => { if (window._coFallbackUrl) window.open(window._coFallbackUrl, '_blank'); });
+}
+
+/* Carte facultative : Leaflet n'est téléchargé qu'au premier affichage. */
+async function toggleDeliveryMap() {
+  const btn = $co('btnShowMap'), box = $co('coMapBox');
+  const open = box.hidden;
+  box.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
+  if (!open) return;
+  try {
+    await loadLeaflet();
+    initDeliveryMap();
+    if (typeof deliveryMap !== 'undefined' && deliveryMap) setTimeout(() => deliveryMap.invalidateSize(), 120);
+  } catch (e) {
+    setMapStatus('map_load_failed');
+  }
+}
+
+/* ====== Message WhatsApp / récapitulatif ====== */
+function buildOrderSummary(orderRef, location, view) {
+  view = view || cartOrderView();
+  const pay = PAYMENT_LABELS[coVal('cPay')] || 'Wave';
   const lines = [];
-  lines.push(t('wa_new_order'));
   if (orderRef) lines.push(t('wa_ref') + ' ' + orderRef);
-  lines.push(t('wa_name') + ' ' + name);
-  lines.push(t('wa_phone') + ' ' + phone);
-  if (email) lines.push(t('wa_email') + ' ' + email);
-  lines.push(t('wa_location_line')(country, city, district));
+  lines.push(t('wa_name') + ' ' + (coVal('cName') || 'Client'));
+  lines.push(t('wa_phone') + ' ' + coVal('cPhone'));
+  if (coVal('cEmail')) lines.push(t('wa_email') + ' ' + coVal('cEmail'));
+  lines.push(t('wa_location_line')(coVal('cCountry') || t('dash'), coVal('cCity') || t('dash'), coVal('cDistrict') || t('dash')));
+  if (location && location.note) lines.push(t('wa_precision') + ' ' + location.note);
   if (location && location.lat != null) {
     lines.push(t('wa_address_detected') + ' ' + (location.address || t('dash')));
-    if (location.note) lines.push(t('wa_precision') + ' ' + location.note);
     lines.push(t('wa_position') + ' ' + location.mapsLink);
   }
-  if (CART.length) {
-    lines.push(t('wa_articles'));
-    CART.forEach(l => {
-      const bits = [];
-      if (l.size) bits.push(l.size);
-      if (l.color) bits.push(l.color);
-      if (l.tissu) bits.push(l.tissu);
-      if (l.optionKimono) bits.push(variantChoiceLabel(l.id, l.optionKimono));
-      if (l.note) bits.push(t('wa_note') + ' ' + l.note);
-      const detail = bits.length ? ' (' + bits.join(', ') + ')' : '';
-      lines.push('- ' + l.name + detail + ' × ' + l.qty + ' — ' + formatMoney(l.price * l.qty, l.currency));
-    });
-  }
-  lines.push(t('wa_total') + ' ' + formatCartTotals());
+  lines.push(t('wa_articles'));
+  view.lines.forEach(l => {
+    const bits = [];
+    if (l.size) bits.push(l.size);
+    if (l.color) bits.push(l.color);
+    if (l.tissu) bits.push(l.tissu);
+    if (l.optionKimono) bits.push(variantChoiceLabel(l.id, l.optionKimono));
+    if (l.note) bits.push(t('wa_note') + ' ' + l.note);
+    lines.push('- ' + l.name + (bits.length ? ' (' + bits.join(', ') + ')' : '') + ' × ' + l.qty + ' — ' + formatMoney(l.price * l.qty, l.currency));
+  });
+  lines.push(t('wa_total_items') + ' ' + formatMoney(view.total, view.currency));
   lines.push(t('wa_payment') + ' ' + pay);
   return lines.join('\n');
 }
+function buildOrderMessage(orderRef, location, view) {
+  return t('wa_new_order') + '\n' + buildOrderSummary(orderRef, location, view);
+}
 
-function validateCheckoutForm() {
-  const name = (document.getElementById('cName') || {}).value.trim();
-  const phone = (document.getElementById('cPhone') || {}).value.trim();
-  const email = (document.getElementById('cEmail') || {}).value.trim();
-  if (!name) { alert(t('val_name_required')); return false; }
-  if (name.length > 120) { alert(t('val_name_too_long')); return false; }
-  if (!phone) { alert(t('val_phone_required')); return false; }
-  if (!/^[0-9+ ().-]{6,30}$/.test(phone)) { alert(t('val_phone_invalid')); return false; }
-  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert(t('val_email_invalid')); return false; }
-  return true;
+/* ====== Envoi ====== */
+function newIdemKey() {
+  try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) { /* repli */ }
+  return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+}
+/* La même clé sert pour toute nouvelle tentative portant sur le MÊME
+   panier et les mêmes coordonnées : un renvoi après coupure réseau (ou un
+   double clic) ne crée jamais deux commandes. */
+function idemKeyFor(payload) {
+  const sig = JSON.stringify([payload.items, payload.customer, payload.currency]);
+  try {
+    const raw = sessionStorage.getItem('ha_idem');
+    if (raw) { const o = JSON.parse(raw); if (o.sig === sig) return o.key; }
+    const key = newIdemKey();
+    sessionStorage.setItem('ha_idem', JSON.stringify({ sig, key }));
+    return key;
+  } catch (e) { return newIdemKey(); }
+}
+
+function setSending(on) {
+  _coSending = on;
+  const btn = $co('btnOrder');
+  if (!btn) return;
+  btn.disabled = on;
+  btn.setAttribute('aria-busy', String(on));
+  btn.textContent = on ? t('sending') : t('place_order_btn');
+  ['coBack'].forEach(id => { const b = $co(id); if (b) b.disabled = on; });
+}
+
+function showCoError(msg, canFallback) {
+  const box = $co('coError');
+  box.textContent = msg; box.hidden = false;
+  const fb = $co('coWaFallback'); if (fb) fb.hidden = !canFallback;
+  box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 async function haOrder() {
-  if (!CART.length) { alert(t('val_cart_empty')); return false; }
-  if (!validateCheckoutForm()) return false;
+  if (_coSending) return false;               /* double clic : ignoré */
+  if (!CART.length) { showCoError(t('val_cart_empty')); return false; }
+  if (cartHasIssues()) { closeClient(); openCart(); return false; }
+  if (!validateStep(1)) { goToStep(1); return false; }
+  if (!validateStep(2)) { goToStep(2); return false; }
 
-  const btn = document.getElementById('btnOrder');
-  if (btn) { btn.disabled = true; btn.textContent = t('sending'); }
+  setSending(true);
+  $co('coError').hidden = true;
+  const fb = $co('coWaFallback'); if (fb) fb.hidden = true;
 
   try {
     saveClientInfoIfAsked();
     const location = (typeof getDeliveryLocation === 'function') ? getDeliveryLocation() : {};
-    const val = id => (document.getElementById(id) || {}).value.trim();
+    const view = cartOrderView();
 
     const payload = {
-      customer: { name: val('cName'), phone: val('cPhone'), email: val('cEmail'), country: val('cCountry'), city: val('cCity'), district: val('cDistrict') },
+      customer: { name: coVal('cName'), phone: coVal('cPhone'), email: coVal('cEmail'), country: coVal('cCountry'), city: coVal('cCity'), district: coVal('cDistrict') },
       location: { lat: location.lat, lng: location.lng, address: location.address, note: location.note, maps_link: location.mapsLink },
-      payment_method: (document.getElementById('cPay') || {}).value || 'wave',
-      currency: CURRENT_CURRENCY,
-      items: CART.map(l => ({
+      payment_method: coVal('cPay') || 'wave',
+      currency: view.currency,
+      items: view.lines.map(l => ({
         product_id: (PRODUCTS.find(p => p.id === l.id) || {})._dbId,
         size: l.size, color: l.color, fabric: l.tissu, note: l.note,
         option_kimono: l.optionKimono, qty: l.qty
       }))
     };
+    payload.idempotency_key = idemKeyFor(payload);
 
-    /* Nouvelle commande : on repart d'une référence et d'une facture vierges
-       (sinon une commande hors-ligne réutiliserait celles de la précédente). */
     window.LAST_INVOICE_ID = null;
     window.LAST_INVOICE_BLOB = null;
-    let orderRef = null;
+    let result;
     try {
-      const result = await placeOrderRemote(payload);
-      orderRef = result && result.order_ref;
-      window.LAST_INVOICE_ID = orderRef;
+      result = await placeOrderRemote(payload);
     } catch (err) {
       console.error('placeOrderRemote:', err);
-      if (err.isValidation) {
-        /* Rejet volontaire du serveur (champ invalide, anti-abus...) :
-           on arrête tout, la vendeuse ne doit pas recevoir de commande
-           WhatsApp sans enregistrement correspondant côté Supabase. */
-        alert(translateServerError(err.message));
-        return false;
-      }
-      /* Panne réseau réelle (hors-ligne, etc.) : on continue quand même
-         vers WhatsApp, qui reste la source de vérité opérationnelle. */
+      const message = err.isValidation ? translateServerError(err.message) : t('co_network_error');
+      /* Panne réseau : on garde panier et saisies, on propose de réessayer
+         (même clé : aucun doublon) ou de passer directement par WhatsApp. */
+      window._coFallbackUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(buildOrderMessage(null, location, view))}`;
+      showCoError(message, !err.isValidation);
+      return false;
     }
 
-    /* Message WhatsApp composé AVANT de vider le panier. Il part vers le
-       numéro de Hadeej'Art (jamais vers un contact au choix). */
-    const message = buildOrderMessage(orderRef, location) + '\n' + t('wa_invoice_note');
-    const waUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(message)}`;
-    const ref = orderRef || window.LAST_INVOICE_ID;
+    const orderRef = result && result.order_ref;
+    window.LAST_INVOICE_ID = orderRef;
+    const summary = buildOrderSummary(orderRef, location, view);
+    const waUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(t('wa_new_order') + '\n' + summary + '\n' + t('wa_invoice_note'))}`;
+    const record = { ref: orderRef, waUrl, summary, total: formatMoney(view.total, view.currency), at: Date.now() };
+    window.LAST_ORDER = record;
+    try { localStorage.setItem(CO_LAST_ORDER_KEY, JSON.stringify(record)); sessionStorage.removeItem('ha_idem'); } catch (e) { /* ignoré */ }
 
-    if (typeof buildInvoiceImage === 'function') await buildInvoiceImage();
-    window.LAST_INVOICE_BLOB = (typeof invoiceBlob === 'function') ? await invoiceBlob() : null;
-
-    /* 1) télécharge la facture, 2) vide le panier, 3) écran de confirmation
-       avec le numéro de commande, 4) ouvre WhatsApp vers Hadeej'Art. */
-    if (typeof downloadInvoice === 'function') await downloadInvoice();
-    window.LAST_ORDER = { ref, waUrl };
-
-    /* Passage de relais d'historique : la fiche client cède son entrée
-       d'historique à l'écran de confirmation (sinon le « retour » du navigateur,
-       asynchrone, dépilerait la nouvelle entrée et pourrait faire quitter la page). */
+    /* Confirmation immédiate : la référence et le récapitulatif s'affichent
+       sans attendre la facture image (confort optionnel, générée ensuite). */
+    window.INVOICE_VIEW = view;
     closeClient(true);
     if (typeof clearCart === 'function') clearCart();
     openOrderDone(true);
 
-    /* Certains navigateurs mobiles bloquent l'ouverture automatique après
-       des étapes asynchrones : le bouton « Confirmer sur WhatsApp » de
-       l'écran de confirmation prend alors le relais. */
-    try { window.open(waUrl, '_blank'); } catch (e) { /* bloqué : le bouton suffit */ }
+    /* WhatsApp peut être bloqué : la confirmation reste affichée avec la
+       référence, le récapitulatif copiable et un bouton dédié. */
+    try { window.open(waUrl, '_blank'); } catch (e) { /* le bouton prend le relais */ }
+
+    (async () => {
+      try {
+        if (typeof buildInvoiceImage === 'function') await buildInvoiceImage();
+        window.LAST_INVOICE_BLOB = (typeof invoiceBlob === 'function') ? await invoiceBlob() : null;
+        refreshOrderDonePreview();
+        if (typeof downloadInvoice === 'function') await downloadInvoice();
+      } catch (e) { console.warn('facture:', e); }
+    })();
     return true;
   } catch (err) {
     console.error('haOrder error:', err);
-    alert(t('val_whatsapp_redirect_failed'));
+    showCoError(t('co_unexpected_error'));
     return false;
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = t('place_order_btn'); }
+    setSending(false);
   }
 }
 
 /* ====== Écran de confirmation après commande ====== */
 let _orderDoneUrl = null;
 
+function refreshOrderDonePreview() {
+  const img = $co('odPreview');
+  if (!img) return;
+  if (_orderDoneUrl) URL.revokeObjectURL(_orderDoneUrl);
+  _orderDoneUrl = window.LAST_INVOICE_BLOB ? URL.createObjectURL(window.LAST_INVOICE_BLOB) : null;
+  img.src = _orderDoneUrl || '';
+  img.hidden = !_orderDoneUrl;
+}
+
 function openOrderDone(reuseHistory) {
-  const modal = document.getElementById('orderDone');
+  const modal = $co('orderDone');
   if (!modal) return;
   const order = window.LAST_ORDER || {};
-  const refEl = document.getElementById('odRef');
-  if (refEl) refEl.textContent = order.ref || '';
-  const img = document.getElementById('odPreview');
-  if (img) {
-    if (_orderDoneUrl) URL.revokeObjectURL(_orderDoneUrl);
-    _orderDoneUrl = window.LAST_INVOICE_BLOB ? URL.createObjectURL(window.LAST_INVOICE_BLOB) : null;
-    img.src = _orderDoneUrl || '';
-    img.hidden = !_orderDoneUrl;
-  }
-  const wa = document.getElementById('odWhatsapp');
-  if (wa) wa.href = order.waUrl || `https://wa.me/${SITE_WA_NUMBER}`;
-  const copy = document.getElementById('odCopy');
-  if (copy) copy.textContent = t('order_done_copy');
+  const refEl = $co('odRef'); if (refEl) refEl.textContent = order.ref || '';
+  const sum = $co('odSummary'); if (sum) sum.textContent = (order.summary || '') + (order.total ? '' : '');
+  refreshOrderDonePreview();
+  const wa = $co('odWhatsapp'); if (wa) wa.href = order.waUrl || `https://wa.me/${SITE_WA_NUMBER}`;
+  const copy = $co('odCopy'); if (copy) copy.textContent = t('order_done_copy');
   modal.classList.add('show');
   if (typeof lockBodyScroll === 'function') lockBodyScroll();
   if (!reuseHistory && typeof pushOverlayHistory === 'function') pushOverlayHistory();
-  const first = document.getElementById('odWhatsapp');
-  if (first) setTimeout(() => first.focus({ preventScroll: true }), 60);
+  if (wa) setTimeout(() => wa.focus({ preventScroll: true }), 60);
 }
 
 function closeOrderDone(viaPopstate) {
-  const modal = document.getElementById('orderDone');
+  const modal = $co('orderDone');
   if (!modal || !modal.classList.contains('show')) return;
   modal.classList.remove('show');
   if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
   if (!viaPopstate && typeof consumeOverlayHistory === 'function') consumeOverlayHistory();
 }
 
-/* Retour à la boutique : ferme la confirmation et remonte au catalogue. */
 function orderDoneBackToShop() {
   closeOrderDone();
-  if (typeof scrollToCatalogue === 'function' && document.getElementById('catalogue')) scrollToCatalogue();
+  if (typeof scrollToCatalogue === 'function' && $co('catalogue')) scrollToCatalogue();
 }
 
-async function orderDoneCopyRef() {
-  const ref = (window.LAST_ORDER || {}).ref || '';
-  const btn = document.getElementById('odCopy');
+async function copyText(text, btn, doneKey, idleKey) {
   try {
-    await navigator.clipboard.writeText(ref);
-    if (btn) { btn.textContent = t('order_done_copied'); setTimeout(() => { btn.textContent = t('order_done_copy'); }, 2200); }
-  } catch (e) {
-    /* Presse-papiers indisponible : sélectionne le texte pour une copie manuelle */
-    const el = document.getElementById('odRef');
-    if (el && window.getSelection) { const r = document.createRange(); r.selectNodeContents(el); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); }
-  }
+    await navigator.clipboard.writeText(text);
+    if (btn) { btn.textContent = t(doneKey); setTimeout(() => { btn.textContent = t(idleKey); }, 2200); }
+  } catch (e) { return false; }
+  return true;
+}
+async function orderDoneCopyRef() {
+  const ok = await copyText((window.LAST_ORDER || {}).ref || '', $co('odCopy'), 'order_done_copied', 'order_done_copy');
+  if (!ok) { const el = $co('odRef'); if (el && window.getSelection) { const r = document.createRange(); r.selectNodeContents(el); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); } }
+}
+async function orderDoneCopySummary() {
+  const o = window.LAST_ORDER || {};
+  const text = (o.ref ? o.ref + '\n' : '') + (o.summary || '');
+  const ok = await copyText(text, $co('odCopySummary'), 'order_done_copied', 'od_copy_summary');
+  if (!ok) { const el = $co('odSummary'); if (el && window.getSelection) { const r = document.createRange(); r.selectNodeContents(el); const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); } }
 }

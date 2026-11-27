@@ -23,7 +23,7 @@ function setCurrency(cur) {
 /* Retourne { amount, currency, isFallback } pour un produit donné, en
    tenant compte d'une éventuelle option de variante (ex: kimono avec/sans
    pantalon) qui porte ses propres prix par devise. */
-function priceForProduct(product, optionValue) {
+function priceForProduct(product, optionValue, forceCurrency) {
   let prices = product && product.prices; // { FCFA, EUR, USD }
   if (optionValue && product && product.variantOptions) {
     const choice = product.variantOptions.choices.find(c => c.value === optionValue);
@@ -31,8 +31,9 @@ function priceForProduct(product, optionValue) {
   }
   if (!prices) return { amount: 0, currency: 'FCFA', isFallback: false };
 
-  const direct = prices[CURRENT_CURRENCY];
-  if (direct != null) return { amount: direct, currency: CURRENT_CURRENCY, isFallback: false };
+  const want = forceCurrency || CURRENT_CURRENCY;
+  const direct = prices[want];
+  if (direct != null) return { amount: direct, currency: want, isFallback: false };
   return { amount: prices.FCFA, currency: 'FCFA', isFallback: true };
 }
 

@@ -65,6 +65,33 @@ function selectCategory(catId) {
   if (typeof closeAllNavMenus === 'function') closeAllNavMenus();
 }
 
+/* Un produit demande-t-il un choix avant l'ajout au panier ? (taille,
+   option à prix différent, ou plusieurs couleurs proposées) */
+function productNeedsChoice(p) {
+  return !!((p.sizes && p.sizes.length) || p.variantOptions || (p.colors && p.colors.length > 1));
+}
+function productCtaLabel(p) {
+  const onlySize = p.sizes && p.sizes.length && !p.variantOptions && !(p.colors && p.colors.length > 1);
+  return t(onlySize ? 'choose_size' : 'choose_options');
+}
+/* Adresse partageable d'un produit (compatible avec tous les liens existants :
+   elle ouvre simplement la fiche sur la page d'accueil). */
+function productUrl(p) { return 'index.html?produit=' + encodeURIComponent(p.id); }
+
+function bindProductGrid(grid) {
+  if (grid._haBound) return;
+  grid._haBound = true;
+  grid.addEventListener('click', e => {
+    const open = e.target.closest('[data-open]');
+    if (open) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return; /* nouvel onglet : lien normal */
+      e.preventDefault(); openDetail(open.dataset.open); return;
+    }
+    const add = e.target.closest('[data-add]');
+    if (add) addToCart(add.dataset.add, {});
+  });
+}
+
 function renderProducts() {
   const grid = el('#productGrid');
   if (!grid) return;
@@ -76,22 +103,29 @@ function renderProducts() {
     return;
   }
   grid.className = 'grid';
+  bindProductGrid(grid);
   renderActiveCollectionBanner();
 
   const list = currentProductList();
   grid.innerHTML = list.map((p, i) => {
     const priceInfo = priceForProduct(p);
+    const id = escapeHtml(p.id), name = escapeHtml(p.name), url = escapeHtml(productUrl(p));
+    const cta = p.soldOut
+      ? `<button type="button" class="btn sm" disabled>${escapeHtml(t('sold_out'))}</button>`
+      : productNeedsChoice(p)
+        ? `<button type="button" class="btn sm" data-open="${id}">${escapeHtml(productCtaLabel(p))}</button>`
+        : `<button type="button" class="btn sm" data-add="${id}">${escapeHtml(t('add'))}</button>`;
     return `
     <article class="card" style="--i:${i}">
-      <img src="${escapeHtml(p.img)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"
-           onerror="this.style.objectFit='contain'; this.alt+=t('photo_coming');">
+      <a class="card-media" href="${url}" data-open="${id}" aria-label="${escapeHtml(t('view_product'))} : ${name}">
+        <img src="${escapeHtml(p.img)}" alt="${name}" width="600" height="800" loading="lazy" decoding="async"
+             onerror="this.style.objectFit='contain'; this.alt+=t('photo_coming');">
+        ${p.soldOut ? `<span class="card-badge">${escapeHtml(t('sold_out'))}</span>` : ''}
+      </a>
       <div class="cap">
-        <h3>${escapeHtml(p.name)}</h3>
-        <div class="price">${formatMoney(priceInfo.amount, priceInfo.currency)}${priceInfo.isFallback ? ' <span class="small">(FCFA)</span>' : ''}</div>
-        <div class="row">
-          <button class="btn sm icon" onclick="addToCart('${escapeHtml(p.id)}', {})">🧺 ${escapeHtml(t('add'))}</button>
-          <button class="btn sm ghost" onclick="openDetail('${escapeHtml(p.id)}')">${escapeHtml(t('detail'))}</button>
-        </div>
+        <h3><a href="${url}" data-open="${id}">${name}</a></h3>
+        <div class="price">${formatMoney(priceInfo.amount, priceInfo.currency)}${priceInfo.isFallback ? ` <span class="small" title="${escapeHtml(t('price_fallback_title'))}">(FCFA)</span>` : ''}</div>
+        <div class="row">${cta}</div>
       </div>
     </article>`;
   }).join('') || `<p class="small">${escapeHtml(t('no_products'))}</p>`;
@@ -136,7 +170,7 @@ function renderDetailGallery(p) {
   }
   thumbs.hidden = false;
   thumbs.innerHTML = images.map((src, i) => `
-    <button type="button" class="thumb${i === 0 ? ' active' : ''}" onclick="selectGalleryImage(${i})">
+    <button type="button" class="thumb${i === 0 ? ' active' : ''}" onclick="selectGalleryImage(${i})" aria-label="${escapeHtml(t('gallery_photo'))} ${i + 1}">
       <img src="${escapeHtml(src)}" alt="" loading="lazy" decoding="async">
     </button>`).join('');
 }
@@ -174,10 +208,7 @@ function galleryStep(dir) {
 }
 
 /* Catégorie + collection(s) du produit (données réelles déjà chargées,
-   aucune information inventée) et une ligne de disponibilité honnête :
-   un produit affiché est par définition publié donc disponible, et le
-   délai réel est communiqué par WhatsApp après la commande (cf. CGV) —
-   on ne peut pas afficher un délai précis que le site n'a jamais connu. */
+   aucune information inventée). */
 function renderDetailMeta(p) {
   const meta = document.getElementById('dMeta');
   if (!meta) return;
@@ -186,101 +217,224 @@ function renderDetailMeta(p) {
   if (cat) tags.push(`<span class="tag">${escapeHtml(cat.label)}</span>`);
   (p.collectionSlugs || []).forEach(slug => {
     const col = COLLECTIONS.find(c => c.id === slug);
-    if (col) tags.push(`<span class="tag tag-collection">${escapeHtml(col.label)}</span>`);
+    if (col) tags.push(`<a class="tag tag-collection" href="collection.html?slug=${encodeURIComponent(slug)}">${escapeHtml(col.label)}</a>`);
   });
   meta.innerHTML = tags.length ? `<div class="detail-tags">${tags.join('')}</div>` : '';
+}
+
+/* Sélection en cours dans la fiche (taille, couleur, option) : conservée
+   quand la langue ou la devise change pendant que la fiche est ouverte. */
+let DETAIL_SEL = { size: '', color: '', option: '' };
+let _detailReturnFocus = null;
+let _detailPrevTitle = '';
+let _detailUrlHandled = false;
+
+function detailTextHtml(txt) { return escapeHtml(txt).replace(/\n/g, '<br>'); }
+
+function chipGroupHtml(group, items) {
+  return `<div class="opt-chips" role="radiogroup" aria-labelledby="dLegend-${group}">` + items.map(it => {
+    const on = DETAIL_SEL[group] === it.value;
+    return `<button type="button" class="opt-chip${on ? ' on' : ''}" role="radio" aria-checked="${on}" data-group="${group}" data-value="${escapeHtml(it.value)}"${it.disabled ? ' disabled' : ''}>
+      <span>${escapeHtml(it.label)}</span>${it.sub ? `<small>${escapeHtml(it.sub)}</small>` : ''}</button>`;
+  }).join('') + '</div>';
+}
+
+function updateDetailPrice(p) {
+  const priceEl = document.getElementById('dPrice');
+  if (!priceEl) return;
+  const info = priceForProduct(p, DETAIL_SEL.option || undefined);
+  priceEl.innerHTML = escapeHtml(formatMoney(info.amount, info.currency))
+    + (info.isFallback ? ` <span class="small">${escapeHtml(t('price_unavailable_in')(CURRENT_CURRENCY))}</span>` : '');
+}
+
+function detailAvailabilityHtml(p) {
+  const lead = p.leadTime ? ` <span class="sep-dot" aria-hidden="true">·</span> <span>${escapeHtml(p.leadTime)}</span>` : '';
+  if (p.soldOut) return `<span class="avail-dot off" aria-hidden="true"></span><span>${escapeHtml(t('detail_unavailable'))}</span>`;
+  if (p.fulfillment === 'in_stock') return `<span class="avail-dot" aria-hidden="true"></span><span>${escapeHtml(t('detail_in_stock'))}</span>${lead}`;
+  if (p.fulfillment === 'made_to_order') return `<span class="avail-dot" aria-hidden="true"></span><span>${escapeHtml(t('detail_made_to_order'))}</span>${lead}`;
+  return `<span class="avail-dot" aria-hidden="true"></span><span>${escapeHtml(t('detail_available'))}</span>`
+    + (p.leadTime ? lead : ` <span class="sep-dot" aria-hidden="true">·</span> <span>${escapeHtml(t('detail_lead_time'))}</span>`);
+}
+
+/* Tarifs de livraison configurés par la boutique (information, jamais ajoutés au total). */
+function deliveryZonesText() {
+  const z = (SITE_SETTINGS && Array.isArray(SITE_SETTINGS.delivery_zones)) ? SITE_SETTINGS.delivery_zones : [];
+  return z.filter(x => x && x.name).map(x => x.name + (x.fee_fcfa != null ? ' : ' + formatMoney(x.fee_fcfa, 'FCFA') : '') + (x.delay ? ' (' + x.delay + ')' : '')).join('\n');
+}
+
+function detailSectionsHtml(p) {
+  const S = SITE_SETTINGS || {};
+  const s = k => pickLang(S, k);
+  const rows = [
+    ['detail_contents', p.contents], ['detail_cut', p.cut], ['detail_measures', p.measures],
+    ['detail_care', p.care], ['detail_lead_time_label', p.leadTime],
+    ['size_guide', s('size_guide'), 'dGuide'], ['detail_delivery', [s('delivery_info'), deliveryZonesText()].filter(Boolean).join('\n\n')], ['detail_exchange', s('exchange_info')]
+  ].filter(r => r[1] && String(r[1]).trim());
+  return rows.map(r => `<details class="detail-acc"${r[2] ? ` id="${r[2]}"` : ''}><summary>${escapeHtml(t(r[0]))}</summary><div class="detail-acc-body">${detailTextHtml(r[1])}</div></details>`).join('');
+}
+
+function renderDetailBody(p) {
+  const keepNote = (document.getElementById('dNote') || {}).value || '';
+  const sizes = (p.sizes && p.sizes.length) ? p.sizes : [];
+  const colors = p.colors || [];
+  const vo = p.variantOptions;
+  const hasGuide = !!pickLang(SITE_SETTINGS || {}, 'size_guide');
+  const unavail = p.unavailableSizes || [];
+
+  const parts = [];
+  if (sizes.length) {
+    parts.push(`<fieldset class="opt" data-field="size"><legend id="dLegend-size">${escapeHtml(t('size_label'))} <span class="req" aria-hidden="true">*</span></legend>
+      ${chipGroupHtml('size', sizes.map(sz => ({ value: sz, label: sz, disabled: unavail.includes(sz), sub: unavail.includes(sz) ? t('detail_unavailable_short') : '' })))}
+      ${hasGuide ? `<button type="button" class="link-btn" data-guide>${escapeHtml(t('size_guide'))}</button>` : ''}
+      <p class="field-error" id="dErr-size" role="alert" hidden></p></fieldset>`);
+  }
+  if (colors.length > 1) {
+    parts.push(`<fieldset class="opt" data-field="color"><legend id="dLegend-color">${escapeHtml(t('color_label'))} <span class="req" aria-hidden="true">*</span></legend>
+      ${chipGroupHtml('color', colors.map(c => ({ value: c, label: c })))}<p class="field-error" id="dErr-color" role="alert" hidden></p></fieldset>`);
+  } else if (colors.length === 1) {
+    parts.push(`<p class="detail-fact"><b>${escapeHtml(t('color_label'))}</b> ${escapeHtml(colors[0])}</p>`);
+  }
+  if (vo) {
+    parts.push(`<fieldset class="opt" data-field="option"><legend id="dLegend-option">${escapeHtml(vo.label)} <span class="req" aria-hidden="true">*</span></legend>
+      ${chipGroupHtml('option', vo.choices.map(c => {
+        const info = priceForProduct(p, c.value);
+        return { value: c.value, label: c.label, sub: formatMoney(info.amount, info.currency) };
+      }))}<p class="field-error" id="dErr-option" role="alert" hidden></p></fieldset>`);
+  }
+  if (p.fabric) parts.push(`<p class="detail-fact"><b>${escapeHtml(t('fabric_label'))}</b> ${escapeHtml(p.fabric)}</p>`);
+  parts.push(`<div class="field"><label for="dNote">${escapeHtml(t('note_label'))}</label><input id="dNote" class="input" maxlength="500" autocomplete="off" placeholder="${escapeHtml(t('note_placeholder'))}" value="${escapeHtml(keepNote)}"></div>`);
+  parts.push(`<button class="btn detail-add" type="submit"${p.soldOut ? ' disabled' : ''}>${escapeHtml(p.soldOut ? t('sold_out') : t('add_to_cart'))}</button>`);
+
+  document.getElementById('dForm').innerHTML = `<form id="dFormEl" novalidate>${parts.join('')}</form>`;
+  document.getElementById('dAvail').innerHTML = detailAvailabilityHtml(p);
+  const desc = document.getElementById('dDescription');
+  desc.hidden = !p.description;
+  desc.innerHTML = p.description ? detailTextHtml(p.description) : '';
+  document.getElementById('dSections').innerHTML = detailSectionsHtml(p);
+  const share = document.getElementById('dShare'); if (share) share.textContent = t('share_link');
+  updateDetailPrice(p);
+}
+
+function bindDetailForm() {
+  const form = document.getElementById('dForm');
+  if (!form || form._haBound) return;
+  form._haBound = true;
+  form.addEventListener('click', e => {
+    const chip = e.target.closest('.opt-chip');
+    if (chip && CURRENT) {
+      DETAIL_SEL[chip.dataset.group] = chip.dataset.value;
+      form.querySelectorAll('.opt-chip[data-group="' + chip.dataset.group + '"]').forEach(b => {
+        const on = b === chip; b.classList.toggle('on', on); b.setAttribute('aria-checked', on);
+      });
+      const err = document.getElementById('dErr-' + chip.dataset.group);
+      if (err) { err.hidden = true; err.textContent = ''; }
+      if (chip.dataset.group === 'option') updateDetailPrice(CURRENT);
+      return;
+    }
+    if (e.target.closest('[data-guide]')) {
+      const g = document.getElementById('dGuide');
+      if (g) { g.open = true; g.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+    }
+  });
+  form.addEventListener('submit', e => { e.preventDefault(); addFromDetail(); });
 }
 
 function openDetail(id) {
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) return;
   CURRENT = p;
+  /* Un seul choix possible -> présélectionné ; sinon l'acheteur choisit explicitement. */
+  DETAIL_SEL = {
+    size: (p.sizes && p.sizes.length === 1 && !(p.unavailableSizes || []).includes(p.sizes[0])) ? p.sizes[0] : '',
+    color: (p.colors && p.colors.length === 1) ? p.colors[0] : '',
+    option: ''
+  };
 
   el('#dName').textContent = p.name;
   renderDetailGallery(p);
   renderDetailMeta(p);
-  if (el('#dColor')) el('#dColor').value = '';
-  if (el('#dTissu')) el('#dTissu').value = p.fabric || '';
-  if (el('#dNote'))  el('#dNote').value = '';
-  if (el('#dSize')) {
-    const sizeSel = el('#dSize');
-    const sizes = (p.sizes && p.sizes.length) ? p.sizes : SIZES;
-    sizeSel.innerHTML = sizes.map(s => `<option>${escapeHtml(s)}</option>`).join('');
-    sizeSel.value = sizes.includes('M') ? 'M' : sizes[0];
-    if (typeof enhanceSelect === 'function') enhanceSelect(sizeSel);
-    if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sizeSel);
-  }
-  if (el('#dSexe')) {
-    const sexeSel = el('#dSexe');
-    sexeSel.selectedIndex = 0; /* "Unisexe" est toujours la 1re option, quelle que soit la langue */
-    if (typeof enhanceSelect === 'function') enhanceSelect(sexeSel);
-    if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sexeSel);
-  }
-
-  const priceInfo = priceForProduct(p);
-  const priceEl = document.getElementById('dPrice');
-  if (priceEl) priceEl.textContent = formatMoney(priceInfo.amount, priceInfo.currency) + (priceInfo.isFallback ? t('price_unavailable_in')(CURRENT_CURRENCY) : '');
-
-  const optBox = document.getElementById('detailOptions');
-  const sexeEl = document.getElementById('dSexe');
-  const sexeField = sexeEl ? (sexeEl.closest('.field') || sexeEl.parentElement) : null;
-  const gendered = isGenderedProduct(p);
-
-  if (optBox) {
-    /* La liste "épique" d'un éventuel select précédent vit dans <body>
-       (portail), pas dans optBox : la détruire explicitement avant de
-       jeter son support, sinon elle resterait orpheline dans le DOM. */
-    const prevSelect = optBox.querySelector('select');
-    if (prevSelect && prevSelect._epicDestroy) prevSelect._epicDestroy();
-    if (p.variantOptions) {
-      const vo = p.variantOptions;
-      optBox.innerHTML = `<label for="${escapeHtml(vo.id)}">${escapeHtml(vo.label)}</label>` +
-        `<select id="${escapeHtml(vo.id)}" class="input">` +
-        vo.choices.map(c => `<option value="${escapeHtml(c.value)}">${escapeHtml(c.label)}</option>`).join('') +
-        `</select>`;
-      optBox.style.display = '';
-      const variantSel = document.getElementById(vo.id);
-      if (variantSel && typeof enhanceSelect === 'function') enhanceSelect(variantSel);
-    } else {
-      optBox.innerHTML = '';
-      optBox.style.display = 'none';
-    }
-  }
-  if (sexeField) sexeField.style.display = gendered ? 'none' : '';
+  bindDetailForm();
+  const oldNote = document.getElementById('dNote'); if (oldNote) oldNote.value = '';
+  renderDetailBody(p);
 
   const modal = el('#detail');
-  if (modal.classList.contains('show')) return; /* déjà ouverte (ex: ré-ouverte pour un autre produit sans passer par une fermeture) */
+  if (modal.classList.contains('show')) return; /* déjà ouverte */
   modal.classList.add('show');
+  modal.setAttribute('role', 'dialog'); modal.setAttribute('aria-modal', 'true'); modal.setAttribute('aria-labelledby', 'dName');
+  _detailReturnFocus = document.activeElement;
   if (typeof lockBodyScroll === 'function') lockBodyScroll();
   if (typeof pushOverlayHistory === 'function') pushOverlayHistory();
+  try {
+    const u = new URL(location.href); u.searchParams.set('produit', p.id);
+    history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+  } catch (e) { /* ignoré */ }
+  _detailPrevTitle = document.title; document.title = p.name + ' — Hadeej’Art';
+  setTimeout(() => { const c = modal.querySelector('header .btn'); if (c) c.focus({ preventScroll: true }); }, 40);
+}
+
+/* Arrivée directe sur « …?produit=slug » : ouvre la fiche (une seule fois,
+   dès que le catalogue est connu) et nettoie l'adresse de base. */
+function openDetailFromUrl() {
+  if (_detailUrlHandled || !PRODUCTS.length) return;
+  _detailUrlHandled = true;
+  const id = new URLSearchParams(location.search).get('produit');
+  if (!id) return;
+  try {
+    const u = new URL(location.href); u.searchParams.delete('produit');
+    history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+  } catch (e) { /* ignoré */ }
+  if (PRODUCTS.some(x => x.id === id)) openDetail(id);
+}
+
+async function shareCurrentProduct() {
+  if (!CURRENT) return;
+  const url = new URL(productUrl(CURRENT), location.href).href;
+  const btn = document.getElementById('dShare');
+  try {
+    if (navigator.share) { await navigator.share({ title: CURRENT.name, url }); return; }
+    await navigator.clipboard.writeText(url);
+    if (btn) { btn.textContent = t('link_copied'); setTimeout(() => { btn.textContent = t('share_link'); }, 2200); }
+  } catch (e) { /* partage annulé ou presse-papiers indisponible */ }
 }
 
 function closeDetail(viaPopstate) {
   const modal = document.getElementById('detail');
   if (!modal || !modal.classList.contains('show')) return;
   modal.classList.remove('show');
+  try {
+    const u = new URL(location.href);
+    if (u.searchParams.has('produit')) { u.searchParams.delete('produit'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); }
+  } catch (e) { /* ignoré */ }
+  if (_detailPrevTitle) { document.title = _detailPrevTitle; _detailPrevTitle = ''; }
   if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
   if (!viaPopstate && typeof consumeOverlayHistory === 'function') consumeOverlayHistory();
+  if (_detailReturnFocus && document.contains(_detailReturnFocus) && _detailReturnFocus.focus) _detailReturnFocus.focus({ preventScroll: true });
+  _detailReturnFocus = null;
 }
 
 function addFromDetail() {
-  if (!CURRENT) return;
-  const productId = CURRENT.id;
-  const color = el('#dColor') ? el('#dColor').value.trim() : '';
-  const size  = el('#dSize')  ? el('#dSize').value  : '';
-  const tissu = el('#dTissu') ? el('#dTissu').value.trim() : '';
-  const note  = el('#dNote')  ? el('#dNote').value.trim()  : '';
-
-  const gendered = isGenderedProduct(CURRENT);
-  const sexe = gendered ? '' : (el('#dSexe') ? el('#dSexe').value : '');
-
-  let optionKimono = '';
-  if (CURRENT.variantOptions) {
-    const sel = document.getElementById(CURRENT.variantOptions.id);
-    optionKimono = sel ? (sel.value || '') : '';
+  if (!CURRENT || CURRENT.soldOut) return;
+  const p = CURRENT;
+  /* Choix nécessaires : erreurs affichées à côté du champ, jamais d'ajout silencieux. */
+  const missing = [];
+  if (p.sizes && p.sizes.length && !DETAIL_SEL.size) missing.push(['size', 'size_required']);
+  if (p.colors && p.colors.length > 1 && !DETAIL_SEL.color) missing.push(['color', 'color_required']);
+  if (p.variantOptions && !DETAIL_SEL.option) missing.push(['option', 'option_required']);
+  document.querySelectorAll('#dForm .field-error').forEach(e => { e.hidden = true; e.textContent = ''; });
+  if (missing.length) {
+    missing.forEach(([g, key]) => {
+      const err = document.getElementById('dErr-' + g);
+      if (err) { err.textContent = t(key); err.hidden = false; }
+    });
+    const first = document.querySelector('#dForm fieldset[data-field="' + missing[0][0] + '"] .opt-chip:not([disabled])');
+    if (first) first.focus();
+    return;
   }
-
-  addToCart(productId, { color, size, sexe, tissu, note, optionKimono });
+  const note = (document.getElementById('dNote') || {}).value || '';
+  addToCart(p.id, {
+    color: DETAIL_SEL.color, size: DETAIL_SEL.size, tissu: p.fabric || '',
+    note: note.trim(), optionKimono: DETAIL_SEL.option
+  });
   closeDetail();
   /* Différé : sinon le même clic, en continuant sa bulle jusqu'à document,
      déclenche aussitôt la fermeture "clic en dehors" du panier (voir
@@ -315,6 +469,7 @@ function onLangChange() {
   renderCategoryFilters();
   renderProducts();
   if (typeof initCollectionHero === 'function') initCollectionHero();
+  if (typeof renderHome === 'function') renderHome();
   if (typeof refreshCartLanguage === 'function') refreshCartLanguage();
   if (typeof refreshMapStatusLabel === 'function') refreshMapStatusLabel();
   if (typeof renderNavMenus === 'function') renderNavMenus();
@@ -322,56 +477,16 @@ function onLangChange() {
   refreshOpenDetailLabels();
 }
 
-/* Si la fiche produit est ouverte, ré-affiche nom/prix/option dans la
-   nouvelle langue sans effacer ce que le visiteur a déjà saisi. */
+/* Si la fiche produit est ouverte, ré-affiche textes, prix et options dans
+   la nouvelle langue/devise sans effacer la sélection ni la note saisie. */
 function refreshOpenDetailLabels() {
   if (!CURRENT || !document.getElementById('detail').classList.contains('show')) return;
+  const fresh = PRODUCTS.find(x => x.id === CURRENT.id);
+  if (fresh) CURRENT = fresh;
   el('#dName').textContent = CURRENT.name;
   renderDetailMeta(CURRENT);
-  const priceInfo = priceForProduct(CURRENT);
-  const priceEl = document.getElementById('dPrice');
-  if (priceEl) priceEl.textContent = formatMoney(priceInfo.amount, priceInfo.currency) + (priceInfo.isFallback ? t('price_unavailable_in')(CURRENT_CURRENCY) : '');
-  if (CURRENT.variantOptions) {
-    const optLabel = document.querySelector('#detailOptions label');
-    if (optLabel) optLabel.textContent = CURRENT.variantOptions.label;
-    const sel = document.getElementById(CURRENT.variantOptions.id);
-    if (sel) {
-      [...sel.options].forEach((opt, i) => { opt.textContent = CURRENT.variantOptions.choices[i].label; });
-      if (typeof refreshEpicSelect === 'function') refreshEpicSelect(sel);
-    }
-  }
-  /* Les options d'Unisexe/Homme/Femme sont traduites via [data-i18n] par
-     applyStaticTranslations() ; le libellé affiché sur le bouton "épique"
-     (déjà mis en cache dans l'ancienne langue) doit être resynchronisé. */
-  const sexeSel = document.getElementById('dSexe');
-  if (sexeSel && typeof refreshEpicSelect === 'function') refreshEpicSelect(sexeSel);
+  renderDetailBody(CURRENT);
 }
-/* Navigation de la galerie de la fiche détail : flèches ← → au clavier,
-   balayage tactile sur l'image. Liée une seule fois au chargement. */
-(function bindDetailGalleryNav() {
-  document.addEventListener('keydown', e => {
-    const modal = document.getElementById('detail');
-    if (!modal || !modal.classList.contains('show')) return;
-    if (e.key === 'ArrowLeft') galleryStep(-1);
-    else if (e.key === 'ArrowRight') galleryStep(1);
-  });
-  document.addEventListener('DOMContentLoaded', () => {
-    const media = document.getElementById('dMedia');
-    if (!media) return;
-    let startX = 0, startY = 0, tracking = false;
-    media.addEventListener('touchstart', e => {
-      if (e.touches.length !== 1) return;
-      tracking = true; startX = e.touches[0].clientX; startY = e.touches[0].clientY;
-    }, { passive: true });
-    media.addEventListener('touchend', e => {
-      if (!tracking) return;
-      tracking = false;
-      const dx = e.changedTouches[0].clientX - startX, dy = e.changedTouches[0].clientY - startY;
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) galleryStep(dx < 0 ? 1 : -1);
-    }, { passive: true });
-  });
-})();
-
 function onCurrencyChange() {
   renderProducts();
   recomputeCartCurrency();

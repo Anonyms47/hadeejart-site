@@ -7,6 +7,27 @@
 
 const DEFAULT_MAP_CENTER = { lat: 14.7167, lng: -17.4677 }; /* Dakar */
 
+/* Leaflet n'est téléchargé qu'à la première ouverture de la carte (elle est
+   facultative) : ni CSS ni JS de carte sur les pages et étapes qui n'en ont pas besoin. */
+let _leafletPromise = null;
+function loadLeaflet() {
+  if (typeof L !== 'undefined') return Promise.resolve();
+  if (_leafletPromise) return _leafletPromise;
+  _leafletPromise = new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    css.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='; css.crossOrigin = '';
+    document.head.appendChild(css);
+    const js = document.createElement('script');
+    js.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    js.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='; js.crossOrigin = '';
+    js.onload = () => resolve();
+    js.onerror = () => { _leafletPromise = null; reject(new Error('leaflet')); };
+    document.head.appendChild(js);
+  });
+  return _leafletPromise;
+}
+
 let deliveryMap = null;
 let deliveryMarker = null;
 let deliveryState = { lat: null, lng: null, address: '' };
