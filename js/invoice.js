@@ -232,7 +232,10 @@ async function buildInvoiceImage() {
   const loc = (typeof getDeliveryLocation === 'function') ? getDeliveryLocation() : {};
   const payValue = val('cPay');
   const pay = (typeof PAYMENT_LABELS !== 'undefined' && PAYMENT_LABELS[payValue]) || payValue || '';
-  const orderId = window.LAST_INVOICE_ID || ('HA-' + Math.random().toString(36).slice(2, 8).toUpperCase());
+  /* Numéro de secours (commande non enregistrée, ex : réseau coupé) : même forme HA-JJMMAA-…
+     mais lettre Z + 3 chiffres, pour ne jamais ressembler à un vrai numéro (A1, A2…). */
+  const _n = new Date(), _p = x => String(x).padStart(2, '0');
+  const orderId = window.LAST_INVOICE_ID || (`HA-${_p(_n.getDate())}${_p(_n.getMonth() + 1)}${_p(_n.getFullYear() % 100)}-Z${Math.floor(100 + Math.random() * 900)}`);
   window.LAST_INVOICE_ID = orderId;
   const view = window.INVOICE_VIEW || cartOrderView();
   const totalsText = formatMoney(view.total, view.currency);
