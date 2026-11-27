@@ -78,6 +78,10 @@ const UI_STRINGS = {
 
     detail_default_title: 'Détail', close: 'Fermer', fullscreen_title: 'Voir en plein écran',
     gallery_prev_aria: 'Photo précédente', gallery_next_aria: 'Photo suivante',
+    hd_micro_full: 'Confectionné à Dakar (S–XXL) ◆ Wave · Orange Money · Sendwave · TapTap Send ◆ Dalal ak jàmm',
+    hd_micro_short: 'Confectionné à Dakar · Commande via WhatsApp',
+    hd_wa_label: 'WhatsApp Atelier',
+    mm_wa_cta: 'Écrire à l’atelier sur WhatsApp ↗',
     ft_top: 'Haut de page',
     ft_badge: 'Confectionné à Dakar · Tailles S–XXL',
     ft_maison: 'La Maison',
@@ -442,6 +446,10 @@ const UI_STRINGS = {
 
     detail_default_title: 'Details', close: 'Close', fullscreen_title: 'View fullscreen',
     gallery_prev_aria: 'Previous photo', gallery_next_aria: 'Next photo',
+    hd_micro_full: 'Made in Dakar (S–XXL) ◆ Wave · Orange Money · Sendwave · TapTap Send ◆ Dalal ak jàmm',
+    hd_micro_short: 'Made in Dakar · Order via WhatsApp',
+    hd_wa_label: 'WhatsApp Atelier',
+    mm_wa_cta: 'Write to the atelier on WhatsApp ↗',
     ft_top: 'Back to top',
     ft_badge: 'Made in Dakar · Sizes S–XXL',
     ft_maison: 'The House',
@@ -806,6 +814,10 @@ const UI_STRINGS = {
 
     detail_default_title: 'Detay', close: 'Tëj', fullscreen_title: 'Xool ko bu mag',
     gallery_prev_aria: 'Nataal bi jiitu', gallery_next_aria: 'Nataal bi topp',
+    hd_micro_full: 'Defar nañu ko Ndakaaru (S–XXL) ◆ Wave · Orange Money · Sendwave · TapTap Send ◆ Dalal ak jàmm',
+    hd_micro_short: 'Defar nañu ko Ndakaaru · Commande ci WhatsApp',
+    hd_wa_label: 'WhatsApp Atelier',
+    mm_wa_cta: 'Bind atelier bi ci WhatsApp ↗',
     ft_top: 'Yéeg ci kaw',
     ft_badge: 'Defar nañu ko Ndakaaru · Taille S–XXL',
     ft_maison: 'Kër gi',

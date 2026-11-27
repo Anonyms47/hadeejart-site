@@ -50,76 +50,93 @@
 </div>
 <canvas id="inv" width="1240" height="1754"></canvas>
 
-<div class="container" id="top">
-  <!-- HEADER -->
-  <div class="header" id="siteHeader" data-i18n-aria="header_aria" aria-label="Barre supérieure">
-    <a class="brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
-      <span class="mark"><img src="images/logo.png" alt=""></span>
-      <span class="brand-text">
-        <span class="brand-name">Hadeej’Art</span>
-        <span class="badge" data-i18n="badge">Pièces stylées & authentiquement africaines</span>
-      </span>
-    </a>
+<div class="hd-ribbon" id="hdRibbon">
+  <div class="hd-weave" aria-hidden="true"></div>
+  <p class="hd-micro"><span class="hd-micro-full" data-i18n="hd_micro_full">Confectionné à Dakar (S–XXL) ◆ Wave · Orange Money · Sendwave · TapTap Send ◆ Dalal ak jàmm</span><span class="hd-micro-short" data-i18n="hd_micro_short">Confectionné à Dakar · Commande via WhatsApp</span></p>
+</div>
 
-    <nav class="main-nav" id="mainNav" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
+<header class="hd" id="siteHeader">
+  <div class="hd-bar">
+    <nav class="main-nav hd-nav" id="mainNav" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
       <div class="nav-item" id="navShop">
         <button type="button" class="nav-link" id="navShopBtn" aria-haspopup="true" aria-expanded="false">
-          <span data-i18n="nav_shop">Boutique</span>
+          <sup aria-hidden="true">01</sup><span data-i18n="nav_shop">Boutique</span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown" id="navShopMenu" role="menu" data-i18n-aria="nav_shop" aria-label="Boutique"></div>
       </div>
       <div class="nav-item" id="navCollections">
         <button type="button" class="nav-link" id="navCollectionsBtn" aria-haspopup="true" aria-expanded="false">
-          <span data-i18n="nav_collections">Collections</span>
+          <sup aria-hidden="true">02</sup><span data-i18n="nav_collections">Collections</span>
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="dropdown" id="navCollectionsMenu" role="menu" data-i18n-aria="nav_collections" aria-label="Collections"></div>
       </div>
-      <a class="nav-link nav-plain" id="navContact" href="contact.html" data-i18n="nav_contact">Contact</a>
-      <a class="nav-link nav-plain" id="navFaq" href="faq.html" data-i18n="nav_faq">FAQ</a>
+      <a class="nav-link nav-plain" id="navContact" href="contact.html"><sup aria-hidden="true">03</sup><span data-i18n="nav_contact">Contact</span></a>
+      <a class="nav-link nav-plain" id="navFaq" href="faq.html"><sup aria-hidden="true">04</sup><span data-i18n="nav_faq">FAQ</span></a>
     </nav>
 
-    <div class="action">
-      <select id="langSelect" class="select-pill lang-select" data-i18n-aria="lang_label" data-i18n-title="lang_label" title="Langue">
+    <a class="hd-brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
+      <span class="hd-emblem"><img src="images/logo.png" alt="" width="56" height="56"></span>
+      <span class="hd-word">HADEEJ’ART</span>
+    </a>
+
+    <div class="hd-actions">
+      <select id="langSelect" class="hd-select lang-select" data-i18n-aria="lang_label" data-i18n-title="lang_label" title="Langue">
         <option value="fr">FR</option>
         <option value="en">EN</option>
         <option value="wo">WO</option>
       </select>
-      <select id="currencySelect" class="select-pill currency-select" data-i18n-aria="currency_label" data-i18n-title="currency_label" title="Devise">
+      <select id="currencySelect" class="hd-select currency-select" data-i18n-aria="currency_label" data-i18n-title="currency_label" title="Devise">
         <option value="FCFA">FCFA</option>
         <option value="EUR">EUR</option>
         <option value="USD">USD</option>
       </select>
-      <div class="cart">
-        <a id="cartBtn" class="btn" href="index.html" data-i18n-aria="cart" aria-label="Panier"><span data-i18n="cart">Panier</span><span class="bubble" id="cartCount">0</span></a>
-      </div>
-      <button type="button" class="hamburger" id="hamburgerBtn" aria-haspopup="true" aria-expanded="false" data-i18n-aria="menu_open">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </div>
-
-  <!-- MENU MOBILE PLEIN ÉCRAN -->
-  <div class="mobile-menu" id="mobileMenu">
-    <div class="mobile-menu-head">
-      <a class="brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
-        <span class="mark"><img src="images/logo.png" alt=""></span>
-        <span class="brand-name">Hadeej’Art</span>
+      <a id="cartBtn" class="hd-cart" href="index.html" data-i18n-aria="cart" aria-label="Panier">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 8.5h13l-1 11h-11z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="hd-cart-label" data-i18n="cart">Panier</span>
+        <span class="hd-count" id="cartCount">0</span>
       </a>
-      <button type="button" class="mobile-menu-close" id="mobileMenuClose" data-i18n-aria="menu_close" aria-label="Fermer le menu">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <button type="button" class="hd-burger" id="hamburgerBtn" aria-haspopup="true" aria-expanded="false" aria-controls="mobileMenu" data-i18n-aria="menu_open" aria-label="Ouvrir le menu">
+        <span></span><span></span>
       </button>
     </div>
-    <nav class="mobile-menu-body mobile-links" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
-      <a class="mobile-link" href="index.html#catalogue"><span class="mobile-link-num" aria-hidden="true">01</span><span class="mobile-link-label" data-i18n="nav_shop">Boutique</span></a>
-      <a class="mobile-link" href="collections.html"><span class="mobile-link-num" aria-hidden="true">02</span><span class="mobile-link-label" data-i18n="nav_collections">Collections</span></a>
-      <a class="mobile-link" href="contact.html"><span class="mobile-link-num" aria-hidden="true">03</span><span class="mobile-link-label" data-i18n="nav_contact">Contact</span></a>
-      <a class="mobile-link" href="faq.html"><span class="mobile-link-num" aria-hidden="true">04</span><span class="mobile-link-label" data-i18n="nav_faq">FAQ</span></a>
-    </nav>
   </div>
+</header>
 
-  <div class="motif-bar motif-top" aria-hidden="true"></div>
+<!-- RIDEAU D'ATELIER (menu mobile plein écran) -->
+<div class="mobile-menu mm" id="mobileMenu" role="dialog" aria-modal="true" aria-label="Menu" data-i18n-aria="nav_main_aria">
+  <svg class="mm-corner mm-corner-tl" viewBox="0 0 80 80" aria-hidden="true"><g fill="none" stroke="#D4A359" stroke-width="1.2" opacity=".55"><path d="M2 40l38-38 38 38-38 38z"/><path d="M14 40l26-26 26 26-26 26z"/><path d="M26 40l14-14 14 14-14 14z"/></g></svg>
+  <svg class="mm-corner mm-corner-br" viewBox="0 0 80 80" aria-hidden="true"><g fill="none" stroke="#D4A359" stroke-width="1.2" opacity=".55"><path d="M2 40l38-38 38 38-38 38z"/><path d="M14 40l26-26 26 26-26 26z"/><path d="M26 40l14-14 14 14-14 14z"/></g></svg>
+  <div class="mobile-menu-head">
+    <a class="hd-brand" href="index.html" data-i18n-aria="home_aria" aria-label="Retour à l’accueil">
+      <span class="hd-emblem"><img src="images/logo.png" alt="" width="56" height="56"></span>
+      <span class="hd-word">HADEEJ’ART</span>
+    </a>
+    <button type="button" class="mobile-menu-close" id="mobileMenuClose" data-i18n-aria="menu_close" aria-label="Fermer le menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </div>
+  <nav class="mobile-menu-body mobile-links" data-i18n-aria="nav_main_aria" aria-label="Navigation principale">
+    <a class="mobile-link" href="index.html#catalogue"><span class="mobile-link-num" aria-hidden="true">01</span><span class="mobile-link-label" data-i18n="nav_shop">Boutique</span></a>
+    <a class="mobile-link" href="collections.html"><span class="mobile-link-num" aria-hidden="true">02</span><span class="mobile-link-label" data-i18n="nav_collections">Collections</span></a>
+    <a class="mobile-link" href="contact.html"><span class="mobile-link-num" aria-hidden="true">03</span><span class="mobile-link-label" data-i18n="nav_contact">Contact</span></a>
+    <a class="mobile-link" href="faq.html"><span class="mobile-link-num" aria-hidden="true">04</span><span class="mobile-link-label" data-i18n="nav_faq">FAQ</span></a>
+    <div class="mm-prefs">
+      <div class="mm-pref"><span class="mm-pref-label" data-i18n="footer_langs_title">Langue</span>
+        <div class="mm-pills" role="group" aria-label="Langue">
+          <button type="button" class="mm-pill" data-lang="fr">FR</button><button type="button" class="mm-pill" data-lang="en">EN</button><button type="button" class="mm-pill" data-lang="wo">WO</button>
+        </div></div>
+      <div class="mm-pref"><span class="mm-pref-label" data-i18n="footer_currencies_title">Devise</span>
+        <div class="mm-pills" role="group" aria-label="Devise">
+          <button type="button" class="mm-pill" data-currency="FCFA">FCFA</button><button type="button" class="mm-pill" data-currency="EUR">EUR</button><button type="button" class="mm-pill" data-currency="USD">USD</button>
+        </div></div>
+    </div>
+    <a class="mm-wa" id="mobileWaLink" data-wa target="_blank" rel="noopener" data-i18n="mm_wa_cta">Écrire à l’atelier sur WhatsApp ↗</a>
+  </nav>
+</div>
+
+<div class="container" id="top">
 
   <!-- PREMIER ÉCRAN : une vraie photo de la collection, un titre, une action -->
   <section class="hero2" aria-label="Mise en avant" data-i18n-aria="hero_aria">

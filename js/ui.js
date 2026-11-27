@@ -6,10 +6,19 @@
 function bindHeaderScrollShadow() {
   const h = document.getElementById('siteHeader');
   if (!h) return;
-  document.addEventListener('scroll', () => {
-    if (window.scrollY > 8) h.classList.add('scrolled');
+  const footer = document.querySelector('.mf');
+  let ticking = false;
+  const update = () => {
+    ticking = false;
+    if (window.scrollY > 40) h.classList.add('scrolled');
     else h.classList.remove('scrolled');
-  });
+    /* Arrivé au pied de page, l'en-tête ne suit plus : il se retire vers le haut. */
+    if (footer) h.classList.toggle('hd-away', footer.getBoundingClientRect().top <= 90);
+  };
+  document.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
 }
 
 /* ======================================================================
@@ -63,7 +72,7 @@ function enhanceSelect(select) {
      .epic-select, sinon elle serait rognée par le overflow:hidden de la
      fiche détail/modale client dès qu'un select s'y trouve. */
   const listbox = document.createElement('div');
-  listbox.className = 'epic-select-list';
+  listbox.className = 'epic-select-list' + (select.classList.contains('hd-select') ? ' hd-list' : '');
   listbox.setAttribute('role', 'listbox');
   document.body.appendChild(listbox);
 

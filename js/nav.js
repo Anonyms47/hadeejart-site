@@ -281,21 +281,22 @@ function bindCartButton() {
 function bindFooterShortcuts() {
   const waLink = document.getElementById('footerWaLink');
   if (waLink) waLink.href = `https://wa.me/${SITE_WA_NUMBER}`;
+  document.querySelectorAll('[data-wa]').forEach(a => { a.href = `https://wa.me/${SITE_WA_NUMBER}`; });
 
-  document.querySelectorAll('#footerLangRow [data-lang]').forEach(btn => {
+  document.querySelectorAll('button[data-lang]').forEach(btn => {
     btn.addEventListener('click', () => setLang(btn.dataset.lang));
   });
-  document.querySelectorAll('#footerCurrencyRow [data-currency]').forEach(btn => {
+  document.querySelectorAll('button[data-currency]').forEach(btn => {
     btn.addEventListener('click', () => setCurrency(btn.dataset.currency));
   });
   refreshFooterShortcutsState();
 }
 
 function refreshFooterShortcutsState() {
-  document.querySelectorAll('#footerLangRow [data-lang]').forEach(btn => {
+  document.querySelectorAll('button[data-lang]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === CURRENT_LANG);
   });
-  document.querySelectorAll('#footerCurrencyRow [data-currency]').forEach(btn => {
+  document.querySelectorAll('button[data-currency]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.currency === CURRENT_CURRENCY);
   });
 }
