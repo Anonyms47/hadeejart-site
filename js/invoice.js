@@ -338,9 +338,15 @@ function invRender(d, canvasH) {
   const addrLines = addr ? invWrap(addr, tw, { weight: 500, size: 11 }) : [];
   const noteLines = d.loc.note ? invWrap(t('invoice_note') + ' ' + d.loc.note, tw, { style: 'italic', weight: 600, size: 10.5 }) : [];
 
-  const leftH = 14 + 12 + nameLines.length * 18 + 18 + mailLines.length * 14 + (d.pay ? 10 + 17 : 0) + 14;
-  const rightH = 14 + 12 + 12 + placeLines.length * 16 + 10 + 12 + (addrLines.length ? addrLines.length * 14 : 14) + (noteLines.length ? 4 + noteLines.length * 14 : 0) + 14;
-  const cardH = Math.max(leftH, rightH, 100);
+  /* Hauteur des contenus (depuis le haut des capitales de la 1re ligne) : la carte en dépend,
+     avec une marge réelle en haut et en bas — jamais de pastille collée au bord. */
+  const nL = nameLines.length, mL = mailLines.length;
+  const leftBody = (d.pay ? 18 * nL + 14 * mL + 52 : (mL ? 18 * nL + 14 * mL + 18 : 18 * nL + 16)) - 3;
+  const pL = placeLines.length, aL = Math.max(addrLines.length, 1), qL = noteLines.length;
+  const s2L = 21 + 16 * pL, lastL = qL ? s2L + 14 + 14 * aL + 2 + 14 * (qL - 1) : s2L + 14 + 14 * (aL - 1);
+  const rightBody = lastL + 3 + 6;
+  const CARD_HEAD = 30, CARD_PAD = 16;
+  const cardH = Math.max(CARD_HEAD + leftBody + CARD_PAD * 2, CARD_HEAD + rightBody + CARD_PAD * 2, 112);
 
   const drawCardShell = (x, title) => {
     invCard(x, y, cardW, cardH);
@@ -349,9 +355,7 @@ function invRender(d, canvasH) {
   };
   drawCardShell(P, t('invoice_client_pay'));
   {
-    const n = nameLines.length, m = mailLines.length;
-    const bodyH = (d.pay ? 18 * n + 14 * m + 52 : (m ? 18 * n + 14 * m + 18 : 18 * n + 16)) - 3;
-    const capTop = y + 30 + Math.max(0, ((cardH - 30) - bodyH) / 2);
+    const capTop = y + CARD_HEAD + Math.max(0, ((cardH - CARD_HEAD) - leftBody) / 2);
     let cy = capTop + 10;
     nameLines.forEach(s => { invText(s, P + padL, cy, { weight: 800, size: 14.5 }); cy += 18; });
     invNum(d.phone || t('dash'), P + padL, cy, { weight: 700, size: 12.5 }); cy += 18;
@@ -362,10 +366,7 @@ function invRender(d, canvasH) {
   const x2 = P + cardW + gap;
   drawCardShell(x2, t('invoice_address_title'));
   {
-    const p = placeLines.length, a = Math.max(addrLines.length, 1), q = noteLines.length;
-    const s2 = 21 + 16 * p, last = q ? s2 + 14 + 14 * a + 2 + 14 * (q - 1) : s2 + 14 + 14 * (a - 1);
-    const bodyH = last + 3 + 6;
-    const capTop = y + 30 + Math.max(0, ((cardH - 30) - bodyH) / 2);
+    const capTop = y + CARD_HEAD + Math.max(0, ((cardH - CARD_HEAD) - rightBody) / 2);
     let cy = capTop + 6;
     invText((t('district_label') + ' / ' + t('city_label')).toUpperCase(), x2 + padL, cy, sub); cy += 15;
     placeLines.forEach(s => { invText(s, x2 + padL, cy, { weight: 700, size: 12.5 }); cy += 16; });

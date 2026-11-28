@@ -29,3 +29,13 @@ URL : `/admin/index.html`. Un seul compte existe actuellement (`hadeejart@2026.s
 1. Exporter le schéma (migrations dans `supabase/` si versionnées, sinon rejouer les migrations SQL appliquées via l'historique du projet).
 2. Mettre à jour `SUPABASE_URL` / la clé anon dans `js/config.js` et `admin/js/supabase-client.js`.
 3. Recréer le compte admin (voir procédure interne) et sa ligne dans `profiles` avec `role = 'admin'`.
+
+## Avant chaque publication : versionner les fichiers
+GitHub Pages demande aux navigateurs de garder chaque fichier 10 minutes. Pour qu'une mise à jour
+(par exemple la nouvelle facture) soit prise en compte tout de suite, y compris par l'application
+installée sur l'écran d'accueil, lancez avant de commiter :
+
+    python3 tools/bump-assets.py
+
+Le script ajoute `?v=<empreinte>` à chaque fichier `.js` / `.css` des pages (site et admin) ;
+l'empreinte ne change que si le fichier change.

@@ -106,6 +106,43 @@ function intlPhone(raw, country) {
   return d.length >= 11 && d.length <= 15 ? d : '';
 }
 
+/* Téléphone bien écrit, sur UNE ligne : « +221 78 182 55 63 », « +33 6 12 34 56 78 ».
+   Si le numéro est ambigu, on affiche ce qui a été saisi, tel quel. */
+function prettyPhone(raw, country) {
+  const d = intlPhone(raw, country);
+  if (!d) return String(raw || '').trim();
+  const g = (str, sizes) => { const out = []; let i = 0; for (const n of sizes) { if (i >= str.length) break; out.push(str.slice(i, i + n)); i += n; } if (i < str.length) out.push(str.slice(i)); return out.join(' '); };
+  if (d.startsWith('221') && d.length === 12) return '+221 ' + g(d.slice(3), [2, 3, 2, 2]);
+  if (d.startsWith('33') && d.length === 11) return '+33 ' + g(d.slice(2), [1, 2, 2, 2, 2]);
+  if (d.startsWith('1') && d.length === 11) return '+1 ' + g(d.slice(1), [3, 3, 4]);
+  if (d.startsWith('44') && d.length >= 12) return '+44 ' + g(d.slice(2), [4, 6]);
+  const known = Object.values(DIAL_CODES).sort((a, b) => b.length - a.length).find(c => d.startsWith(c));
+  const cc = known || d.slice(0, 3);
+  return '+' + cc + ' ' + g(d.slice(cc.length), [3, 3, 3, 3]);
+}
+
+/* Numéro de commande lisible : « HA-281126-A2 » avec la date en gris et le rang du jour en relief */
+function prettyRef(ref) {
+  const m = /^(HA)-(\d{6})-([A-Z]\d+)$/.exec(String(ref || ''));
+  if (!m) return '<span class="ref">' + escapeHtml(ref) + '</span>';
+  /* Le texte reste EXACTEMENT « HA-281126-A2 » (copiable, recherchable, identique à la facture) */
+  return `<span class="ref"><i>${m[1]}</i><em>-</em><u>${m[2]}</u><em>-</em><b>${escapeHtml(m[3])}</b></span>`;
+}
+
+/* « Aujourd’hui · 00:30 », « Hier · 14:12 », « 28 nov. · 09:05 » (heure de Dakar) */
+function fmtWhen(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso), tz = 'Africa/Dakar';
+    const day = x => x.toLocaleDateString('fr-CA', { timeZone: tz });
+    const now = new Date(), yest = new Date(now.getTime() - 864e5);
+    const hm = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: tz });
+    if (day(d) === day(now)) return 'Aujourd’hui · ' + hm;
+    if (day(d) === day(yest)) return 'Hier · ' + hm;
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: tz }) + ' · ' + hm;
+  } catch (e) { return iso; }
+}
+
 /* Lien WhatsApp « click to chat » : numéro international, message pré-rempli */
 function waLink(phone, message, country) {
   const d = intlPhone(phone, country);

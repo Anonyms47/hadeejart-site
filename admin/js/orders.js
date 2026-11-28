@@ -22,6 +22,7 @@ async function renderOrders() {
         <div class="toolbar">
         <button class="btn ghost sm" id="ordersExport">⬇ Exporter (CSV)</button>
         <input id="filterOrderSearch" type="search" placeholder="Rechercher (réf, nom, téléphone)" aria-label="Rechercher une commande" style="min-width:200px">
+        <div class="ord-filters" id="ordFilters"><button type="button" class="ord-filters-btn" id="ordFiltersBtn" aria-expanded="false" aria-controls="ordFiltersBody">Filtres</button><div class="ord-filters-body" id="ordFiltersBody">
         <select id="filterOrderPay" aria-label="Filtrer par paiement">
           <option value="">Tous paiements</option>
           ${PAYMENT_STATUSES.map(s => `<option value="${s}">Paiement : ${PAYMENT_STATUS_LABELS[s]}</option>`).join('')}
@@ -32,6 +33,7 @@ async function renderOrders() {
           <option value="">Tous les mois</option>
           ${['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'].map((m, i) => `<option value="${i + 1}">${m}</option>`).join('')}
         </select>
+        </div></div>
         </div>
       </div>
       <div class="tabs" id="orderTabs" role="tablist" aria-label="Filtrer par statut"></div>
@@ -42,6 +44,10 @@ async function renderOrders() {
   if (SECTION_PRESET === 'pending' || SECTION_PRESET === 'confirmed') document.getElementById('filterOrderStatus').value = SECTION_PRESET;
   if (SECTION_PRESET === 'unpaid') ORDERS_UNPAID_MODE = true;
   document.getElementById('ordersExport').addEventListener('click', exportOrdersCsv);
+  document.getElementById('ordFiltersBtn').addEventListener('click', e => {
+    const box = document.getElementById('ordFilters'), open = !box.classList.contains('open');
+    box.classList.toggle('open', open); e.currentTarget.setAttribute('aria-expanded', String(open));
+  });
   document.getElementById('orderTabs').addEventListener('click', e => {
     const t = e.target.closest('.tab'); if (!t) return;
     ORDERS_UNPAID_MODE = false;
@@ -91,34 +97,42 @@ async function loadOrdersList() {
 
   ORDERS_VIEW = data;
   document.getElementById('ordersTitle').textContent = data.length + ' commande' + (data.length > 1 ? 's' : '');
-  host.innerHTML = `<table><thead><tr><th>Réf</th><th>Client</th><th>Total</th><th>Moyen</th><th>Paiement</th><th>Statut</th><th>Date</th><th></th></tr></thead>
-    <tbody>${data.map(o => {
-      const next = NEXT_STEP[o.status];
-      const wa = waLink(o.customer_phone, `Bonjour ${o.customer_name || ''}, ici Hadeej’Art au sujet de votre commande ${o.order_ref}.`, o.country);
-      return `
-      <tr>
-        <td><b>${escapeHtml(o.order_ref)}</b></td>
-        <td>${escapeHtml(o.customer_name)}<br><span class="badge" style="background:#f3f3f3">${escapeHtml(o.customer_phone)}</span></td>
-        <td>${formatMoney(o.total_amount, o.currency)}</td>
-        <td>${escapeHtml(PAYMENT_METHOD_LABELS[o.payment_method] || o.payment_method)}</td>
-        <td><span class="badge ${(o.payment_status || 'expected') === 'received' ? 'delivered' : (o.payment_status === 'refunded' ? 'cancelled' : 'pending')}">${PAYMENT_STATUS_LABELS[o.payment_status || 'expected']}</span></td>
-        <td><span class="badge ${escapeHtml(o.status)}">${ORDER_STATUS_LABELS[o.status] || o.status}</span></td>
-        <td>${fmtDate(o.created_at)}</td>
-        <td class="row-actions">
-          ${next ? `<button class="btn sm" data-next="${o.id}" data-to="${next[0]}">${next[1]}</button>` : ''}
-          ${wa ? `<a class="btn ghost sm" href="${escapeHtml(wa)}" target="_blank" rel="noopener" title="Écrire au client sur WhatsApp">WhatsApp</a>` : ''}
-          <button class="btn ghost sm" data-view="${o.id}">Détail</button>
-        </td>
-      </tr>`; }).join('') || `<tr><td colspan="8"><div class="empty"><span class="big">🧾</span><b>Aucune commande ici</b><p>Les commandes passées sur le site apparaîtront dans cette liste.</p></div></td></tr>`}</tbody></table>`;
+  const payBadge = o => {
+    const ps = o.payment_status || 'expected';
+    return `<span class="badge ${ps === 'received' ? 'delivered' : (ps === 'refunded' ? 'cancelled' : 'pending')}">${ps === 'received' ? '✓ Payée' : (ps === 'refunded' ? 'Remboursée' : 'Paiement attendu')}</span>`;
+  };
+  host.innerHTML = data.length ? `<div class="ord-grid">${data.map((o, i) => {
+    const next = NEXT_STEP[o.status];
+    const wa = waLink(o.customer_phone, `Bonjour ${o.customer_name || ''}, ici Hadeej’Art au sujet de votre commande ${o.order_ref}.`, o.country);
+    return `
+    <article class="ord st-${escapeHtml(o.status)}" data-open="${o.id}" tabindex="0" aria-label="Commande ${escapeHtml(o.order_ref)}" style="animation-delay:${Math.min(i, 10) * 35}ms">
+      <header class="ord-top"><span class="ord-ref">${prettyRef(o.order_ref)}</span><span class="ord-when">${escapeHtml(fmtWhen(o.created_at))}</span></header>
+      <div class="ord-who"><b>${escapeHtml(o.customer_name)}</b><span class="ord-tel">${escapeHtml(prettyPhone(o.customer_phone, o.country))}</span></div>
+      <div class="ord-mid"><span class="ord-total">${formatMoney(o.total_amount, o.currency)}</span>
+        <span class="ord-pills"><span class="badge ${escapeHtml(o.status)}">${ORDER_STATUS_LABELS[o.status] || escapeHtml(o.status)}</span>${payBadge(o)}</span></div>
+      <div class="ord-act">
+        ${next ? `<button class="btn sm" data-next="${o.id}" data-to="${next[0]}">${next[1]}</button>` : ''}
+        ${wa ? `<a class="btn ghost sm" href="${escapeHtml(wa)}" target="_blank" rel="noopener" title="Écrire au client sur WhatsApp">WhatsApp</a>` : ''}
+        <button class="btn ghost sm" data-view="${o.id}">Détail</button>
+      </div>
+    </article>`; }).join('')}</div>`
+    : `<div class="empty"><span class="big">🧾</span><b>Aucune commande ici</b><p>Les commandes passées sur le site apparaîtront dans cette liste.</p></div>`;
 
-  host.querySelectorAll('[data-next]').forEach(btn => btn.addEventListener('click', async () => {
+  host.querySelectorAll('[data-next]').forEach(btn => btn.addEventListener('click', async e => {
+    e.stopPropagation();
     btn.disabled = true;
-    const { error: e } = await sb.from('orders').update({ status: btn.dataset.to }).eq('id', btn.dataset.next);
-    if (e) { toast('Erreur: ' + e.message, true); btn.disabled = false; return; }
+    const { error: er } = await sb.from('orders').update({ status: btn.dataset.to }).eq('id', btn.dataset.next);
+    if (er) { toast('Erreur: ' + er.message, true); btn.disabled = false; return; }
     toast('Statut : ' + ORDER_STATUS_LABELS[btn.dataset.to] + '.');
     loadOrdersList(); updateNavBadges();
   }));
-  host.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', () => openOrderDetail(btn.dataset.view)));
+  host.querySelectorAll('[data-view]').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); openOrderDetail(btn.dataset.view); }));
+  host.querySelectorAll('a.btn').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
+  /* toute la carte ouvre le détail (souris, doigt ou clavier) */
+  host.querySelectorAll('.ord[data-open]').forEach(card => {
+    card.addEventListener('click', () => openOrderDetail(card.dataset.open));
+    card.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); openOrderDetail(card.dataset.open); } });
+  });
 }
 
 function exportOrdersCsv() {
@@ -137,50 +151,105 @@ async function openOrderDetail(id) {
   if (!order) { toast('Commande introuvable.', true); return; }
   const history = histRes && !histRes.error ? histRes.data : [];
   const hasPay = Object.prototype.hasOwnProperty.call(order, 'payment_status'); /* colonne présente = migration appliquée */
+  const lines = items || [];
+
+  /* vignettes et libellés d'options des produits commandés (facultatif : sans réponse, on s'en passe) */
+  const pids = [...new Set(lines.map(l => l.product_id).filter(Boolean))];
+  const thumbBy = {}, optBy = {};
+  if (pids.length) {
+    try {
+      const [im, pr] = await Promise.all([
+        sb.from('product_images').select('product_id,image_url,is_primary,sort_order').in('product_id', pids),
+        sb.from('products').select('id,variant_options').in('id', pids)
+      ]);
+      (im.data || []).sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0) || (a.sort_order || 0) - (b.sort_order || 0))
+        .forEach(r => { if (!thumbBy[r.product_id]) thumbBy[r.product_id] = r.image_url; });
+      (pr.data || []).forEach(r => { if (r.variant_options && r.variant_options.choices) optBy[r.id] = Object.fromEntries(r.variant_options.choices.map(c => [c.value, c.label_fr || c.value])); });
+    } catch (e) { /* ignoré */ }
+  }
+
+  const tel = prettyPhone(order.customer_phone, order.country);
+  const intl = intlPhone(order.customer_phone, order.country);
+  const wa = waLink(order.customer_phone, 'Bonjour ' + (order.customer_name || '') + ', ici Hadeej’Art au sujet de votre commande ' + order.order_ref + '.', order.country);
+  const place = [order.district, order.city, order.country].filter(Boolean).join(', ');
+  const ps = order.payment_status || 'expected';
+  const payLabel = ps === 'received' ? '✓ Payée' : (ps === 'refunded' ? 'Remboursée' : 'Paiement attendu');
+  const placed = (() => { try { return new Date(order.created_at).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Dakar' }); } catch (e) { return ''; } })();
+
+  const flow = ['pending', 'confirmed', 'shipped', 'delivered'];
+  const at = flow.indexOf(order.status);
+  const steps = order.status === 'cancelled'
+    ? '<p class="od-cancel">✕ Commande annulée</p>'
+    : `<ol class="od-steps" aria-label="Avancement de la commande">${flow.map((s, i) => `<li class="${i < at ? 'done' : (i === at ? 'now' : '')}"><i>${i < at ? '✓' : i + 1}</i><span>${ORDER_STATUS_LABELS[s]}</span></li>`).join('')}</ol>`;
+
+  const itemHtml = lines.map(it => {
+    const optLabel = it.option_kimono ? ((optBy[it.product_id] || {})[it.option_kimono] || it.option_kimono) : '';
+    const pills = [['Taille', it.size], ['Tissu', it.fabric], ['Couleur', it.color], ['Option', optLabel]].filter(x => x[1])
+      .map(([k, v]) => `<span class="od-pill"><small>${k}</small> ${escapeHtml(v)}</span>`).join('');
+    return `<li class="od-item">
+      <span class="od-thumb">${thumbBy[it.product_id] ? `<img src="${escapeHtml(assetUrl(thumbBy[it.product_id]))}" alt="" loading="lazy">` : '🧵'}</span>
+      <div class="od-item-main"><b>${escapeHtml(it.product_name)}</b>${pills ? `<div class="od-pills">${pills}</div>` : ''}${it.note ? `<p class="od-note">Note libre : ${escapeHtml(it.note)}</p>` : ''}</div>
+      <div class="od-item-price"><span class="od-qty">×${it.qty}</span><b>${formatMoney(it.line_total, order.currency)}</b></div></li>`;
+  }).join('');
+
+  const kindLabel = h => (h.kind === 'payment' ? PAYMENT_STATUS_LABELS : ORDER_STATUS_LABELS);
+  const histHtml = history && history.length ? `<ol class="od-timeline">${history.map(h => `<li><span class="dot"></span><div><b>${h.kind === 'payment' ? 'Paiement' : 'Statut'} : ${escapeHtml(kindLabel(h)[h.to_value] || h.to_value)}</b>
+      <small>${h.from_value ? 'avant : ' + escapeHtml(kindLabel(h)[h.from_value] || h.from_value) + ' · ' : ''}${escapeHtml(fmtWhen(h.changed_at))}</small></div></li>`).join('')}</ol>` : '<p class="hint">Aucun changement enregistré pour le moment.</p>';
 
   const overlay = openModal(`
-    <header><h3>Commande ${escapeHtml(order.order_ref)}</h3><button class="icon-btn" id="closeOrderModal">✕</button></header>
-    <div class="body">
-      <p><b>${escapeHtml(order.customer_name)}</b> · ${escapeHtml(order.customer_phone)} ${order.customer_email ? '· ' + escapeHtml(order.customer_email) : ''} ${waLink(order.customer_phone, "", order.country) ? `· <a href="${escapeHtml(waLink(order.customer_phone, 'Bonjour ' + (order.customer_name || '') + ', ici Hadeej’Art au sujet de votre commande ' + order.order_ref + '.', order.country))}" target="_blank" rel="noopener">Écrire sur WhatsApp ↗</a>` : ''}</p>
-      <p>Lieu : ${escapeHtml([order.district, order.city, order.country].filter(Boolean).join(', ') || '—')}</p>
-      ${order.location_address ? `<p>Adresse détectée : ${escapeHtml(order.location_address)}</p>` : ''}
-      ${order.location_note ? `<p>Précision : ${escapeHtml(order.location_note)}</p>` : ''}
-      ${order.maps_link ? `<p><a href="${escapeHtml(order.maps_link)}" target="_blank" rel="noopener">Voir sur Google Maps ↗</a></p>` : ''}
-      <p>Paiement : ${escapeHtml(order.payment_method)} · Devise : ${escapeHtml(order.currency)}</p>
-      <table><thead><tr><th>Article</th><th>Détails</th><th>Qté</th><th>Total</th></tr></thead>
-        <tbody>${(items || []).map(it => `
-          <tr>
-            <td>${escapeHtml(it.product_name)}</td>
-            <td>${escapeHtml([it.size, it.color, it.fabric, it.option_kimono, it.note].filter(Boolean).join(' · '))}</td>
-            <td>${it.qty}</td>
-            <td>${formatMoney(it.line_total, order.currency)}</td>
-          </tr>`).join('')}</tbody></table>
-      <p style="text-align:right;font-weight:800;margin-top:10px">Total articles (hors livraison) : ${formatMoney(order.total_amount, order.currency)}</p>
-      <div class="grid-2">
-        <div class="field"><label>Statut de la commande</label>
-          <select id="orderStatusSelect">
-            ${ORDER_STATUSES.map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${ORDER_STATUS_LABELS[s]}</option>`).join('')}
-          </select>
+    <header class="od-head">
+      <div class="od-title"><small>COMMANDE</small><h3>${prettyRef(order.order_ref)}</h3>
+        <p class="od-meta">${escapeHtml(placed)}</p>
+        <p class="od-badges"><span class="badge ${escapeHtml(order.status)}">${ORDER_STATUS_LABELS[order.status] || escapeHtml(order.status)}</span>
+          <span class="badge ${ps === 'received' ? 'delivered' : (ps === 'refunded' ? 'cancelled' : 'pending')}">${payLabel}</span></p></div>
+      <div class="od-head-act"><button class="icon-btn" id="copyOrderBtn" title="Copier le récapitulatif" aria-label="Copier le récapitulatif">⧉</button><button class="icon-btn" id="closeOrderModal" aria-label="Fermer">✕</button></div>
+    </header>
+    <div class="body od-body">
+      ${steps}
+      <section class="od-card"><h4>Client</h4>
+        <p class="od-name">${escapeHtml(order.customer_name)}</p>
+        <p class="od-tel">${escapeHtml(tel)}</p>
+        ${order.customer_email ? `<p class="od-mail"><a href="mailto:${escapeHtml(order.customer_email)}">${escapeHtml(order.customer_email)}</a></p>` : ''}
+        <div class="od-actions">
+          ${wa ? `<a class="btn sm" href="${escapeHtml(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
+          ${intl ? `<a class="btn ghost sm" href="tel:+${intl}">Appeler</a>` : ''}
+        </div></section>
+      <section class="od-card"><h4>Livraison</h4>
+        <p class="od-place">${escapeHtml(place || '—')}</p>
+        ${order.location_address ? `<p class="od-line"><small>Adresse détectée</small>${escapeHtml(order.location_address)}</p>` : ''}
+        ${order.location_note ? `<p class="od-line"><small>Précision du client</small>${escapeHtml(order.location_note)}</p>` : ''}
+        ${order.maps_link ? `<div class="od-actions"><a class="btn ghost sm" href="${escapeHtml(order.maps_link)}" target="_blank" rel="noopener">Voir sur Google Maps ↗</a></div>` : ''}</section>
+      <section class="od-card"><h4>Articles <span class="od-count">${lines.reduce((s, l) => s + Number(l.qty || 0), 0)}</span></h4>
+        <ul class="od-items">${itemHtml || '<li class="hint">Aucun article.</li>'}</ul>
+        <div class="od-total"><span>Total des articles <small>(hors livraison)</small></span><b>${formatMoney(order.total_amount, order.currency)}</b></div>
+        <p class="od-pay">Moyen choisi : <b>${escapeHtml(PAYMENT_METHOD_LABELS[order.payment_method] || order.payment_method)}</b> · Devise : <b>${escapeHtml(order.currency)}</b></p></section>
+      <section class="od-card"><h4>Suivi</h4>
+        <div class="grid-2">
+          <div class="field"><label>Statut de la commande</label>
+            <select id="orderStatusSelect">${ORDER_STATUSES.map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${ORDER_STATUS_LABELS[s]}</option>`).join('')}</select></div>
+          ${hasPay ? `<div class="field"><label>Paiement</label>
+            <select id="orderPaySelect">${PAYMENT_STATUSES.map(s => `<option value="${s}" ${ps === s ? 'selected' : ''}>${PAYMENT_STATUS_LABELS[s]}</option>`).join('')}</select>
+            <p class="hint">Ne passez « Reçu » qu’après avoir réellement encaissé.</p></div>` : ''}
         </div>
-        ${hasPay ? `<div class="field"><label>Paiement</label>
-          <select id="orderPaySelect">
-            ${PAYMENT_STATUSES.map(s => `<option value="${s}" ${(order.payment_status || 'expected') === s ? 'selected' : ''}>${PAYMENT_STATUS_LABELS[s]}</option>`).join('')}
-          </select>
-          <p class="hint">Moyen choisi par le client : ${escapeHtml(PAYMENT_METHOD_LABELS[order.payment_method] || order.payment_method)}. Ne passez « Reçu » qu’après avoir réellement encaissé.</p>
-        </div>` : ''}
-      </div>
-      ${hasPay ? `<div class="field"><label>Note interne</label><textarea id="orderNote" rows="2">${escapeHtml(order.internal_note || '')}</textarea></div>` : '<p class="hint">Suivi du paiement et historique : appliquez la migration SQL (supabase/migrations).</p>'}
-      ${history && history.length ? `<details><summary><b>Historique</b></summary><ul style="margin:8px 0 0;padding-left:18px">${history.map(h => `<li>${fmtDate(h.changed_at)} — ${h.kind === 'payment' ? 'Paiement' : 'Statut'} : ${escapeHtml(((h.kind === 'payment' ? PAYMENT_STATUS_LABELS : ORDER_STATUS_LABELS)[h.from_value] || h.from_value || '—'))} → <b>${escapeHtml(((h.kind === 'payment' ? PAYMENT_STATUS_LABELS : ORDER_STATUS_LABELS)[h.to_value] || h.to_value))}</b></li>`).join('')}</ul></details>` : ''}
+        ${hasPay ? `<div class="field"><label>Note interne <small>(visible par vous seul)</small></label><textarea id="orderNote" rows="2">${escapeHtml(order.internal_note || '')}</textarea></div>` : '<p class="hint">Suivi du paiement et historique : appliquez la migration SQL (supabase/migrations).</p>'}</section>
+      <section class="od-card"><h4>Historique</h4>${histHtml}</section>
     </div>
     <div class="foot">
-      <button class="btn danger" id="deleteOrderBtn">Supprimer</button>
+      <button class="btn danger ghost-danger" id="deleteOrderBtn">Supprimer</button>
       <button class="btn ghost" id="closeOrderBtn">Fermer</button>
       <button class="btn" id="saveOrderStatusBtn">Enregistrer</button>
     </div>
   `);
+  overlay.querySelector('.modal-box').classList.add('od-modal');
 
   overlay.querySelector('#closeOrderModal').addEventListener('click', () => closeModal(overlay));
   overlay.querySelector('#closeOrderBtn').addEventListener('click', () => closeModal(overlay));
+  overlay.querySelector('#copyOrderBtn').addEventListener('click', async () => {
+    const txt = [`Commande ${order.order_ref}`, `Client : ${order.customer_name} · ${tel}`, `Livraison : ${place || '—'}${order.location_address ? ' · ' + order.location_address : ''}`,
+      ...lines.map(l => `- ${l.product_name} ×${l.qty}${[l.size, l.fabric, l.color].filter(Boolean).length ? ' (' + [l.size, l.fabric, l.color].filter(Boolean).join(', ') + ')' : ''} — ${formatMoney(l.line_total, order.currency)}`),
+      `Total (hors livraison) : ${formatMoney(order.total_amount, order.currency)}`, `Paiement : ${PAYMENT_METHOD_LABELS[order.payment_method] || order.payment_method}`].join('\n');
+    try { await navigator.clipboard.writeText(txt); toast('Récapitulatif copié.'); } catch (e) { prompt('Copiez le récapitulatif :', txt); }
+  });
   overlay.querySelector('#deleteOrderBtn').addEventListener('click', async () => { if (await deleteOrder(id, order.order_ref)) closeModal(overlay); });
   overlay.querySelector('#saveOrderStatusBtn').addEventListener('click', async () => {
     const newStatus = overlay.querySelector('#orderStatusSelect').value;
@@ -192,7 +261,7 @@ async function openOrderDetail(id) {
     }
     const { error } = await sb.from('orders').update(patch).eq('id', id);
     if (error) toast('Erreur: ' + error.message, true);
-    else { toast('Statut mis à jour.'); closeModal(overlay); if (document.getElementById('ordersList')) loadOrdersList(); updateNavBadges(); }
+    else { toast('Commande mise à jour.'); closeModal(overlay); if (document.getElementById('ordersList')) loadOrdersList(); updateNavBadges(); }
   });
 }
 
