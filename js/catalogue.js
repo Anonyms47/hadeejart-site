@@ -96,6 +96,16 @@ function renderProducts() {
   const grid = el('#productGrid');
   if (!grid) return;
 
+  if (!CATALOG_LOADED && !PRODUCTS.length && CATALOG_ERROR) {
+    /* Panne réseau sans copie locale : un message clair plutôt que des cartes vides éternelles */
+    grid.className = 'catalogue-error';
+    grid.innerHTML = `<div class="cat-err" role="alert"><p><b>${escapeHtml(t('catalog_error'))}</b></p>
+      <div class="cat-err-act"><button type="button" class="btn" id="catRetry">${escapeHtml(t('catalog_retry'))}</button>
+      <a class="btn ghost" href="https://wa.me/${SITE_WA_NUMBER}" target="_blank" rel="noopener">${escapeHtml(t('catalog_wa'))}</a></div></div>`;
+    const rb = document.getElementById('catRetry');
+    if (rb) rb.addEventListener('click', () => { CATALOG_ERROR = false; renderProducts(); loadCatalog(window.__onCatalog); });
+    return;
+  }
   if (!CATALOG_LOADED && !PRODUCTS.length) {
     grid.className = 'catalogue-skeleton';
     grid.innerHTML = Array.from({ length: 8 }).map((_, i) => `<div class="skeleton-card" style="--i:${i}"></div>`).join('')

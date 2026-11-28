@@ -117,8 +117,8 @@ async function createCategory(e) {
   const nameEl = document.getElementById('catNewName');
   const btn = document.getElementById('catNewBtn');
   const fr = nameEl.value.trim();
-  const base = slugify(fr);
-  if (!fr || !base) { toast('Donnez un nom à la catégorie.', true); return; }
+  const base = slugify(fr) || 'categorie';   /* noms en arabe, chinois… : identifiant de secours, unique grâce au suffixe ci-dessous */
+  if (!fr) { toast('Donnez un nom à la catégorie.', true); return; }
   btn.disabled = true; btn.textContent = 'Création…';
   try {
     const { data: existing, error: e1 } = await sb.from('categories').select('slug, name_fr, sort_order');

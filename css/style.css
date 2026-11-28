@@ -2311,3 +2311,34 @@ fieldset.opt legend{ font:700 14px var(--font-body); padding:0; margin-bottom:8p
 
 /* Performance : animations du pied de page figées hors écran */
 .mf.mf-off::after, .mf.mf-off .mf-track, .mf.mf-off .mf-wa{ animation-play-state:paused; }
+
+/* Très petits écrans (iPhone SE 1re génération 320 px, Galaxy Fold replié 280 px) :
+   l'en-tête doit tenir sans faire défiler la page horizontalement. */
+@media (max-width:359px){
+  .hd-brand{ gap:6px; }
+  .hd-emblem{ width:44px; height:44px; }
+  .hd.scrolled .hd-emblem{ width:40px; height:40px; }
+  .hd-word{ font-size:17px; letter-spacing:.02em; }
+  .hd.scrolled .hd-word{ font-size:16px; }
+  .hd-actions{ gap:2px; }
+  .hd-cart{ padding:0 8px; gap:4px; }
+  .hd-micro{ letter-spacing:.05em; font-size:9px; padding:0 8px; }
+}
+@media (max-width:299px){
+  .hd-word{ display:none; }
+}
+
+/* Bandeau d'accueil international (proposition de langue / devise) */
+.welcome-bar{ position:relative; z-index:5; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 14px; padding:8px 14px; background:#1d1812; color:#F6F1E7; font:600 13.5px/1.35 var(--font-body); border-bottom:1px solid rgba(212,163,89,.4); }
+.welcome-bar .wb-msg{ text-align:center; }
+.welcome-bar .wb-act{ display:inline-flex; gap:8px; align-items:center; }
+.welcome-bar .wb-yes{ min-height:40px; padding:0 16px; border:0; border-radius:999px; background:linear-gradient(180deg,#e0b46c,#D4A359); color:#1a1208; font:800 13.5px var(--font-body); cursor:pointer; }
+.welcome-bar .wb-no{ width:40px; height:40px; border:1px solid rgba(255,255,255,.2); border-radius:50%; background:transparent; color:#F6F1E7; cursor:pointer; font-size:15px; }
+.welcome-bar button:focus-visible{ outline:2px solid #D4A359; outline-offset:2px; }
+
+/* Catalogue indisponible (panne réseau, aucune copie locale) */
+.catalogue-error{ display:block; }
+.cat-err{ max-width:520px; margin:24px auto; padding:24px 20px; text-align:center; border:1px dashed rgba(212,163,89,.8); border-radius:16px; background:rgba(255,255,255,.55); }
+.cat-err p{ margin:0 0 14px; font-size:16px; line-height:1.5; }
+.cat-err-act{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.cat-err-act .btn{ min-height:46px; text-decoration:none; }

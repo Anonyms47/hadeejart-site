@@ -136,7 +136,7 @@ async function openCollectionForm(id) {
         description_fr: overlay.querySelector('#colDesc').value.trim() || null,
         status: overlay.querySelector('#colStatus').value,
         cover_image_url: coverUrl,
-        slug: slugify(nameFr) + '-' + Date.now().toString(36).slice(-4)
+        slug: (slugify(nameFr) || 'collection') + '-' + Date.now().toString(36).slice(-4)
       };
       if (id) delete payload.slug; /* on ne change pas le slug d'une collection existante */
 

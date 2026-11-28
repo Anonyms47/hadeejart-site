@@ -242,8 +242,8 @@ async function buildInvoiceImage() {
   window.LAST_INVOICE_TOTAL = totalsText;
   const locale = CURRENT_LANG === 'en' ? 'en-GB' : 'fr-FR';
   const now = new Date();
-  const dateStr = now.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
-  const timeStr = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+  const dateStr = now.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Dakar' });
+  const timeStr = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Dakar' });
 
   const [logo, instruction, ...thumbs] = await Promise.all([
     invLoadImage('images/logo.png'), invPaymentInstruction(payValue), ...view.lines.map(l => invLoadImage(l.img))
@@ -256,14 +256,19 @@ async function buildInvoiceImage() {
   };
 
   /* Passe 1 : mesure de la hauteur sur un canvas haut ; passe 2 : dessin à la hauteur exacte. */
+  let SC = INV_SC;
   const prep = h => {
-    CANVAS.width = Math.round(INV_LW * INV_SC); CANVAS.height = Math.round(h * INV_SC);
+    CANVAS.width = Math.round(INV_LW * SC); CANVAS.height = Math.round(h * SC);
     INV = CANVAS.getContext('2d');
-    INV.setTransform(INV_SC, 0, 0, INV_SC, 0, 0);
+    INV.setTransform(SC, 0, 0, SC, 0, 0);
     INV.textBaseline = 'alphabetic';
   };
   prep(4000);
   const H = Math.ceil(invRender(d, 4000));
+  /* Très gros panier : on réduit la définition pour rester sous les limites des
+     téléphones (≈ 16 millions de pixels sur iPhone) et garder une image légère. */
+  const MAXPX = 9e6;
+  if (INV_LW * SC * H * SC > MAXPX) SC = Math.max(1.2, Math.sqrt(MAXPX / (INV_LW * H)));
   prep(H);
   invRender(d, H);
   NAT_W = CANVAS.width; NAT_H = CANVAS.height;

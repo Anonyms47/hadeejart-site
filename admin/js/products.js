@@ -162,7 +162,7 @@ async function duplicateProduct(id) {
   const copy = Object.assign({}, src);
   ['id', 'created_at', 'updated_at', 'product_images', 'product_collections'].forEach(k => delete copy[k]);
   copy.name_fr = src.name_fr + ' (copie)'; copy.name_en = src.name_en ? src.name_en + ' (copy)' : null; copy.name_wo = src.name_wo ? src.name_wo + ' (copie)' : null;
-  copy.slug = slugify(src.name_fr) + '-' + Date.now().toString(36).slice(-5);
+  copy.slug = (slugify(src.name_fr) || 'produit') + '-' + Date.now().toString(36).slice(-5);
   copy.status = 'draft';
   const { data: ins, error: e2 } = await sb.from('products').insert(copy).select('id').single();
   if (e2) { toast('Erreur: ' + e2.message, true); return; }
@@ -515,7 +515,7 @@ async function openProductForm(id) {
         if (isMissingColumn(error)) { extendedSaved = false; ({ error } = await sb.from('products').update(payload).eq('id', id)); }
         if (error) throw error;
       } else {
-        payload.slug = slugify(nameFr) + '-' + Date.now().toString(36).slice(-5);
+        payload.slug = (slugify(nameFr) || 'produit') + '-' + Date.now().toString(36).slice(-5);
         let { data: inserted, error } = await sb.from('products').insert(Object.assign({}, payload, extra)).select('id').single();
         if (isMissingColumn(error)) { extendedSaved = false; ({ data: inserted, error } = await sb.from('products').insert(payload).select('id').single()); }
         if (error) throw error;

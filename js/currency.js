@@ -40,10 +40,16 @@ function priceForProduct(product, optionValue, forceCurrency) {
 function formatMoney(amount, currency) {
   const cur = currency || CURRENT_CURRENCY;
   const n = Number(amount || 0);
+  /* Séparateurs selon la langue du site : « 35 000 » / « 80,50 » en français et wolof,
+     « 35,000 » / « 80.50 » en anglais ; symbole devant en anglais pour € et $. */
+  const en = typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'en';
+  const loc = en ? 'en-GB' : 'fr-FR';
   const formatted = cur === 'FCFA'
-    ? n.toLocaleString('fr-FR')
-    : n.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
-  return cur === 'FCFA' ? `${formatted} FCFA` : `${formatted} ${CURRENCY_SYMBOLS[cur] || cur}`;
+    ? n.toLocaleString(loc, { maximumFractionDigits: 0 })
+    : n.toLocaleString(loc, Number.isInteger(n) ? { maximumFractionDigits: 0 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (cur === 'FCFA') return `${formatted} FCFA`;
+  const sym = CURRENCY_SYMBOLS[cur] || cur;
+  return en ? `${sym}${formatted}` : `${formatted} ${sym}`;
 }
 
 /* formatPrice() est utilisé tel quel par cart.js/invoice.js (contrat

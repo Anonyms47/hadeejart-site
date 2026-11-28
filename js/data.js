@@ -16,6 +16,7 @@ let COMING_SOON_CATEGORIES = [];
 let PRODUCTS = [];
 let COLLECTIONS = [];
 let CATALOG_LOADED = false;
+let CATALOG_ERROR = false;   /* le catalogue n'a pas pu être téléchargé et aucune copie locale n'existe */
 let RAW_CATEGORIES = [];
 let RAW_PRODUCTS = [];
 let RAW_COLLECTIONS = [];
@@ -108,6 +109,7 @@ function applyCatalogData(categoryRows, productRows, collectionRows, settingsRow
   }
 
   CATALOG_LOADED = true;
+  CATALOG_ERROR = false;
   renderProductsJsonLd();
 }
 

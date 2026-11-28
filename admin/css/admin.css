@@ -5,7 +5,7 @@
    et une mise en page qui s'adapte du téléphone à l'écran large.
    ====================================================================== */
 :root{
-  --bg:#f6d7c4; --paper:#fff7f1; --brand:#d47a2c; --brand-700:#9e5317;
+  --bg:#f6d7c4; --paper:#fff7f1; --brand:#d47a2c; --brand-fill:#b05a17; --brand-700:#9e5317;
   --ink:#2b1e12; --terracotta:#C1440E; --emerald:#146356; --danger:#B43D2A;
   --line:#e6d7c8; --line-strong:#d9c3ad; --focus:rgba(212,122,44,.28);
   --font-body:"DM Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
@@ -41,7 +41,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=file]):focus,textarea:foc
   outline:none;border-color:var(--brand-700);box-shadow:0 0 0 4px var(--focus);background:#fffdfb;
 }
 input[type=file]{width:100%;padding:12px;border:1.5px dashed var(--line-strong);border-radius:var(--radius);background:#fffaf5;font:500 14px var(--font-body);cursor:pointer}
-input[type=file]::file-selector-button{margin-right:12px;border:0;border-radius:10px;padding:10px 16px;background:linear-gradient(180deg,var(--brand),var(--brand-700));color:#fff;font:700 14px var(--font-body);cursor:pointer}
+input[type=file]::file-selector-button{margin-right:12px;border:0;border-radius:10px;padding:10px 16px;background:linear-gradient(180deg,var(--brand-fill),var(--brand-700));color:#fff;font:700 14px var(--font-body);cursor:pointer}
 .hint{font-size:13px;opacity:.7;margin:6px 0 0}
 
 /* ====== CASES À COCHER : grandes, aérées, cliquables sur toute la ligne ====== */
@@ -69,7 +69,7 @@ label:has(> input[type=checkbox]:checked){background:#fff1e4;border-color:#f0d4b
 .size-row,.field > div:has(> label > .p-size){display:flex !important;flex-wrap:wrap;gap:10px !important}
 label:has(> input.p-size){position:relative;min-height:46px;padding:8px 20px !important;border:1.5px solid var(--line-strong) !important;border-radius:999px !important;background:#fff !important;color:var(--ink);font-weight:700 !important}
 label:has(> input.p-size:hover){border-color:var(--brand) !important}
-label:has(> input.p-size:checked){background:linear-gradient(180deg,var(--brand),var(--brand-700)) !important;border-color:transparent !important;color:#fff !important;box-shadow:0 6px 14px rgba(158,83,23,.25)}
+label:has(> input.p-size:checked){background:linear-gradient(180deg,var(--brand-fill),var(--brand-700)) !important;border-color:transparent !important;color:#fff !important;box-shadow:0 6px 14px rgba(158,83,23,.25)}
 label:has(> input.p-size:focus-visible){box-shadow:0 0 0 4px var(--focus)}
 label:has(> input.p-size) input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
 /* Liste de produits à cocher (collections) */
@@ -78,7 +78,7 @@ label:has(> input.p-size) input{position:absolute;opacity:0;pointer-events:none;
 /* ====== BOUTONS ====== */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:var(--radius);min-height:46px;
-  background:linear-gradient(180deg,var(--brand),var(--brand-700));color:#fff;padding:11px 20px;font-weight:700;font-size:15px;cursor:pointer;
+  background:linear-gradient(180deg,var(--brand-fill),var(--brand-700));color:#fff;padding:11px 20px;font-weight:700;font-size:15px;cursor:pointer;
   box-shadow:0 6px 14px rgba(158,83,23,.22);transition:transform .12s ease,box-shadow .15s ease,filter .15s ease;
 }
 .btn:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(158,83,23,.28)}
@@ -279,7 +279,7 @@ details.translations .grid-2{margin-top:6px}
 .todo .n{flex:0 0 auto;min-width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font:700 24px var(--font-serif);background:#f3efe9;color:#6d5a48}
 .todo .t{display:flex;flex-direction:column;gap:2px;min-width:0}
 .todo .t small{opacity:.7;font-size:13px}
-.todo.hot{border-color:#e9a35f;background:#fff8ef}.todo.hot .n{background:linear-gradient(135deg,var(--brand),var(--brand-700));color:#fff}
+.todo.hot{border-color:#e9a35f;background:#fff8ef}.todo.hot .n{background:linear-gradient(135deg,var(--brand-fill),var(--brand-700));color:#fff}
 .todo.warm .n{background:#fff3da;color:#9e5317}
 .todo.zero{opacity:.6}
 

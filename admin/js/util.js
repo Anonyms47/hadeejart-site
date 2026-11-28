@@ -76,10 +76,40 @@ function downloadCsv(filename, rows) {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 
-/* Lien WhatsApp « click to chat » : chiffres uniquement, message pré-rempli */
-function waLink(phone, message) {
-  const d = String(phone || '').replace(/\D/g, '');
-  if (d.length < 8) return '';
+/* Indicatifs téléphoniques par pays (noms en français, sans accents, minuscules). */
+const DIAL_CODES = { senegal: '221', mali: '223', "cote d'ivoire": '225', guinee: '224', mauritanie: '222', gambie: '220', 'burkina faso': '226',
+  benin: '229', togo: '228', niger: '227', cameroun: '237', gabon: '241', congo: '242', 'guinee-bissau': '245', maroc: '212', algerie: '213', tunisie: '216',
+  france: '33', belgique: '32', suisse: '41', luxembourg: '352', allemagne: '49', italie: '39', espagne: '34', portugal: '351', 'pays-bas': '31',
+  'royaume-uni': '44', irlande: '353', 'etats-unis': '1', usa: '1', canada: '1', bresil: '55', chine: '86', japon: '81', 'arabie saoudite': '966',
+  'emirats arabes unis': '971', qatar: '974', turquie: '90' };
+function _plain(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+
+/* Numéro -> chiffres au format international pour wa.me, ou '' si on ne peut pas
+   le déterminer sans risque (mieux vaut aucun lien qu'un lien vers un inconnu).
+   - « + » ou « 00 » : déjà international ;
+   - sinon, l'indicatif du pays de la commande (zéro de tête retiré) ;
+   - sinon, 9 chiffres commençant par 7 = numéro sénégalais (marché de la boutique). */
+function intlPhone(raw, country) {
+  const txt = String(raw || '').replace(/[\u0660-\u0669]/g, c => c.charCodeAt(0) - 0x0660).replace(/[\u06F0-\u06F9]/g, c => c.charCodeAt(0) - 0x06F0).replace(/[\uFF10-\uFF19]/g, c => c.charCodeAt(0) - 0xFF10).trim();
+  let d = txt.replace(/\D/g, '');
+  if (!d) return '';
+  if (/^\+/.test(txt)) return d.length >= 8 && d.length <= 15 ? d : '';
+  if (/^00/.test(d)) { d = d.slice(2); return d.length >= 8 && d.length <= 15 ? d : ''; }
+  const dial = DIAL_CODES[_plain(country)];
+  if (dial) {
+    if (d.startsWith(dial) && d.length >= dial.length + 7) return d;
+    d = d.replace(/^0+/, '');
+    return d.length >= 6 && (dial.length + d.length) <= 15 ? dial + d : '';
+  }
+  if (d.length === 9 && d[0] === '7') return '221' + d;
+  if (d.length === 12 && d.startsWith('221')) return d;
+  return d.length >= 11 && d.length <= 15 ? d : '';
+}
+
+/* Lien WhatsApp « click to chat » : numéro international, message pré-rempli */
+function waLink(phone, message, country) {
+  const d = intlPhone(phone, country);
+  if (!d) return '';
   return 'https://wa.me/' + d + (message ? '?text=' + encodeURIComponent(message) : '');
 }
 

@@ -102,6 +102,7 @@ async function loadCatalog(onUpdate) {
     if (onUpdate) onUpdate();
   } catch (err) {
     console.error('loadCatalog:', err);
+    if (!cached) CATALOG_ERROR = true;
     if (!cached && onUpdate) onUpdate(); /* déclenche l'affichage de l'état vide/erreur */
   }
 }
