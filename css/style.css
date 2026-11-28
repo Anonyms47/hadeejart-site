@@ -2342,3 +2342,6 @@ fieldset.opt legend{ font:700 14px var(--font-body); padding:0; margin-bottom:8p
 .cat-err p{ margin:0 0 14px; font-size:16px; line-height:1.5; }
 .cat-err-act{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
 .cat-err-act .btn{ min-height:46px; text-decoration:none; }
+
+/* Note du client visible dans le panier */
+.cart-note-line{ margin:4px 0 0; font-size:12.5px; line-height:1.4; font-style:italic; color:#8b6a2b; overflow-wrap:anywhere; }

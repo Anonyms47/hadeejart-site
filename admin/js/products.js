@@ -189,9 +189,8 @@ async function previewProduct(id) {
       ${p.fabric_fr ? `<p><b>Tissu :</b> ${escapeHtml(p.fabric_fr)}</p>` : ''}
       ${sec('Description', p.description_fr)}${sec('Contenu de l’ensemble', p.contents_fr)}${sec('Coupe', p.cut_fr)}${sec('Mesures', p.measures_text)}${sec('Entretien', p.care_fr)}${sec('Délai', p.lead_time_fr)}
     </div>
-    <div class="foot"><button class="btn ghost" id="closePrev2">Fermer</button></div>`);
+    `);
   overlay.querySelector('#closePrev').addEventListener('click', () => closeModal(overlay));
-  overlay.querySelector('#closePrev2').addEventListener('click', () => closeModal(overlay));
 }
 
 async function archiveProduct(id) {
@@ -296,9 +295,13 @@ async function openProductForm(id) {
           </select>
         </div>
       </div>
-      <div class="grid-2">
-        <div class="field"><label>Tissu (FR)</label><input id="pFabricFr" value="${escapeHtml(row.fabric_fr || '')}" placeholder="Wax"></div>
-        <div class="field"><label>Couleurs suggérées (séparées par virgule)</label><input id="pColors" value="${escapeHtml((row.colors || []).join(', '))}" placeholder="Orange, Bleu"></div>
+      <div class="field"><label>Tissu (FR)</label><input id="pFabricFr" value="${escapeHtml(row.fabric_fr || '')}" placeholder="Wax"></div>
+      <div class="field"><label>Couleurs proposées au client</label>
+        <p class="hint">Aucune couleur : le client peut écrire la couleur souhaitée. Une seule : couleur fixe affichée sur la fiche. Deux ou plus : le client choisit parmi elles.</p>
+        <div class="tag-list" id="colorTags" aria-live="polite"></div>
+        <div class="color-add"><input id="colorNew" maxlength="40" placeholder="Écrire une couleur (ex : Bleu indigo)" autocomplete="off"><button type="button" class="btn ghost sm" id="colorAddBtn">+ Ajouter</button></div>
+        <div class="color-quick" aria-label="Couleurs courantes">${['Orange', 'Rouge', 'Bleu', 'Vert', 'Jaune', 'Rose', 'Violet', 'Marron', 'Noir', 'Blanc', 'Multicolore'].map(c => `<button type="button" class="color-q" data-c="${c}">${c}</button>`).join('')}</div>
+        <input type="hidden" id="pColors" value="${escapeHtml((row.colors || []).join(', '))}">
       </div>
       <div class="field"><label>Tailles disponibles</label>
         <div style="display:flex;gap:14px;flex-wrap:wrap">
@@ -370,6 +373,26 @@ async function openProductForm(id) {
   `);
 
   overlay.querySelector('#closeProdModal').addEventListener('click', () => closeModal(overlay));
+  /* éditeur de couleurs : pastilles, ajout par bouton / Entrée / virgule, suggestions en un clic */
+  (() => {
+    const hid = overlay.querySelector('#pColors'), tags = overlay.querySelector('#colorTags'), inp = overlay.querySelector('#colorNew');
+    let list = hid.value.split(',').map(x => x.trim()).filter(Boolean);
+    const paint = () => {
+      hid.value = list.join(', ');
+      tags.innerHTML = list.length ? list.map((c, i) => `<span class="tag">${escapeHtml(c)}<button type="button" data-rm="${i}" aria-label="Retirer ${escapeHtml(c)}">✕</button></span>`).join('') : '<span class="hint">Aucune couleur pour l’instant.</span>';
+      overlay.querySelectorAll('.color-q').forEach(b => b.classList.toggle('on', list.some(c => c.toLowerCase() === b.dataset.c.toLowerCase())));
+    };
+    const add = v => { v = String(v || '').trim(); if (!v || list.some(c => c.toLowerCase() === v.toLowerCase())) return; list.push(v); paint(); };
+    overlay.querySelector('#colorAddBtn').addEventListener('click', () => { add(inp.value); inp.value = ''; inp.focus(); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(inp.value); inp.value = ''; } });
+    overlay.querySelectorAll('.color-q').forEach(b => b.addEventListener('click', () => {
+      const i = list.findIndex(c => c.toLowerCase() === b.dataset.c.toLowerCase());
+      if (i >= 0) list.splice(i, 1); else list.push(b.dataset.c);
+      paint();
+    }));
+    tags.addEventListener('click', e => { const r = e.target.closest('[data-rm]'); if (r) { list.splice(+r.dataset.rm, 1); paint(); } });
+    paint();
+  })();
   overlay.querySelector('#cancelProdBtn').addEventListener('click', () => closeModal(overlay));
   overlay.querySelector('#pHasVariant').addEventListener('change', e => {
     overlay.querySelector('#variantBox').style.display = e.target.checked ? '' : 'none';
@@ -428,7 +451,9 @@ async function openProductForm(id) {
       if (!priceFcfa && priceFcfa !== 0) throw new Error('Le prix FCFA est requis.');
 
       const sizes = [...overlay.querySelectorAll('.p-size:checked')].map(c => c.value);
+      const pending = overlay.querySelector('#colorNew').value.trim();
       const colors = overlay.querySelector('#pColors').value.split(',').map(s => s.trim()).filter(Boolean);
+      if (pending && !colors.some(c => c.toLowerCase() === pending.toLowerCase())) colors.push(pending);
 
       let variantOptions = null;
       if (overlay.querySelector('#pHasVariant').checked) {

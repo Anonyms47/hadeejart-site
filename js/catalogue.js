@@ -352,6 +352,7 @@ function detailSectionsHtml(p) {
 
 function renderDetailBody(p) {
   const keepNote = (document.getElementById('dNote') || {}).value || '';
+  const keepColor = (document.getElementById('dColorFree') || {}).value || '';
   const sizes = (p.sizes && p.sizes.length) ? p.sizes : [];
   const colors = p.colors || [];
   const vo = p.variantOptions;
@@ -371,6 +372,9 @@ function renderDetailBody(p) {
       ${chipGroupHtml('color', colors.map(c => ({ value: c, label: c })), 'swatch')}<p class="swatch-name" id="dSwatchName" aria-live="polite"></p><p class="field-error" id="dErr-color" role="alert" hidden></p></fieldset>`);
   } else if (colors.length === 1) {
     parts.push(`<p class="detail-fact"><b>${escapeHtml(t('color_label'))}</b> ${escapeHtml(colors[0])}</p>`);
+  } else {
+    /* Aucune couleur définie par la boutique : le client peut préciser celle qu'il souhaite (facultatif) */
+    parts.push(`<div class="field"><label for="dColorFree">${escapeHtml(t('color_free_label'))}</label><input id="dColorFree" class="input" maxlength="60" autocomplete="off" placeholder="${escapeHtml(t('color_placeholder'))}" value="${escapeHtml(keepColor)}"></div>`);
   }
   if (vo) {
     parts.push(`<fieldset class="opt" data-field="option"><legend id="dLegend-option">${escapeHtml(vo.label)} <span class="req" aria-hidden="true">*</span></legend>
@@ -456,6 +460,7 @@ function openDetail(id) {
   renderDetailMeta(p);
   bindDetailForm();
   const oldNote = document.getElementById('dNote'); if (oldNote) oldNote.value = '';
+  const oldColor = document.getElementById('dColorFree'); if (oldColor) oldColor.value = '';
   renderDetailBody(p);
 
   const modal = el('#detail');
@@ -533,7 +538,7 @@ function addFromDetail() {
   }
   const note = (document.getElementById('dNote') || {}).value || '';
   addToCart(p.id, {
-    color: DETAIL_SEL.color, size: DETAIL_SEL.size, tissu: p.fabric || '',
+    color: DETAIL_SEL.color || ((document.getElementById('dColorFree') || {}).value || '').trim(), size: DETAIL_SEL.size, tissu: p.fabric || '',
     note: note.trim(), optionKimono: DETAIL_SEL.option
   });
   /* Retour immédiat sur le bouton (✓ Ajouté), puis le panier s'ouvre. */
