@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const orderBtn = document.getElementById('btnOrder');
   if (orderBtn) orderBtn.addEventListener('click', e => { e.preventDefault(); haOrder(); });
 
-  loadCatalog(() => {
+  window.__onCatalog = () => {
     renderCategoryFilters();
     renderProducts();
     renderHome();
@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof renderNavMenus === 'function') renderNavMenus();
     openDetailFromUrl();
     hidePageLoader();
-  });
+  };
+  loadCatalog(window.__onCatalog);
 });
 
 /* Remplit la bannière de la page dédiée d'une collection (collection.html) :

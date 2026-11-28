@@ -94,7 +94,7 @@ async function loadOrdersList() {
   host.innerHTML = `<table><thead><tr><th>Réf</th><th>Client</th><th>Total</th><th>Moyen</th><th>Paiement</th><th>Statut</th><th>Date</th><th></th></tr></thead>
     <tbody>${data.map(o => {
       const next = NEXT_STEP[o.status];
-      const wa = waLink(o.customer_phone, `Bonjour ${o.customer_name || ''}, ici Hadeej’Art au sujet de votre commande ${o.order_ref}.`);
+      const wa = waLink(o.customer_phone, `Bonjour ${o.customer_name || ''}, ici Hadeej’Art au sujet de votre commande ${o.order_ref}.`, o.country);
       return `
       <tr>
         <td><b>${escapeHtml(o.order_ref)}</b></td>
@@ -141,7 +141,7 @@ async function openOrderDetail(id) {
   const overlay = openModal(`
     <header><h3>Commande ${escapeHtml(order.order_ref)}</h3><button class="icon-btn" id="closeOrderModal">✕</button></header>
     <div class="body">
-      <p><b>${escapeHtml(order.customer_name)}</b> · ${escapeHtml(order.customer_phone)} ${order.customer_email ? '· ' + escapeHtml(order.customer_email) : ''} ${waLink(order.customer_phone) ? `· <a href="${escapeHtml(waLink(order.customer_phone, 'Bonjour ' + (order.customer_name || '') + ', ici Hadeej’Art au sujet de votre commande ' + order.order_ref + '.'))}" target="_blank" rel="noopener">Écrire sur WhatsApp ↗</a>` : ''}</p>
+      <p><b>${escapeHtml(order.customer_name)}</b> · ${escapeHtml(order.customer_phone)} ${order.customer_email ? '· ' + escapeHtml(order.customer_email) : ''} ${waLink(order.customer_phone, "", order.country) ? `· <a href="${escapeHtml(waLink(order.customer_phone, 'Bonjour ' + (order.customer_name || '') + ', ici Hadeej’Art au sujet de votre commande ' + order.order_ref + '.', order.country))}" target="_blank" rel="noopener">Écrire sur WhatsApp ↗</a>` : ''}</p>
       <p>Lieu : ${escapeHtml([order.district, order.city, order.country].filter(Boolean).join(', ') || '—')}</p>
       ${order.location_address ? `<p>Adresse détectée : ${escapeHtml(order.location_address)}</p>` : ''}
       ${order.location_note ? `<p>Précision : ${escapeHtml(order.location_note)}</p>` : ''}

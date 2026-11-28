@@ -57,6 +57,9 @@ const UI_STRINGS = {
 
     catalogue: 'Catalogue', all: 'Tous', add: 'Ajouter', detail: 'Détail',
     no_products: 'Aucun produit dans cette catégorie pour le moment.',
+    catalog_error: 'Impossible de charger le catalogue pour le moment. Vérifiez votre connexion, puis réessayez.',
+    catalog_retry: 'Réessayer',
+    catalog_wa: 'Nous écrire sur WhatsApp',
     loading: 'Chargement du catalogue…',
     photo_coming: ' (photo à venir)',
     price_unavailable_in: cur => ` (FCFA — indisponible en ${cur})`,
@@ -443,6 +446,9 @@ const UI_STRINGS = {
 
     catalogue: 'Catalogue', all: 'All', add: 'Add', detail: 'Details',
     no_products: 'No products in this category yet.',
+    catalog_error: 'The catalogue could not be loaded right now. Check your connection, then try again.',
+    catalog_retry: 'Try again',
+    catalog_wa: 'Message us on WhatsApp',
     loading: 'Loading catalogue…',
     photo_coming: ' (photo coming soon)',
     price_unavailable_in: cur => ` (FCFA — unavailable in ${cur})`,
@@ -829,6 +835,9 @@ const UI_STRINGS = {
 
     catalogue: 'Katalog', all: 'Yépp', add: 'Yokk', detail: 'Detay',
     no_products: 'Amul marsandiis ci wàll bii, léegi.',
+    catalog_error: 'Catalogue bi mënul a ubbeeku léegi. Seetal sa connexion, te nga jéemaat.',
+    catalog_retry: 'Jéemaat',
+    catalog_wa: 'Bind nu ci WhatsApp',
     loading: 'Di yëngal katalog bi…',
     photo_coming: ' (nataal dina ñëw)',
     price_unavailable_in: cur => ` (FCFA — amul ci ${cur})`,

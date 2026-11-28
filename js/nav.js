@@ -500,3 +500,66 @@ function initNav() {
   bindCartButton();
   bindOverlayEscape();
 }
+
+/* ======================================================================
+   Accueil international : on PROPOSE (jamais d'office) l'anglais et la devise
+   du pays du visiteur à sa première visite. Rien n'est changé sans son accord,
+   et la page reste en français pour les moteurs de recherche. Un clic sur
+   « Oui » enregistre le choix ; la croix le refuse définitivement.
+   ====================================================================== */
+(function () {
+  const FR_REGIONS = ['SN', 'FR', 'BE', 'CH', 'LU', 'MC', 'ML', 'CI', 'GN', 'MR', 'BF', 'BJ', 'TG', 'NE', 'CM', 'MA', 'DZ', 'TN', 'CD', 'CG', 'GA', 'MG', 'HT', 'GW', 'TD', 'CF'];
+  const CFA = ['SN', 'ML', 'CI', 'BF', 'BJ', 'TG', 'NE', 'GW', 'CM', 'GA', 'CG', 'TD', 'CF', 'GQ'];
+  const EUR_REGIONS = ['FR', 'BE', 'DE', 'ES', 'IT', 'PT', 'NL', 'LU', 'IE', 'AT', 'FI', 'GR', 'MC', 'SM', 'VA', 'MT', 'CY', 'SK', 'SI', 'EE', 'LV', 'LT', 'HR',
+    'GB', 'CH', 'SE', 'DK', 'NO', 'PL', 'CZ', 'HU', 'RO', 'BG', 'IS', 'MA', 'DZ', 'TN'];
+  const CUR_NAME = { EUR: 'euros (€)', USD: 'dollars US ($)', FCFA: 'FCFA' };
+
+  function guess() {
+    const tags = ((navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || '']).map(x => String(x || '').trim());
+    let region = '', lang = '';
+    for (const tag of tags) {
+      const [base, , r] = tag.replace('_', '-').split('-').concat(['', '']);
+      const reg = (tag.replace('_', '-').split('-').find((p, i) => i > 0 && /^[A-Za-z]{2}$/.test(p)) || '').toUpperCase();
+      if (!region && reg) region = reg;
+      if (!lang && SUPPORTED_LANGS.includes(String(base).toLowerCase())) lang = String(base).toLowerCase();
+    }
+    let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+    if (!lang) lang = FR_REGIONS.includes(region) ? 'fr' : 'en';
+    let cur;
+    if (region) cur = CFA.includes(region) ? 'FCFA' : (EUR_REGIONS.includes(region) ? 'EUR' : 'USD');
+    else if (/^Africa\/(Dakar|Abidjan|Bamako|Conakry|Nouakchott|Ouagadougou|Lome|Niamey|Douala|Libreville)/.test(tz)) cur = 'FCFA';
+    else if (/^Europe\//.test(tz)) cur = 'EUR';
+    else if (/^(America|Asia|Australia|Pacific)\//.test(tz)) cur = 'USD';
+    else cur = 'FCFA';
+    return { lang, cur };
+  }
+
+  function show() {
+    let seen = null, stored = null, storedCur = null;
+    try { seen = localStorage.getItem('ha_welcome'); stored = localStorage.getItem('ha_lang'); storedCur = localStorage.getItem('ha_currency'); } catch (e) { return; }
+    if (seen || document.getElementById('welcomeBar')) return;
+    const g = guess();
+    const needLang = !stored && g.lang !== CURRENT_LANG;
+    const needCur = !storedCur && g.cur !== CURRENT_CURRENCY;
+    if (!needLang && !needCur) return;
+
+    const en = g.lang === 'en';                       /* langue du message : anglais ou français */
+    const LANG_NAME = { fr: en ? 'French' : 'français', en: en ? 'English' : 'anglais', wo: en ? 'Wolof' : 'wolof' };
+    const parts = [];
+    if (needLang) parts.push(en ? `View this site in ${LANG_NAME[g.lang]}` : `Voir le site en ${LANG_NAME[g.lang]}`);
+    if (needCur) parts.push(en ? `show prices in ${CUR_NAME[g.cur]}` : `afficher les prix en ${CUR_NAME[g.cur]}`);
+    if (parts.length) parts[0] = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+    const msg = (en ? 'Welcome! ' : 'Bienvenue ! ') + parts.join(en ? ' and ' : ' et ') + (en ? '?' : ' ?');
+
+    const bar = document.createElement('div');
+    bar.id = 'welcomeBar'; bar.className = 'welcome-bar'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', en ? 'Language and currency' : 'Langue et devise');
+    bar.innerHTML = `<span class="wb-msg"></span><span class="wb-act"><button type="button" class="wb-yes"></button><button type="button" class="wb-no" aria-label="${en ? 'No thanks' : 'Non merci'}">✕</button></span>`;
+    bar.querySelector('.wb-msg').textContent = msg;
+    bar.querySelector('.wb-yes').textContent = en ? 'Yes, switch' : 'Oui, changer';
+    const done = () => { try { localStorage.setItem('ha_welcome', '1'); } catch (e) {} bar.remove(); };
+    bar.querySelector('.wb-yes').addEventListener('click', () => { if (needLang) setLang(g.lang); if (needCur) setCurrency(g.cur); done(); });
+    bar.querySelector('.wb-no').addEventListener('click', done);
+    document.body.insertBefore(bar, document.body.firstChild);
+  }
+  document.addEventListener('DOMContentLoaded', () => { try { setTimeout(show, 900); } catch (e) { /* jamais bloquant */ } });
+})();

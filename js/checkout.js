@@ -130,14 +130,28 @@ function coClearErrors() {
 
 /* Numéros acceptés : local sénégalais à 9 chiffres (77 123 45 67), ou
    international (+221…, 00221…) de 9 à 15 chiffres. */
+/* Chiffres d'autres écritures (arabe-indien ٠١٢, persan ۰۱۲, pleine largeur ０１２) et
+   espaces / tirets typographiques -> caractères ASCII : un clavier arabe ou asiatique
+   produit des numéros valides que le serveur (ASCII seulement) refuserait sinon. */
+function normalizePhoneChars(s) {
+  return String(s || '')
+    .replace(/[\u0660-\u0669]/g, c => String(c.charCodeAt(0) - 0x0660))
+    .replace(/[\u06F0-\u06F9]/g, c => String(c.charCodeAt(0) - 0x06F0))
+    .replace(/[\uFF10-\uFF19]/g, c => String(c.charCodeAt(0) - 0xFF10))
+    .replace(/[\uFF0B]/g, '+')
+    .replace(/[\u00A0\u2007\u202F\u3000]/g, ' ')
+    .replace(/[\u2010-\u2015\u2212]/g, '-');
+}
 function phoneDigits(raw) { return String(raw || '').replace(/\D/g, ''); }
 function phoneIsValid(raw) {
+  raw = normalizePhoneChars(raw);
   if (!/^[0-9+ ().-]{6,30}$/.test(raw)) return false;
   let d = phoneDigits(raw);
   if (/^\s*00/.test(raw)) d = d.slice(2);
   return d.length >= 9 && d.length <= 15;
 }
 function formatPhoneForDisplay(raw) {
+  raw = normalizePhoneChars(raw);
   const d = phoneDigits(raw);
   if (!/^\s*\+/.test(raw) && d.length === 9) return d.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
   return raw.trim();
@@ -147,6 +161,7 @@ function validateStep(n) {
   let ok = true, first = null;
   const fail = (id, key) => { coSetError(id, t(key)); ok = false; if (!first) first = id; };
   if (n === 1) {
+    const phoneEl = $co('cPhone'); if (phoneEl) phoneEl.value = normalizePhoneChars(phoneEl.value).trim();
     const name = coVal('cName'), phone = coVal('cPhone'), email = coVal('cEmail');
     coSetError('cName', ''); coSetError('cPhone', ''); coSetError('cEmail', '');
     if (!name) fail('cName', 'val_name_required'); else if (name.length > 120) fail('cName', 'val_name_too_long');
@@ -156,7 +171,7 @@ function validateStep(n) {
   if (n === 2) {
     coSetError('cCity', ''); coSetError('cDistrict', '');
     if (!coVal('cCity')) fail('cCity', 'val_city_required');
-    if (!coVal('cDistrict')) fail('cDistrict', 'val_district_required');
+    if (!coVal('cDistrict') && (!coVal('cCountry') || /s[ée]n[ée]gal/i.test(coVal('cCountry')))) fail('cDistrict', 'val_district_required');
   }
   if (!ok && first) { const el = $co(first); if (el) el.focus(); }
   return ok;
@@ -279,6 +294,18 @@ function buildOrderMessage(orderRef, location, view) {
   return t('wa_new_order') + '\n' + buildOrderSummary(orderRef, location, view);
 }
 
+/* Lien WhatsApp : au-delà de ~3500 caractères (gros panier) certains navigateurs ou
+   applications tronquent ou refusent le lien : on envoie alors un message court ;
+   le détail complet est dans la facture image et le récapitulatif copiable. */
+function waOrderUrl(fullText, view, orderRef) {
+  const url = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(fullText)}`;
+  if (url.length <= 3500) return url;
+  const short = [t('wa_new_order'), orderRef ? t('wa_ref') + ' ' + orderRef : '', t('wa_name') + ' ' + (coVal('cName') || 'Client'),
+    t('wa_phone') + ' ' + coVal('cPhone'), t('wa_total_items') + ' ' + formatMoney(view.total, view.currency),
+    t('wa_payment') + ' ' + (PAYMENT_LABELS[coVal('cPay')] || 'Wave'), t('wa_invoice_note')].filter(Boolean).join('\n');
+  return `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(short)}`;
+}
+
 /* ====== Envoi ====== */
 function newIdemKey() {
   try { if (window.crypto && crypto.randomUUID) return crypto.randomUUID(); } catch (e) { /* repli */ }
@@ -354,7 +381,7 @@ async function haOrder() {
       const message = err.isValidation ? translateServerError(err.message) : t('co_network_error');
       /* Panne réseau : on garde panier et saisies, on propose de réessayer
          (même clé : aucun doublon) ou de passer directement par WhatsApp. */
-      window._coFallbackUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(buildOrderMessage(null, location, view))}`;
+      window._coFallbackUrl = waOrderUrl(buildOrderMessage(null, location, view), view, null);
       showCoError(message, !err.isValidation);
       return false;
     }
@@ -362,7 +389,7 @@ async function haOrder() {
     const orderRef = result && result.order_ref;
     window.LAST_INVOICE_ID = orderRef;
     const summary = buildOrderSummary(orderRef, location, view);
-    const waUrl = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(t('wa_new_order') + '\n' + summary + '\n' + t('wa_invoice_note'))}`;
+    const waUrl = waOrderUrl(t('wa_new_order') + '\n' + summary + '\n' + t('wa_invoice_note'), view, orderRef);
     const record = { ref: orderRef, waUrl, summary, total: formatMoney(view.total, view.currency), at: Date.now() };
     window.LAST_ORDER = record;
     try { localStorage.setItem(CO_LAST_ORDER_KEY, JSON.stringify(record)); sessionStorage.removeItem('ha_idem'); } catch (e) { /* ignoré */ }

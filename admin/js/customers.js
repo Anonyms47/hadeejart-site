@@ -34,7 +34,7 @@ async function renderCustomers() {
     document.getElementById('custCount').textContent = `${view.length} client${view.length > 1 ? 's' : ''}` + (view.length !== all.length ? ` sur ${all.length}` : '') + ` · ${all.filter(c => c.orders > 1).length} fidèle${all.filter(c => c.orders > 1).length > 1 ? 's' : ''}`;
     host.innerHTML = `<table><thead><tr><th>Nom</th><th>Téléphone</th><th>Ville</th><th>Commandes</th><th>Total dépensé</th><th>Dernière commande</th><th></th></tr></thead>
       <tbody>${view.map(c => {
-        const wa = waLink(c.phone, 'Bonjour ' + (c.name || '') + ', ici Hadeej’Art 🧵');
+        const wa = waLink(c.phone, 'Bonjour ' + (c.name || '') + ', ici Hadeej’Art 🧵', c.country);
         return `<tr>
           <td>${escapeHtml(c.name)}${c.orders > 1 ? ' <span class="badge delivered">Fidèle</span>' : ''}</td>
           <td>${escapeHtml(c.phone || '—')}</td>
