@@ -105,10 +105,10 @@ async function renderDashboard() {
   /* ---- Dernières commandes (clic = détail) ---- */
   const rows = orders.slice(0, 6).map(o => `
     <tr class="clickable" data-open="${o.id}">
-      <td>${escapeHtml(o.order_ref)}</td><td>${escapeHtml(o.customer_name)}</td>
+      <td>${prettyRef(o.order_ref)}</td><td>${escapeHtml(o.customer_name)}</td>
       <td>${formatMoney(o.total_amount, o.currency)}</td>
       <td><span class="badge ${escapeHtml(o.status)}">${escapeHtml(ORDER_STATUS_LABELS[o.status] || o.status)}</span></td>
-      <td>${fmtDate(o.created_at)}</td>
+      <td>${escapeHtml(fmtWhen(o.created_at))}</td>
     </tr>`).join('') || '<tr><td colspan="5">Aucune commande.</td></tr>';
   document.getElementById('recentOrders').innerHTML = `<table><thead><tr><th>Réf</th><th>Client</th><th>Total</th><th>Statut</th><th>Date</th></tr></thead><tbody>${rows}</tbody></table>`;
   document.querySelectorAll('#recentOrders [data-open]').forEach(tr => tr.addEventListener('click', () => openOrderDetail(tr.dataset.open)));

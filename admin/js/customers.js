@@ -37,7 +37,7 @@ async function renderCustomers() {
         const wa = waLink(c.phone, 'Bonjour ' + (c.name || '') + ', ici Hadeej’Art 🧵', c.country);
         return `<tr>
           <td>${escapeHtml(c.name)}${c.orders > 1 ? ' <span class="badge delivered">Fidèle</span>' : ''}</td>
-          <td>${escapeHtml(c.phone || '—')}</td>
+          <td class="nowrap">${escapeHtml(c.phone ? prettyPhone(c.phone, c.country) : '—')}</td>
           <td>${escapeHtml([c.city, c.country].filter(Boolean).join(', ') || '—')}</td>
           <td>${c.orders}</td><td>${spent(c)}</td><td>${fmtDate(c.lastOrder)}</td>
           <td class="row-actions">${wa ? `<a class="btn ghost sm" href="${escapeHtml(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</td>
