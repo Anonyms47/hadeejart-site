@@ -294,12 +294,12 @@ function buildOrderMessage(orderRef, location, view) {
   return t('wa_new_order') + '\n' + buildOrderSummary(orderRef, location, view);
 }
 
-/* Lien WhatsApp : au-delà de ~3500 caractères (gros panier) certains navigateurs ou
+/* Lien WhatsApp : au-delà de ~2000 caractères (gros panier) certains navigateurs ou
    applications tronquent ou refusent le lien : on envoie alors un message court ;
    le détail complet est dans la facture image et le récapitulatif copiable. */
 function waOrderUrl(fullText, view, orderRef) {
   const url = `https://wa.me/${SITE_WA_NUMBER}?text=${encodeURIComponent(fullText)}`;
-  if (url.length <= 3500) return url;
+  if (url.length <= 2000) return url;
   const short = [t('wa_new_order'), orderRef ? t('wa_ref') + ' ' + orderRef : '', t('wa_name') + ' ' + (coVal('cName') || 'Client'),
     t('wa_phone') + ' ' + coVal('cPhone'), t('wa_total_items') + ' ' + formatMoney(view.total, view.currency),
     t('wa_payment') + ' ' + (PAYMENT_LABELS[coVal('cPay')] || 'Wave'), t('wa_invoice_note')].filter(Boolean).join('\n');
