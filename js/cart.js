@@ -273,6 +273,7 @@ function cartLineHtml(l, i) {
       <div class="cart-info">
         <h5 class="cart-name">${name}</h5>
         ${chips.length ? `<ul class="cart-chips">${chips.map(c => `<li>${escapeHtml(c)}</li>`).join('')}</ul>` : ''}
+        ${l.note ? `<p class="cart-note-line"><span aria-hidden="true">✎</span> ${escapeHtml(l.note)}</p>` : ''}
         ${issue ? `<p class="cart-issue" role="alert">${escapeHtml(t('cart_issue_' + issue))} <button type="button" class="cart-issue-fix" data-act="fix" data-key="${key}">${escapeHtml(t('cart_issue_fix'))}</button></p>` : ''}
         <div class="cart-line-foot">
           <div class="qty" role="group" aria-label="${escapeHtml(t('cart_qty_label'))}">

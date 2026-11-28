@@ -96,6 +96,12 @@ async function loadOrdersList() {
   if (term) data = data.filter(o => [o.order_ref, o.customer_name, o.customer_phone, o.city, o.district].some(v => String(v || '').toLowerCase().includes(term)));
 
   ORDERS_VIEW = data;
+  /* Notes laissées par les clients (une note par article + la précision de livraison) : visibles dès la liste */
+  const notesBy = {};
+  try {
+    const r = await sb.from('order_items').select('order_id,note').not('note', 'is', null).neq('note', '');
+    (r.data || []).forEach(x => { if (x.note) (notesBy[x.order_id] = notesBy[x.order_id] || []).push(x.note); });
+  } catch (e) { /* facultatif */ }
   document.getElementById('ordersTitle').textContent = data.length + ' commande' + (data.length > 1 ? 's' : '');
   const payBadge = o => {
     const ps = o.payment_status || 'expected';
@@ -108,6 +114,7 @@ async function loadOrdersList() {
     <article class="ord st-${escapeHtml(o.status)}" data-open="${o.id}" tabindex="0" aria-label="Commande ${escapeHtml(o.order_ref)}" style="animation-delay:${Math.min(i, 10) * 35}ms">
       <header class="ord-top"><span class="ord-ref">${prettyRef(o.order_ref)}</span><span class="ord-when">${escapeHtml(fmtWhen(o.created_at))}</span></header>
       <div class="ord-who"><b>${escapeHtml(o.customer_name)}</b><span class="ord-tel">${escapeHtml(prettyPhone(o.customer_phone, o.country))}</span></div>
+      ${(() => { const ns = (notesBy[o.id] || []).concat(o.location_note ? [o.location_note] : []); return ns.length ? `<p class="ord-note" title="${escapeHtml(ns.join(' · '))}"><span aria-hidden="true">📝</span> <span>${escapeHtml(ns[0])}${ns.length > 1 ? ' <b>+' + (ns.length - 1) + '</b>' : ''}</span></p>` : ''; })()}
       <div class="ord-mid"><span class="ord-total">${formatMoney(o.total_amount, o.currency)}</span>
         <span class="ord-pills"><span class="badge ${escapeHtml(o.status)}">${ORDER_STATUS_LABELS[o.status] || escapeHtml(o.status)}</span>${payBadge(o)}</span></div>
       <div class="ord-act">
@@ -188,7 +195,7 @@ async function openOrderDetail(id) {
       .map(([k, v]) => `<span class="od-pill"><small>${k}</small> ${escapeHtml(v)}</span>`).join('');
     return `<li class="od-item">
       <span class="od-thumb">${thumbBy[it.product_id] ? `<img src="${escapeHtml(assetUrl(thumbBy[it.product_id]))}" alt="" loading="lazy">` : '🧵'}</span>
-      <div class="od-item-main"><b>${escapeHtml(it.product_name)}</b>${pills ? `<div class="od-pills">${pills}</div>` : ''}${it.note ? `<p class="od-note">Note libre : ${escapeHtml(it.note)}</p>` : ''}</div>
+      <div class="od-item-main"><b>${escapeHtml(it.product_name)}</b>${pills ? `<div class="od-pills">${pills}</div>` : ''}${it.note ? `<p class="od-note"><span aria-hidden="true">📝</span> <span><small>Note du client</small>${escapeHtml(it.note)}</span></p>` : ''}</div>
       <div class="od-item-price"><span class="od-qty">×${it.qty}</span><b>${formatMoney(it.line_total, order.currency)}</b></div></li>`;
   }).join('');
 
@@ -236,14 +243,12 @@ async function openOrderDetail(id) {
     </div>
     <div class="foot">
       <button class="btn danger ghost-danger" id="deleteOrderBtn">Supprimer</button>
-      <button class="btn ghost" id="closeOrderBtn">Fermer</button>
       <button class="btn" id="saveOrderStatusBtn">Enregistrer</button>
     </div>
   `);
   overlay.querySelector('.modal-box').classList.add('od-modal');
 
   overlay.querySelector('#closeOrderModal').addEventListener('click', () => closeModal(overlay));
-  overlay.querySelector('#closeOrderBtn').addEventListener('click', () => closeModal(overlay));
   overlay.querySelector('#copyOrderBtn').addEventListener('click', async () => {
     const txt = [`Commande ${order.order_ref}`, `Client : ${order.customer_name} · ${tel}`, `Livraison : ${place || '—'}${order.location_address ? ' · ' + order.location_address : ''}`,
       ...lines.map(l => `- ${l.product_name} ×${l.qty}${[l.size, l.fabric, l.color].filter(Boolean).length ? ' (' + [l.size, l.fabric, l.color].filter(Boolean).join(', ') + ')' : ''} — ${formatMoney(l.line_total, order.currency)}`),
